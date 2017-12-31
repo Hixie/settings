@@ -1,0 +1,15 @@
+! Fonts {{{
+Xft.antialias: true
+Xft.hinting:   true
+Xft.rgba:      rgb
+Xft.hintstyle: hintfull
+Xft.dpi:       120
+! }}}
+
+URxvt.font: xft:monospace:pixelsize=20
+URxvt.perl-ext:
+URxvt.perl-ext-common:
+URxvt.background: black
+URxvt.foreground: white
+URxvt.scrollBar: false
+

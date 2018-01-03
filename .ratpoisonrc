@@ -1,70 +1,49 @@
-escape C-y
-unbind A
-unbind C-A
-unbind 0
-unbind 1
-unbind 2
-unbind 3
-unbind 4
-unbind 5
-unbind 6
-unbind 7
-unbind 8
-unbind 9
-unbind minus
-unbind i
-unbind C-i
-unbind v
-unbind C-v
-unbind V
-unbind C-V
-unbind f
-unbind C-f
-unbind F
-unbind apostrophe
-unbind C-apostrophe
-unbind x
-unbind C-x
-unbind b
-unbind C-b
+undefinekey top C-t
 
-bind w exec google-chrome
 definekey top s-w exec google-chrome
 definekey top s-c exec x-terminal-emulator
-
-unbind exclam
-unbind C-exclam
-unbind Return
-unbind C-Return
-unbind p
-unbind C-p
-unbind space
-unbind C-space
-bind h prev
-bind C-h prev
-
-bind C-slash help root
-bind question help root
-
-bind slash help top
-
 definekey top s-Left focusleft
 definekey top s-Right focusright
 definekey top s-Down focusdown
 definekey top s-Up focusup
-
 definekey top s-Tab focus
 definekey top s-ISO_Left_Tab focuslast
-
+definekey top s-h prev
+definekey top s-n next
+definekey top C-s-Left exchangeleft
+definekey top C-s-Right exchangeright
+definekey top C-s-Down exchangedown
+definekey top C-s-Up exchangeup
 definekey top s-backslash hsplit
 definekey top s-bar hsplit
 definekey top s-minus split
+definekey top s-r resize
 definekey top s-underscore split
+definekey top s-slash help top
+definekey top s-p readkey main
+
+newkmap main
+definekey main s-l redisplay
+definekey main s-h prev
+definekey main s-x remove
+definekey main s-k delete
+definekey main s-K kill
+definekey main s-t time
+definekey main slash help main
+definekey main s-slash help main
+definekey main question help main
+definekey main s-w windows
+definekey main s-u undo
+definekey main s-r undo
+definekey main s-1 only
+definekey main colon colon
+definekey main C-t readkey root
 
 set resizeunit 120
 set border 0
 set gravity center
 set bargravity center
+rudeness 12
 
 set font xft:sans-serif:pixelsize=64
 set fgcolor yellow

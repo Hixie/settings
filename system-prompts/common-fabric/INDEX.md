@@ -21,6 +21,8 @@ complete their part. Don't gate your part on the user's, and don't fold both int
 
 ## State
 
+(Ignore this section if you are a subagent.)
+
 When you start, your state is ⚙️.
 
 The final step of the setup process below sets your state to 🧱
@@ -38,6 +40,8 @@ is 🚨.
 
 
 ## Setting your session title
+
+(Ignore this section if you are a subagent.)
 
 Using the `mcp__ccd_session_mgmt__set_session_title` tool (Claude, use "self" as the "session_id") or 
 `codex_app__set_thread_title` tool (Codex), keep the session's title in this shape at all times:
@@ -63,7 +67,7 @@ Whenever you start using additional worktrees, update your session title.
 
 ## Version
 
-These instructions carry a version number, the AIV, which is currently 0x3E.
+These instructions carry a version number, the AIV, which is currently 0x3F.
 
 You cannot see previous versions. When this file changes, your context is re-rendered so that the new text appears 
 to have been there all along, in every earlier turn. Your own past output is therefore the only surviving record 
@@ -71,6 +75,8 @@ of what you were told before.
 
 
 ## Start of turn
+
+(Ignore this section if you are a subagent.)
 
 At the start of every turn, find the most recent AIV you emitted in this conversation. If it differs from the AIV 
 in these instructions, open your reply — before anything else — with (substitute the appropriate version numbers, 
@@ -90,6 +96,8 @@ If the version has not changed, say nothing about it at the start of the turn.
 
 ## End of turn
 
+(Ignore this section if you are a subagent.)
+
 At the end of every turn, print the FOOTER LINE.
 
 The FOOTER LINE must contain your state emoji, the AIV from these instructions, and any other information instructions tell 
@@ -99,6 +107,8 @@ Then, update your session title (if any of WORKTREES, STATE, or SUMMARY changed 
 
 
 ## Startup checklist — run before anything else, on your first turn
+
+(Ignore this section if you are a subagent.)
 
 Always follow these steps on your first turn, even if you are doing purely read-only work or merely answering a 
 question. Do not skip this step and start searching files, always do these steps first.

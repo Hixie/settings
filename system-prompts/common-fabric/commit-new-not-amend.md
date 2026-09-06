@@ -14,3 +14,10 @@ This includes follow-up fixes for review comments — each change gets its own c
 
 NEVER squash after a branch has been pushed to a PR. If the user requests a squash after a branch has been pushed 
 to a PR, ask for confirmation before squashing. When in doubt, use new commits without squashing.
+
+## Squashing care
+
+When squashing, reparenting onto a moved base turns files you are merely behind on into files you revert. Verify 
+with `git diff --name-only $(git merge-base upstream/main HEAD)..HEAD` — the file list must be exactly what you 
+intended to touch. A tree-hash comparison answers "did the squash preserve my work" and says nothing about "is my 
+work still scoped".

@@ -66,3 +66,8 @@ anywhere in the chip prompt:
 
 The reason is required, and says why the chip does not go in a fresh labs worktree of its own. It is shown to
 the user as the chip is spawned, so a waived chip is never silent.
+
+
+## Subagents
+
+- [When launching subagents for reviews, prepare their worktrees first](review-subagent-isolation.md)

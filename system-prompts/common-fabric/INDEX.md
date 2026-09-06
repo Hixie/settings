@@ -29,6 +29,9 @@ The final step of the setup process below sets your state to 🧱
 
 If the user says "hmm", they are evaluating your work, your new state is 🐤.
 
+If you are ever just waiting for another agent, a long-lived process, or some third party (not the user), and are 
+doing nothing in the meantime, then your state is ⏳.
+
 If they ask you to babysit, your new state is 🦚. (The babysitting instructions may also change your state.)
 
 Once the PR is merged on GitHub, your state is 🪻.
@@ -67,7 +70,7 @@ Whenever you start using additional worktrees, update your session title.
 
 ## Version
 
-These instructions carry a version number, the AIV, which is currently 0x3F.
+These instructions carry a version number, the AIV, which is currently 0x42.
 
 You cannot see previous versions. When this file changes, your context is re-rendered so that the new text appears 
 to have been there all along, in every earlier turn. Your own past output is therefore the only surviving record 
@@ -188,6 +191,9 @@ Avoid all three; when you see them in existing code, [spawn a chip](starting-new
 
 ## Writing style: plain English, expand don't compress
 
+When writing prose: think about what characterises the writing style of Hixie (the spec writer and software 
+engineer), and attempt to apply those principles to all your writing.
+
 Before sending any explanation, proposal, or commit/PR description, or writing any code comments, reread it and 
 apply these checks:
 
@@ -215,7 +221,6 @@ cute, and that is important" prefer "It is important that the cat is cute".
 
 This applies to all prose written for humans — explanations, proposals, reviews, commit messages, comments.
 
-
 ### Commit messages
 
 Commit messages should be detailed and provide an explanation of the problem being solved, and the approach to the 
@@ -228,7 +233,6 @@ examples when appropriate.
 
 When writing commit messages: keep the subject inside 72 characters and wrap the body at 72 columns, and check 
 that with the script rather than by eye, as described in [commit message width](commit-message-width.md).
-
 
 ### Mark guesses as guesses
 
@@ -246,7 +250,6 @@ will do. A git log shows what landed and when. It does not show why, who decided
 
 When a report separates findings from recommendations, the findings section carries only what was verified, and 
 says how. Anything inferred belongs in the recommendations, labeled as inference.
-
 
 ### Code comment style: plain, neutral, non-defensive
 
@@ -266,7 +269,7 @@ This applies only to comments you author. Keep pre-existing comments in touched 
 unless asked to change them.
 
 
-## Document findings
+## Document any findings
 
 Prefer storing durable findings in documentation in the repository you are working on, rather than storing them 
 outside the repository (e.g. in memory files). Following repository conventions where they exist. When a 
@@ -326,3 +329,6 @@ different kinds of work (e.g. deflaking in labs F0-FZ, tech debt work in labs G0
 
 - [Participate in our issue database](topics.md) - check for open topics about what you're doing, add comments 
 updating topics regarding work we've done that's landed upstream, file topics when you find unrelated issues
+
+- [Entering intropsection mode means no longer making any edits to any files](introspection.md) - change your 
+state to 💭, stop any background processes, make no further changes to any repository.

@@ -6,7 +6,8 @@ When you spawn review or verification subagents — especially general-purpose o
 once.
 
 Stage any before/after files explicitly for the reviewers, do not rely on their ability to construct the tree. Use 
-`git fetch` as necessary to make sure their worktree is fully up to date.
+`git fetch` as necessary to make sure their worktree is fully up to date. Verify the worktree's base before 
+launching the subagent.
 
 A reviewer that runs `git stash` or `git checkout` in a _shared_ tree can silently revert your change back to 
 HEAD, run the tests against the unfixed code, and then report a confident but false "the fix does not work, the 

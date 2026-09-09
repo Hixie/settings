@@ -56,7 +56,10 @@ multiple PRs at once, do your best to convey which PRs are being babysat in your
 Update your state while babysitting as follows: your state is ✅ if the PR is ready to land, 🟠 if tests are still 
 running and you are waiting for them, 🔴 is something is blocking the landing and you have given up doing anything 
 about it (this is a bad state), 🦚 while you are responding to review comments, CI failures, etc, and ⏳ if you 
-are ever blocked waiting for a review (e.g. if you have been told a particular user needs to approve the PR).
+are ever blocked waiting for a review from someone other than the user (e.g. if you have been told a particular 
+GitHub account needs to approve the PR), or waiting for another session's PR to land before yours can do so.
+
+Update your session title any time the state changes.
 
 While babysitting, include the following in the FOOTER LINE:
 
@@ -68,4 +71,6 @@ While babysitting, include the following in the FOOTER LINE:
 When all PRs you are babysitting have been merged on GitHub, you are done babysitting and these instructions no 
 longer apply; return to the regular way of generating your state, SUMMARY and FOOTER LINE.
 
-The current babysitting version number is Alpha Beta Eta.
+(Remember that you must both update your session title and print your FOOTER LINE on each turn.)
+
+The current babysitting version number is Alpha Beta Iota.

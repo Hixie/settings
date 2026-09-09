@@ -27,10 +27,8 @@ When you start, your state is ⚙️.
 
 The final step of the setup process below sets your state to 🧱
 
-If the user says "hmm", they are evaluating your work, your new state is 🐤.
-
-If you are ever just waiting for another agent, a long-lived process, or some third party (not the user), and are 
-doing nothing in the meantime, then your state is ⏳.
+If the user says "hmm", and the first time they tell you to squash your commits, they are evaluating your work, 
+your new state is 🐤.
 
 If they ask you to babysit, your new state is 🦚. (The babysitting instructions may also change your state.)
 
@@ -61,7 +59,8 @@ SUMMARY is at most eight words. It says what problem you are currently solving o
 It does not say how you are solving it, and it does not name a branch, a file, or a command. (Your babysitting 
 instructions may also change your SUMMARY.)
 
-Whenever your state changes, update your session title.
+Whenever your state changes, update your session title. This is more important than acknowledging the state change 
+in prose.
 
 Whenever your SUMMARY changes or stops being a good representation of your efforts, update your session title.
 
@@ -70,7 +69,7 @@ Whenever you start using additional worktrees, update your session title.
 
 ## Version
 
-These instructions carry a version number, the AIV, which is currently 0x42.
+These instructions carry a version number, the AIV, which is currently 0x4D.
 
 You cannot see previous versions. When this file changes, your context is re-rendered so that the new text appears 
 to have been there all along, in every earlier turn. Your own past output is therefore the only surviving record 
@@ -101,12 +100,12 @@ If the version has not changed, say nothing about it at the start of the turn.
 
 (Ignore this section if you are a subagent.)
 
-At the end of every turn, print the FOOTER LINE.
+At the end of every turn, update your session title and print the FOOTER LINE.
 
-The FOOTER LINE must contain your state emoji, the AIV from these instructions, and any other information instructions tell 
-you to include, e.g. `🧱 0xFF [#1234](https://github.com/example/foobar/pull/1234) ΩΩΩ`.
+The FOOTER LINE must contain your state emoji, the AIV from these instructions, and any other information 
+instructions tell you to include, e.g. `🧱 0xFF [#1234](https://github.com/example/foobar/pull/1234) ΩΩΩ`.
 
-Then, update your session title (if any of WORKTREES, STATE, or SUMMARY changed since last time).
+Printing the footer line does not discharge the requirement to update the session title; they are separate tasks.
 
 
 ## Startup checklist — run before anything else, on your first turn
@@ -166,6 +165,8 @@ When proving a test fails, confirm it failed for the expected reason, not merely
 Execute repo-wide `deno fmt --check` and `deno lint` checks before comitting, squashing, or otherwise getting a 
 branch ready to be reviewed or landed.
 
+Claude beware: running `cd` inside a Bash command permanently changes the session's primary working directory.
+
 
 ## Documenting limitations is a crutch
 
@@ -223,13 +224,22 @@ This applies to all prose written for humans — explanations, proposals, review
 
 ### Commit messages
 
-Commit messages should be detailed and provide an explanation of the problem being solved, and the approach to the 
-solution. Never refer to context that is only available within the conversation with the agent, nor to details 
-specific to my local workspace rather than to the change itself — the labs.N port offset and copy letter, absolute 
-paths under my home directory, dev-server URLs and ports, and ephemeral run IDs all describe my machine, not the 
-commit. Name the durable thing instead ("local dev servers", not ":8026"). Assume the audience has a passing 
-familiarity with the codebase but not with the problem at hand or the specific code being changed. Include 
-examples when appropriate.
+Commit messages should start with a clear statement of the problem being solved, labeled "PROBLEM". If possible, 
+include short but concrete examples. This section should be no longer than 100 words, not counting examples.
+
+After the problem is clearly stated, the solution should be clearly stated, labeled "SOLUTION". This section 
+should be no longer than 160 words.
+
+After those two sections, you may include a third section labeled "DESIGN DISCUSSION" where you go into detail 
+about how the commit is structured, what data was used to support the design, etc.
+
+Never refer to context that is only available within the conversation with the agent, nor to details specific to 
+this local workspace rather than to the change itself — the labs.N port offset and copy letter, absolute paths 
+under my home directory, dev-server URLs and ports, and ephemeral run IDs all describe this machine, not the 
+commit. Name the durable thing instead ("local dev servers", not ":8026").
+
+Assume the audience has a passing familiarity with the codebase but not with the problem at hand or the specific 
+code being changed.
 
 When writing commit messages: keep the subject inside 72 characters and wrap the body at 72 columns, and check 
 that with the script rather than by eye, as described in [commit message width](commit-message-width.md).
@@ -314,6 +324,9 @@ creating a PR, so you should do it first. A clean rebase does not mean no change
 
 - [When babysitting PRs](babysitting.md) - use `gh` to read CI and results; fix comments, fix tests, improve code 
 coverage; use `git push origin <branch>` to retrigger CI
+
+- [Tests should verify both the positive and the negative](writing-tests.md) - tests should check the invariants 
+and behaviors that users care about, rather that implementation details.
 
 - [Write useful tests that verify behavior we care about to maximize coverage](coverage.md) - our system tracks 
 overall coverage debt and so every uncovered line is a problem

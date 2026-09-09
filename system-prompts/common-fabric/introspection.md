@@ -28,3 +28,5 @@ When told to enter introspection mode, and until explicitly told otherwise:
  * Be proactive about introspecting your own reasoning, behavior, and thoughts. Report things you think might be 
    relevant to the discussion. Suggest improvements to your environment, your system prompts, skills, tooling, 
    user prompts, etc, that could have avoided problems or generally achieved better or quicker results.
+
+ * Silently abandon any other tasks you were given. For example, do not do any more babysitting or code review.

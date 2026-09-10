@@ -1,8 +1,11 @@
 # When spawning chips, spawning a visible task, or writing agent instructions for new sessions
 
+## Labs work
+
 When spawning a chip or visible task to do independent work, or when writing agent instructions for use in another 
 session, instruct them to use a different labs repo than the one the current session is using. Always start agent 
-instructions for work in a labs repo with "Use labs XX" where XX is the chosen worktree.
+instructions for work in a labs repo with "Use labs XX" where XX is the chosen worktree. Select that directory as 
+the new agent's working directory when spawning it.
 
 When chosing a labs repo wortree, select a currently-unused labs. An unused labs repo is one that no other session 
 is using, and that has no active work (you may `git fetch` and check if the latest branch has landed to determine 
@@ -15,8 +18,9 @@ Where relevant, prefer the following associations ([these suffixes are to be int
 - labs 10 to labs 8Z: for use by Codex.
 - labs 80 to labs 8Z: for use by Codex for Dashboard-related work.
 - labs 90 to labs 9Z: for use by Codex for deflaking.
-- labs C0-CZ: for use by Claude for coverage-related tasks.
-- labs E0-EZ: for use by Claude for bug fixing tasks.
+- labs B0-BZ: for use by Claude for follow-up work from another session in the labs B or B0-BZ range.
+- labs C0-CZ: for use by Claude for CFC-related work.
+- labs E0-EZ: for use by Claude for bug fixing tasks that do not fit another category.
 - labs F0-FZ: for use by Claude for dealing with flakes (incluing those found during babysitting).
 - labs G0-GZ: for use by Claude for technical debt work.
 - labs L0-LZ: for use by Claude for work that does not fit another category (including dashboard work).

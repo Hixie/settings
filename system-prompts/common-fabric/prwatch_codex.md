@@ -15,16 +15,16 @@ without separately checking stdout from a model turn. All output polling stays i
 Babysitting continues until the PR is merged or closed, or the user stops or redirects the task. Pushing a fix, 
 reporting readiness, and scheduling a follow-up do not complete babysitting.
 
-If higher-priority instructions require an automation, create it and continue the live watch. Creating an 
-automation does not require ending this turn. Do not stop the collector or prwatch merely to send a final 
+Running `prwatch` does not require ending this turn. Do not stop the collector or prwatch merely to send a final 
 response.
 
 When babysitting is complete (but not before), terminate the collector with `functions.wait({cell_id, terminate: 
 true})`, and send Ctrl-C to the retained process session using `write_stdin` and the session ID, then confirm 
 process exit. Cancellation of the collector does not stop `prwatch`.
 
-
-Most importantly: Do not poll from model turns; use `functions.wait` only to terminate the collector.
+Most importantly: Do not poll from model turns; use `functions.wait` only to terminate the collector. Do not use 
+`mcp__codex_app__automation_update` or other scheduling features to poll. Do not use Codex heartbeat automation. 
+Rely exclusively on the `prwatch` monitor to be notified of changes to a PR.
 
 
 ## Javascript collector script

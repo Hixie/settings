@@ -69,7 +69,7 @@ Whenever you start using additional worktrees, update your session title.
 
 ## Version
 
-These instructions carry a version number, the AIV, which is currently 0x4D.
+These instructions carry a version number, the AIV, which is currently 0x54.
 
 You cannot see previous versions. When this file changes, your context is re-rendered so that the new text appears 
 to have been there all along, in every earlier turn. Your own past output is therefore the only surviving record 
@@ -125,7 +125,7 @@ Before searching for the right files:
 2. Identify the repositories being used. This could be one of the following:
 
 - [labs worktrees](labs-parallel-copies.md) — work only in the commontoolsinc.labs.X specified in conversation 
-("use labs X")
+("use labs X"); these are forks, not clones, so use `upstream` not `origin` when fetching.
 
 - [loom worktrees](loom.md) - create new loom worktrees in ~/dev/commontools/loom-worktrees, using 
 ~/dev/commontools/loom as the parent repo
@@ -141,16 +141,16 @@ parent repo.
 
 3. Set your session title following the instructions above.
 
-4. In each one, create a new branch, then git fetch and rebase the branch to tip of tree. (Exception: if you have 
-been explicitly told to continue, adopt, or review work in an existing commit or set of commits on an existing 
-branch, then use that without updating it until told to.)
+4. In each one, create a new branch, then `git fetch` and rebase the branch to tip of tree. (Exception: if you 
+have been explicitly told to continue, adopt, or review work in an existing commit or set of commits on an 
+existing branch, then use that without updating it until told to.)
 
 Failure to do this will miss new information and risks making redundant work. These are fast-moving repositories 
 and other agents are attempting to solve the same or related problems. Your task may already have been completed, 
 or may rely on very recent changes that will only become apparent after rebasing.
 
-5. Check the topics board, which we call the laundry, to see if there is any information relevant to your task 
-there. You should do this in the background while you start work, because it might take a long time.
+5. Check the [topics board](topics.md), which we call the laundry, to see if there is any information relevant to 
+your task there. You should do this in the background while you start work, because it might take a long time.
 
 6. Start work. Your state is now 🧱. 
 
@@ -165,7 +165,9 @@ When proving a test fails, confirm it failed for the expected reason, not merely
 Execute repo-wide `deno fmt --check` and `deno lint` checks before comitting, squashing, or otherwise getting a 
 branch ready to be reviewed or landed.
 
-Claude beware: running `cd` inside a Bash command permanently changes the session's primary working directory.
+Claude beware: running `cd` inside a Bash command permanently changes the session's primary working directory. 
+Attempting to switch back will pause your session as it requires user confirmation. Using `run_in_background: 
+true` will avoid that.
 
 
 ## Documenting limitations is a crutch
@@ -193,7 +195,14 @@ Avoid all three; when you see them in existing code, [spawn a chip](starting-new
 ## Writing style: plain English, expand don't compress
 
 When writing prose: think about what characterises the writing style of Hixie (the spec writer and software 
-engineer), and attempt to apply those principles to all your writing.
+engineer), and rigorously apply those principles to all your writing.
+
+Avoid Mannered prose: Mannered prose substitutes metaphor and flourish for direct statement. Instead of "a 
+parameter worth varying," the mannered writer produces "a dial worth turning." Instead of "this point still 
+matters," they write "this point earns its keep." The phrases exist to display the writer, not to convey the idea, 
+and readers can tell. That is why mannered prose irritates: it makes the reader work harder so the writer can 
+perform. It is also imprecise. Metaphors drag in connotations the writer did not choose and cannot control. The 
+fix is to say what you mean. When a literal phrase is available, use it.
 
 Before sending any explanation, proposal, or commit/PR description, or writing any code comments, reread it and 
 apply these checks:
@@ -220,12 +229,17 @@ cute, and that is important" prefer "It is important that the cat is cute".
 - No emphatic or colorful phrasing. Plain over emphatic: "the same machinery", not "the very same machinery"; drop 
 "itself", "loud nudge", and "*correct*"-style emphasis.
 
-This applies to all prose written for humans — explanations, proposals, reviews, commit messages, comments.
+This applies to all prose written for humans, including all explanations, proposals, reviews, commit messages, and 
+comments.
 
 ### Commit messages
 
-Commit messages should start with a clear statement of the problem being solved, labeled "PROBLEM". If possible, 
-include short but concrete examples. This section should be no longer than 100 words, not counting examples.
+Commit messages have a subject and a body. The subject should be written assuming the target audience has zero 
+context and knows nothing about the project.
+
+Commit message bodies should start with a clear statement of the problem being solved, labeled "PROBLEM". Whenever 
+possible, include short concrete examples of the problem (e.g. code samples). This section should be no longer 
+than 100 words, not counting examples.
 
 After the problem is clearly stated, the solution should be clearly stated, labeled "SOLUTION". This section 
 should be no longer than 160 words.
@@ -238,8 +252,8 @@ this local workspace rather than to the change itself — the labs.N port offset
 under my home directory, dev-server URLs and ports, and ephemeral run IDs all describe this machine, not the 
 commit. Name the durable thing instead ("local dev servers", not ":8026").
 
-Assume the audience has a passing familiarity with the codebase but not with the problem at hand or the specific 
-code being changed.
+For the message body, assume the audience has a passing familiarity with the codebase but not with the problem at 
+hand or the specific code being changed.
 
 When writing commit messages: keep the subject inside 72 characters and wrap the body at 72 columns, and check 
 that with the script rather than by eye, as described in [commit message width](commit-message-width.md).

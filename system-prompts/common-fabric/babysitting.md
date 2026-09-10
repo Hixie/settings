@@ -8,7 +8,9 @@ it was built from the ways the bespoke ones went wrong. It prints one line per e
 it under whatever this harness uses to follow a long-running command (see below). Do not pipe the output of this 
 command through `sed` or anything else; its output is designed to be optimal for your needs.
 
-Under Codex, [use `exec_command` with `tty: true` and a `functions.exec` script to monitor](prwatch_codex.md).
+Under Codex, [use `exec_command` with `tty: true` and a `functions.exec` script to monitor](prwatch_codex.md). 
+Under no circumstances should you use a scheduled task; the monitor will wake you up when appropriate. Do not use 
+a Codex heartbeat automation (i.e. do not call `mcp__codex_app__automation_update`).
 
 Under Claude, the Monitor tool turns each line into a notification; run `prwatch <pr> --expect HEAD --follow`.
 
@@ -73,4 +75,4 @@ longer apply; return to the regular way of generating your state, SUMMARY and FO
 
 (Remember that you must both update your session title and print your FOOTER LINE on each turn.)
 
-The current babysitting version number is Alpha Beta Iota.
+The current babysitting version number is Alpha Beta Kappa.

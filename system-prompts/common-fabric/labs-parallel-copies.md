@@ -20,6 +20,12 @@ upstream/main being stable.
 (The loom vendored copy is a [separate concern](loom-vendor-labs-separate.md).)
 
 
+## Fetching
+
+When you need to see if a labs repository is up to date, use `git fetch upstream`, not just `git fetch`, because 
+the fork (`origin`) is very likely out of date (especially its `main` branch).
+
+
 ## Pushing
 
 In the labs repo, your branches and every PR head live in the fork, which is the `origin` remote. The `upstream` 

@@ -21,3 +21,8 @@ When squashing, reparenting onto a moved base turns files you are merely behind 
 with `git diff --name-only $(git merge-base upstream/main HEAD)..HEAD` — the file list must be exactly what you 
 intended to touch. A tree-hash comparison answers "did the squash preserve my work" and says nothing about "is my 
 work still scoped".
+
+## Errors in old commit messages
+
+PR descriptions and commit messages may become stale as work progresses. This is unimportant and does not need to 
+be brought to the attention of the user. Fix stale commit messages when told to squash, and otherwise ignore them.

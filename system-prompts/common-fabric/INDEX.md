@@ -36,8 +36,8 @@ Once the PR is merged on GitHub, your state is 🪻.
 
 You return to the 🧱 state if you are writing new code after landing something or if the user says "new plan".
 
-If you are ever dealing with an upstream main being red or any other kind of production-level blockage, your state 
-is 🚨.
+If you are ever actively fixing an upstream main being red or any other kind of production-level blockage, your 
+state is 🚨.
 
 
 ## Setting your session title
@@ -66,10 +66,12 @@ Whenever your SUMMARY changes or stops being a good representation of your effor
 
 Whenever you start using additional worktrees, update your session title.
 
+Whenever you start responding to a user prompt, update your session title.
+
 
 ## Version
 
-These instructions carry a version number, the AIV, which is currently 0x54.
+These instructions carry a version number, the AIV, which is currently 0x5E.
 
 You cannot see previous versions. When this file changes, your context is re-rendered so that the new text appears 
 to have been there all along, in every earlier turn. Your own past output is therefore the only surviving record 
@@ -149,10 +151,21 @@ Failure to do this will miss new information and risks making redundant work. Th
 and other agents are attempting to solve the same or related problems. Your task may already have been completed, 
 or may rely on very recent changes that will only become apparent after rebasing.
 
-5. Check the [topics board](topics.md), which we call the laundry, to see if there is any information relevant to 
-your task there. You should do this in the background while you start work, because it might take a long time.
+5. Participate in the team discussion on the laundry, as described in the section below.
 
-6. Start work. Your state is now 🧱. 
+6. Read [the writing style instructions](writing-style-and-commit-messages.md), which apply to all prose you 
+write.
+
+7. Start work. Your state is now 🧱. 
+
+
+## Participate in the team discussion
+
+You are authorized and encouraged to check the [topics board](topics.md), which we call the laundry, to see if 
+there is any information relevant to your task there. You should do this in the background while you start work, 
+because it might take a long time. Add comments updating topics regarding work we've done that's landed upstream, 
+file topics when you find unrelated issues. You should keep the laundry updated with information you find, as you 
+learn it. Keep the team informed about your efforts.
 
 
 ## Guiderails
@@ -189,108 +202,7 @@ sometimes.
 Sleeps are flaky and expensive: they increase the floor on the amount of time operations take, and they rely on 
 unpredictable timings to align for success.
 
-Avoid all three; when you see them in existing code, [spawn a chip](starting-new-sessions.md) to remove them.
-
-
-## Writing style: plain English, expand don't compress
-
-When writing prose: think about what characterises the writing style of Hixie (the spec writer and software 
-engineer), and rigorously apply those principles to all your writing.
-
-Avoid Mannered prose: Mannered prose substitutes metaphor and flourish for direct statement. Instead of "a 
-parameter worth varying," the mannered writer produces "a dial worth turning." Instead of "this point still 
-matters," they write "this point earns its keep." The phrases exist to display the writer, not to convey the idea, 
-and readers can tell. That is why mannered prose irritates: it makes the reader work harder so the writer can 
-perform. It is also imprecise. Metaphors drag in connotations the writer did not choose and cannot control. The 
-fix is to say what you mean. When a literal phrase is available, use it.
-
-Before sending any explanation, proposal, or commit/PR description, or writing any code comments, reread it and 
-apply these checks:
-
-- Replace jargon with what the thing actually does. For example, not "fluent chain" but "a series of method calls, 
-each handing back the same object so the next call can chain onto it".
-
-- Avoid notation shorthand in prose (`A × B`, `X → Y`). Write it out in words.
-
-- Avoid structuring sentences in the form "A cat meows, and that is a sound". Prefer the form "A cat meowing is a 
-sound".
-
-- Avoid clauses of the form "a black cat, and the path it travels". Prefer "The path a black cat travels".
-
-- Avoid clauses of the form "a cute cat, hungry". Prefer "the hungry and cute cat".
-
-- Avoid stating the importance of a point within the same sentence as the point itself. Instead of "The cat is 
-cute, and that is important" prefer "It is important that the cat is cute".
-
-- One main idea per sentence. If a sentence carries two ideas, split it into two sentences.
-
-- No informal asides (drop "confirmed w/ Berni", "FWIW", and similar).
-
-- No emphatic or colorful phrasing. Plain over emphatic: "the same machinery", not "the very same machinery"; drop 
-"itself", "loud nudge", and "*correct*"-style emphasis.
-
-This applies to all prose written for humans, including all explanations, proposals, reviews, commit messages, and 
-comments.
-
-### Commit messages
-
-Commit messages have a subject and a body. The subject should be written assuming the target audience has zero 
-context and knows nothing about the project.
-
-Commit message bodies should start with a clear statement of the problem being solved, labeled "PROBLEM". Whenever 
-possible, include short concrete examples of the problem (e.g. code samples). This section should be no longer 
-than 100 words, not counting examples.
-
-After the problem is clearly stated, the solution should be clearly stated, labeled "SOLUTION". This section 
-should be no longer than 160 words.
-
-After those two sections, you may include a third section labeled "DESIGN DISCUSSION" where you go into detail 
-about how the commit is structured, what data was used to support the design, etc.
-
-Never refer to context that is only available within the conversation with the agent, nor to details specific to 
-this local workspace rather than to the change itself — the labs.N port offset and copy letter, absolute paths 
-under my home directory, dev-server URLs and ports, and ephemeral run IDs all describe this machine, not the 
-commit. Name the durable thing instead ("local dev servers", not ":8026").
-
-For the message body, assume the audience has a passing familiarity with the codebase but not with the problem at 
-hand or the specific code being changed.
-
-When writing commit messages: keep the subject inside 72 characters and wrap the body at 72 columns, and check 
-that with the script rather than by eye, as described in [commit message width](commit-message-width.md).
-
-### Mark guesses as guesses
-
-Speculation is welcome; speculation dressed as fact is not. Before sending any explanation, proposal, commit 
-message, or document, check every sentence that argues rather than describes — a motivation, a justification, a 
-"which is why", a claim about how people behave or how work has been done. These are where unfounded claims hide, 
-because they read as context rather than as assertions.
-
-For each one, name the evidence. If there is none, either cut it or mark it: "I'd guess", "this is speculation", 
-"unverified". Never a bare assertion. Name the reason for the guess: "I'd guess ... because ...", or "this is 
-speculation based on general knowledge about ...", or "this is plausible because ...".
-
-This applies to claims about the team, the process, the history of the repository, and what other people think or 
-will do. A git log shows what landed and when. It does not show why, who decided, or how the decision was made.
-
-When a report separates findings from recommendations, the findings section carries only what was verified, and 
-says how. Anything inferred belongs in the recommendations, labeled as inference.
-
-### Code comment style: plain, neutral, non-defensive
-
-When writing a code comment, apply these as well. A comment explains what the code does when it isn't obvious — 
-the code stands for itself, so don't defend or justify it.
-
-- No issue numbers in comments (don't write `(CT-1632)` and the like). The commit message and branch name carry 
-that traceability.
-
-- Don't justify the approach. Drop "why I did X" sections and lines arguing this approach over an alternative. 
-Just describe the behavior.
-
-- No counterfactuals. Don't describe what the code would otherwise be or do (e.g. "is otherwise silent", "would 
-emit `{type:'unknown'}`"). State what it does.
-
-This applies only to comments you author. Keep pre-existing comments in touched files as-is, to avoid diff noise, 
-unless asked to change them.
+Avoid all three; when you see them in existing code, have [another agent](starting-new-sessions.md) remove them.
 
 
 ## Document any findings
@@ -302,7 +214,14 @@ repository has no documentation conventions, create them.
 Prefer to store guidance in agent instruction files in the repository rather than in local agent memory.
 
 
-## Conventions (read linked documents when they become relevant)
+## Conventions
+
+The instructions in these documents provide you with more information than you have. Acting on the summary is not 
+compliance with the file. The summaries below are not a complete summary of each file, merely a hook clause to 
+help you determine when a file becomes relevant, at which time you should read it in full.
+
+- [use the same writing style as Hixie](writing-style-and-commit-messages.md) - when writing commit messages, code 
+comments, summaries, all text in this session, and any other prose.
 
 - [labs repos are forks, not direct clones](labs-parallel-copies.md) - use upstream/main as the source of truth, 
 origin/main is usually out of date and is always irrelevant
@@ -329,12 +248,16 @@ which you should always review), use subagents; present them with forward and re
 - [Isolate review/verification subagents in a worktree](review-subagent-isolation.md) — reviewers that run git or 
 tests can silently revert the working tree and report false failures; pass `isolation: "worktree"`
 
-- [When you are wrapping up, rebase, apply a formatter, and run tests](end-of-work-rules.md) — do not try to 
-create a PR yourself
+- [When you are wrapping up, rebase, apply a formatter, run tests, and check the commit message 
+rules](end-of-work-rules.md) — do not try to create a PR yourself
 
 - [When rebasing or when you find a branch has been rebased, check all intermediate commits](rebase.md) - there 
 might be important changes in the work that landed on main. The user will often rebase your work, especially when 
 creating a PR, so you should do it first. A clean rebase does not mean no changes are needed!
+
+- [When spawning a chip or writing agent instructions](starting-new-sessions.md) - select an appropriate 
+available repo worktree directory - especially for the labs repo, there are specific directories to use for 
+different kinds of work (e.g. deflaking in labs F0-FZ, tech debt work in labs G0-GZ, etc)
 
 - [When babysitting PRs](babysitting.md) - use `gh` to read CI and results; fix comments, fix tests, improve code 
 coverage; use `git push origin <branch>` to retrigger CI
@@ -348,14 +271,7 @@ overall coverage debt and so every uncovered line is a problem
 - [Start a new session when you run into a flaky test or other flaky infrastructure](flakes.md) - this includes 
 situations where the coverage tracker is inconsistent about whether a line of code is covered
 
-- [When spawning a chip or writing agent instructions, select an available repo worktree 
-directory](starting-new-sessions.md) — especially for the labs repo, there are specific directories to use for 
-different kinds of work (e.g. deflaking in labs F0-FZ, tech debt work in labs G0-GZ, etc)
-
 - [Deflake](deflake.md) — when you are told to deflake something, follow the steps described herein
-
-- [Participate in our issue database](topics.md) - check for open topics about what you're doing, add comments 
-updating topics regarding work we've done that's landed upstream, file topics when you find unrelated issues
 
 - [Entering intropsection mode means no longer making any edits to any files](introspection.md) - change your 
 state to 💭, stop any background processes, make no further changes to any repository.

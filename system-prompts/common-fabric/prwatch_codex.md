@@ -9,8 +9,8 @@ initial output. Start one background `functions.exec` cell with the collector sc
 Keep the turn open and wait with `clock.sleep` with the longest duration supported by the tool (typically this is 
 43200000ms). Notifications interrupt the wait. Handle the notifications, run the global "end of turn" steps 
 (despite not actually ending the turn), then wait again. If the collector or process exits unexpectedly, restore 
-monitoring before sleeping again. If restoration is blocked, report the specific blocker. Renew expired waits 
-without separately checking stdout from a model turn. All output polling stays inside JavaScript.
+the prwatch process before sleeping again. If restoration is blocked, report the specific blocker. Renew expired 
+waits without separately checking stdout from a model turn. All output polling stays inside JavaScript.
 
 Babysitting continues until the PR is merged or closed, or the user stops or redirects the task. Pushing a fix, 
 reporting readiness, and scheduling a follow-up do not complete babysitting.
@@ -23,8 +23,10 @@ true})`, and send Ctrl-C to the retained process session using `write_stdin` and
 process exit. Cancellation of the collector does not stop `prwatch`.
 
 Most importantly: Do not poll from model turns; use `functions.wait` only to terminate the collector. Do not use 
-`mcp__codex_app__automation_update` or other scheduling features to poll. Do not use Codex heartbeat automation. 
-Rely exclusively on the `prwatch` monitor to be notified of changes to a PR.
+`mcp__codex_app__automation_update`, `automation_update`, or other scheduling features to poll. Do not use Codex 
+heartbeat automation. Rely exclusively on the `prwatch` tool to be notified of changes to a PR.
+
+Babysitting is not a monitoring request.
 
 
 ## Javascript collector script

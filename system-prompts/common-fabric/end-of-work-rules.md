@@ -15,3 +15,7 @@ Before your first push on a branch, confirm where the PR's head lives: `gh pr vi
 headRepositoryOwner,headRefName`. Push to that repository's remote. If push output says `[new branch]` when you 
 expected to update an existing one, you have pushed to the wrong remote: delete it with `git push <remote> 
 --delete <branch>` and tell the user.
+
+## When writing a commit message
+
+Obey the global [writing style rules](writing-style-and-commit-messages.md).

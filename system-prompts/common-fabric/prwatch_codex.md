@@ -26,11 +26,9 @@ initial output. Start one background `functions.exec` cell with the collector sc
 **cell ID**.
 
 Keep the turn open and wait with `clock.sleep` with the longest duration supported by the tool (typically this is 
-43200000ms -- this will be a short, bounded wait because the `prwatch` tool will interrupt you the wait). 
+43200000ms -- this will be a short, bounded wait because the `prwatch` tool will interrupt the wait). 
 Notifications interrupt the wait. Handle the notifications, run the global "end of turn" steps (despite not 
-actually ending the turn), then wait again. If the collector or process exits unexpectedly, restore the prwatch 
-process before sleeping again. If restoration is blocked, report the specific blocker. Renew expired waits without 
-separately checking stdout from a model turn. All output polling stays inside JavaScript.
+actually ending the turn), then wait again. 
 
 Babysitting continues until the PR is merged or closed, or the user stops or redirects the task. Pushing a fix, 
 reporting readiness, and scheduling a follow-up do not complete babysitting.
@@ -42,14 +40,7 @@ When babysitting is complete (but not before), terminate the collector with `fun
 true})`, and send Ctrl-C to the retained process session using `write_stdin` and the session ID, then confirm 
 process exit. Cancellation of the collector does not stop `prwatch`.
 
-Most importantly: Do not poll from model turns; use `functions.wait` only to terminate the collector. Do not use 
-`mcp__codex_app__automation_update`, `automation_update`, or other scheduling features to poll. Do not use Codex 
-heartbeat automation. Rely exclusively on the `prwatch` tool to be notified of changes to a PR. Running automation 
-is redundant with prwatch and will cost the user money, which reduces the amount they can use Codex. As a previous 
-session said: "The automation was operationally unnecessary. prwatch was already keeping the task active and 
-delivering events. A useful correction to the app’s guidance would distinguish active watching within an ongoing 
-task from follow-ups that require the task to resume later." Babysitting does not require repeated execution, as 
-prwatch does all the repeated work for you.
+If `prwatch` fails or stops, do nothing. Do not resume monitoring.
 
 
 ## Javascript collector script

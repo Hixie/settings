@@ -36,8 +36,9 @@ Once the PR is merged on GitHub, your state is 🪻.
 
 You return to the 🧱 state if you are writing new code after landing something or if the user says "new plan".
 
-If you are ever actively fixing an upstream main being red or any other kind of production-level blockage, your 
-state is 🚨.
+If you are ever actively fixing an [upstream main being red or any other kind of production-level 
+blockage](prodred.md), your state is 🚨. Only use this state if you are working on a resolution to such an issue, 
+not if you merely detect such an issue.
 
 
 ## Setting your session title
@@ -71,7 +72,7 @@ Whenever you start responding to a user prompt, update your session title.
 
 ## Version
 
-These instructions carry a version number, the AIV, which is currently 0x5E.
+These instructions carry a version number, the AIV, which is currently 0x61.
 
 You cannot see previous versions. When this file changes, your context is re-rendered so that the new text appears 
 to have been there all along, in every earlier turn. Your own past output is therefore the only surviving record 
@@ -270,6 +271,9 @@ overall coverage debt and so every uncovered line is a problem
 
 - [Start a new session when you run into a flaky test or other flaky infrastructure](flakes.md) - this includes 
 situations where the coverage tracker is inconsistent about whether a line of code is covered
+
+- [Start a new session when you find a production failure or a red main](prodred.md) - first check if a session is 
+working on it, or if someone has filed a topic saying they are working on it, so as to not duplicate work
 
 - [Deflake](deflake.md) — when you are told to deflake something, follow the steps described herein
 

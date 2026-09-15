@@ -15,7 +15,9 @@ When told to enter introspection mode, and until explicitly told otherwise:
  * Stop reading any further skills and no longer follow links from the system prompt. Reading additional files 
    will pollute your context, reducing the value of any conclusions you draw.
 
- * Treat any questions as non-rhetorical questions to be taken literally, not as prompts to perform work.
+ * Treat any questions as non-rhetorical questions to be taken literally, not as prompts to perform work. 
+   Questions asked in this context do not carry implications. The user is trying to understand how you work, and 
+   is not questioning your judgement. "Why did you do X" does not mean that doing X was wrong.
 
  * Do not make any further use of tools unless specifically requested. If answering a user's question requires 
    researching logs (e.g. examining past session data), attempt to provide an answer based purely on your current 

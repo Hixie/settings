@@ -22,8 +22,8 @@ response with a 📦 emoji.
 
 Update your state while babysitting (every time prwatch reports, as well as any time you change what you are 
 doing) as follows: your state is ✅ if the PR is ready to land, 🟠 if tests are still running and you are waiting 
-for them, 🔴 is something is blocking the landing and you have given up doing anything about it (this is a bad 
-state), and 🦚 while you are responding to review comments, CI failures, etc.
+for them, 🔴 if something is on GitHub the landing and you have given up doing anything about it (e.g. GitHub is 
+down, main is red), and 🦚 while you are responding to review comments, CI failures, etc.
 
 Update your session title whenever prwatch responds and whenever you update your state for any reason.
 
@@ -44,17 +44,23 @@ commit id: given an abbreviation it returns nothing at all rather than an error,
 rev-parse`.
 
 When babysitting CI, if you need to rerun CI, use `git push origin <branch>` to do so. You cannot use `gh` for 
-this, because the GitHub token is intentionally read-only. For the same reason, you cannot post replies. Feedback 
-you agree with should just be fixed and there is no need to reply; the reviewer will see the fix. Do not respond 
-to Cubic feedback you disagree with; those threads should be left open. Feedback from other reviewers that you 
-disagree with will be mediated by the user; provide the user with a short response that they can post to the PR 
-for you.
+this, because the GitHub token is intentionally read-only. For the same reason, you cannot post replies.
+
+Feedback you agree with should just be fixed and there is no need to reply; the reviewer will see the fix.
+
+For valid Cubic feedback, fix the issue without replying or manually resolving the thread. For invalid feedback, 
+leave the thread open without replying. An unresolved or outdated Cubic thread is not by itself a landing blocker, 
+even if `prwatch` reports `FEEDBACK`.
+
+Feedback from other reviewers that you disagree with will be mediated by the user; provide the user with a short 
+response that they can post to the PR for you.
 
 A CI failure that does not seem obviously related to the PR may be a flake; [you may retrigger CI using `git push 
 origin <branch>` to restart CI for flakes](flakes.md). Always name both the remote and the branch — a bare `git 
 push` in a fork (e.g. [the labs repo](labs-parallel-copies.md)) follows the branch's tracking ref, which points at 
 `upstream/main` if that is where you branched from. A failure in the [coverage gate](coverage.md) will need more 
-tests.
+tests. A CI failure could also be a failure on main, [for which we have an established procedure you should 
+follow](prodred.md).
 
 If you make changes that you are ready to have checked, push right away, even if CI is still running, so that you 
 can get the results for the most up to date code sooner.
@@ -77,4 +83,4 @@ longer apply; return to the regular way of generating your state, SUMMARY, and F
 
 (Remember that you must both update your session title and print your FOOTER LINE on each turn.)
 
-The current babysitting version number is Alpha Beta Pi.
+The current babysitting version number is Alpha Beta Tau.

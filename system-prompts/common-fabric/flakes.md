@@ -17,3 +17,6 @@ condition, and [spawn a chip/spawn a visible task](starting-new-sessions.md) in 
 
 While waiting for CI to rerun the test and/or for another session to fix it, run it locally with and without the 
 PR's change, to definitively prove that it is not related to the PR.
+
+If you discover your flake is actually less a flake and more a production failure or red main, follow the 
+"handling a failure" [red main](prodred.md) steps.

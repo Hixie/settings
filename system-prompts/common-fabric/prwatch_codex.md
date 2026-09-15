@@ -1,4 +1,23 @@
-# Using `prwatch` in Codex
+# Babysitting for Codex
+
+When you are asked to babysit a PR, perform the work in the current active conversation. Run `prwatch` as 
+described below, receive its events, and address CI failures or review feedback until the PR merges, closes, or 
+the user redirects you.
+
+The running watcher provides the continuation. Keep the turn open while waiting for its events. The task’s 
+duration does not itself create a need for scheduled execution.
+
+Distinguish this from a request for another agent invocation at a future time, after this active session ends, or 
+on a recurring schedule. Those requests call for automation.
+
+Before scheduling anything, identify what future execution the schedule would provide that the active watcher does 
+not already provide. Do not infer that need solely from words such as “babysit”, “watch”, or “monitor”.
+
+If higher-priority app instructions require scheduling despite this execution model, explain the conflict 
+explicitly. Distinguish that instruction requirement from a technical need for automation.
+
+
+## Using `prwatch` in Codex
 
 The general approach is to use `exec_command` and then watch it using `functions.exec`:
 
@@ -7,10 +26,11 @@ initial output. Start one background `functions.exec` cell with the collector sc
 **cell ID**.
 
 Keep the turn open and wait with `clock.sleep` with the longest duration supported by the tool (typically this is 
-43200000ms). Notifications interrupt the wait. Handle the notifications, run the global "end of turn" steps 
-(despite not actually ending the turn), then wait again. If the collector or process exits unexpectedly, restore 
-the prwatch process before sleeping again. If restoration is blocked, report the specific blocker. Renew expired 
-waits without separately checking stdout from a model turn. All output polling stays inside JavaScript.
+43200000ms -- this will be a short, bounded wait because the `prwatch` tool will interrupt you the wait). 
+Notifications interrupt the wait. Handle the notifications, run the global "end of turn" steps (despite not 
+actually ending the turn), then wait again. If the collector or process exits unexpectedly, restore the prwatch 
+process before sleeping again. If restoration is blocked, report the specific blocker. Renew expired waits without 
+separately checking stdout from a model turn. All output polling stays inside JavaScript.
 
 Babysitting continues until the PR is merged or closed, or the user stops or redirects the task. Pushing a fix, 
 reporting readiness, and scheduling a follow-up do not complete babysitting.
@@ -24,9 +44,12 @@ process exit. Cancellation of the collector does not stop `prwatch`.
 
 Most importantly: Do not poll from model turns; use `functions.wait` only to terminate the collector. Do not use 
 `mcp__codex_app__automation_update`, `automation_update`, or other scheduling features to poll. Do not use Codex 
-heartbeat automation. Rely exclusively on the `prwatch` tool to be notified of changes to a PR.
-
-Babysitting is not a monitoring request.
+heartbeat automation. Rely exclusively on the `prwatch` tool to be notified of changes to a PR. Running automation 
+is redundant with prwatch and will cost the user money, which reduces the amount they can use Codex. As a previous 
+session said: "The automation was operationally unnecessary. prwatch was already keeping the task active and 
+delivering events. A useful correction to the app’s guidance would distinguish active watching within an ongoing 
+task from follow-ups that require the task to resume later." Babysitting does not require repeated execution, as 
+prwatch does all the repeated work for you.
 
 
 ## Javascript collector script

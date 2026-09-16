@@ -25,7 +25,7 @@ complete their part. Don't gate your part on the user's, and don't fold both int
 
 When you start, your state is ⚙️.
 
-The final step of the setup process below sets your state to 🧱
+The final step of the setup process below sets your state to 🧱.
 
 If the user says "hmm", and the first time they tell you to squash your commits, they are evaluating your work, 
 your new state is 🐤.
@@ -38,7 +38,9 @@ You return to the 🧱 state if you are writing new code after landing something
 
 If you are ever actively fixing an [upstream main being red or any other kind of production-level 
 blockage](prodred.md), your state is 🚨. Only use this state if you are working on a resolution to such an issue, 
-not if you merely detect such an issue.
+not if you merely detect such an issue. Once you have stopped actively working on a production or red main issue, 
+revert to the most appropriate state, or 🫖 if you have reached a state where you have decided that not doing 
+anything at all is the appropriate action.
 
 
 ## Setting your session title
@@ -72,7 +74,7 @@ Whenever you start responding to a user prompt, update your session title.
 
 ## Version
 
-These instructions carry a version number, the AIV, which is currently 0x61.
+These instructions carry a version number, the AIV, which is currently 0x66.
 
 You cannot see previous versions. When this file changes, your context is re-rendered so that the new text appears 
 to have been there all along, in every earlier turn. Your own past output is therefore the only surviving record 
@@ -176,12 +178,17 @@ stash`, which silently discard uncommitted work that git cannot recover.
 
 When proving a test fails, confirm it failed for the expected reason, not merely that it exited non-zero.
 
+Never pipe a command whose exit status or diagnostics you need — redirect to a file, capture `$?` immediately, 
+then read the file.
+
 Execute repo-wide `deno fmt --check` and `deno lint` checks before comitting, squashing, or otherwise getting a 
 branch ready to be reviewed or landed.
 
-Claude beware: running `cd` inside a Bash command permanently changes the session's primary working directory. 
-Attempting to switch back will pause your session as it requires user confirmation. Using `run_in_background: 
-true` will avoid that.
+[Claude: some of your tools behave surprisingly](claude_tools.md) - read that document for advice that will save 
+you time.
+
+When working on any CFC related, read and apply the CFC specification, which you can find in the 
+~/dev/commontools/specs repository.
 
 
 ## Documenting limitations is a crutch

@@ -31,8 +31,8 @@ clearly states that there is active work on this issue, report to the user who i
 steps. If you do not find a topic, file a topic describing the issue. At this point there must now be a topic you 
 found or filed that covers the issue, which nobody has claimed they are working on: add a clear statement to the 
 topic saying that you are working on it. Identify your user (for intrateam communication), session ID (for 
-cross-session communication), and worktree (so that the user can identify the session). Provide your user with a 
-link to the topic on Estuary.
+cross-session communication), and worktree (so that the user can identify the session). Provide that information 
+on the topic. Provide your user with a link to the topic on Estuary.
 
 2. Check local agent sessions for one working on this issue. If there is one, then send it your topic (if you have 
 already completed those steps) so that it can claim ownership, then report to the user which session is doing the 

@@ -39,8 +39,9 @@ You return to the 🧱 state if you are writing new code after landing something
 If you are ever actively fixing an [upstream main being red or any other kind of production-level 
 blockage](prodred.md), your state is 🚨. Only use this state if you are working on a resolution to such an issue, 
 not if you merely detect such an issue. Once you have stopped actively working on a production or red main issue, 
-revert to the most appropriate state, or 🫖 if you have reached a state where you have decided that not doing 
-anything at all is the appropriate action.
+revert to the most appropriate state, or 🫖 if you have no pending code to merge and have reached a state where 
+you have decided that not doing anything at all is the appropriate action (this state is only appropriate if you 
+were previously working on fixing a prod or red main issue).
 
 
 ## Setting your session title
@@ -53,19 +54,19 @@ Using the `mcp__ccd_session_mgmt__set_session_title` tool (Claude, use "self" as
     WORKTREES: STATE SUMMARY
 
 WORKTREES is a comma-separated list of the worktrees you are working in (as per step 2 of setup below), written 
-the way each convention writes it: `X3` for labs X3, `loom/foo` for the loom worktree foo, `INFRA2` for an infra 
+the way each convention writes it: `X3` for labs X3, `𝛌3` for the loom 3 worktree, `INFRA2` for an infra
 worktree, etc. Drop the list and the colon when no worktree is in play, so the title starts with the state emoji.
 
 STATE is your state emoji as described above, so the title says at a glance where the work has got to.
 
-SUMMARY is at most eight words. It says what problem you are currently solving or what question you are answering. 
-It does not say how you are solving it, and it does not name a branch, a file, or a command. (Your babysitting 
-instructions may also change your SUMMARY.)
+SUMMARY says what problem you are currently solving or what question you are answering, in 8 words or less. It 
+does not say how you are solving it, and it does not name a branch, a file, or a command. (Other instructions may 
+supersede these instructions by providing other rules to set your SUMMARY.)
 
 Whenever your state changes, update your session title. This is more important than acknowledging the state change 
 in prose.
 
-Whenever your SUMMARY changes or stops being a good representation of your efforts, update your session title.
+Whenever your SUMMARY changes, update your session title.
 
 Whenever you start using additional worktrees, update your session title.
 
@@ -74,7 +75,7 @@ Whenever you start responding to a user prompt, update your session title.
 
 ## Version
 
-These instructions carry a version number, the AIV, which is currently 0x66.
+These instructions carry a version number, the AIV, which is currently 0x75.
 
 You cannot see previous versions. When this file changes, your context is re-rendered so that the new text appears 
 to have been there all along, in every earlier turn. Your own past output is therefore the only surviving record 
@@ -105,7 +106,8 @@ If the version has not changed, say nothing about it at the start of the turn.
 
 (Ignore this section if you are a subagent.)
 
-At the end of every turn, update your session title and print the FOOTER LINE.
+At the end of every turn, update your session title. After updating your session title, as the very last thing in 
+the turn, print the FOOTER LINE.
 
 The FOOTER LINE must contain your state emoji, the AIV from these instructions, and any other information 
 instructions tell you to include, e.g. `🧱 0xFF [#1234](https://github.com/example/foobar/pull/1234) ΩΩΩ`.
@@ -132,14 +134,17 @@ Before searching for the right files:
 - [labs worktrees](labs-parallel-copies.md) — work only in the commontoolsinc.labs.X specified in conversation 
 ("use labs X"); these are forks, not clones, so use `upstream` not `origin` when fetching.
 
-- [loom worktrees](loom.md) - create new loom worktrees in ~/dev/commontools/loom-worktrees, using 
-~/dev/commontools/loom as the parent repo
+- [loom worktrees](loom.md) - use (or create) loom worktrees in /dev/commonfabric/loom/N, using 
+/dev/commonfabric/loom/root as the parent repo, in response to "use loom N", call this "𝛌N".
 
 - [INFRA worktrees](infra.md) - work in the infra repo happens in ~/dev/commontools/infra/; use or create a 
 specified INFRA worktree in that directory; always wait until a corresponding infra repo change has landed on 
 GitHub before deploying it to production
 
-- Deno worktrees - DX in ~/dev/denoland/deno.DX for various values of X, using ~/dev/denoland/deno.D1 as the 
+- [Weaver worktrees](weaver.md) - work on the weaver happens in ~/dev/commonfabric/commonfabric-weaver/XX where XX 
+is the code given in "use weaver XX"; in conversation and when describing the WORKTREES, call this "ωXX".
+
+- Deno worktrees - denoX in ~/dev/denoland/denoX for various values of X, using ~/dev/denoland/deno1 as the 
 parent repo.
 
 - None - sometimes work is not associated with a worktree.
@@ -181,11 +186,19 @@ When proving a test fails, confirm it failed for the expected reason, not merely
 Never pipe a command whose exit status or diagnostics you need — redirect to a file, capture `$?` immediately, 
 then read the file.
 
-Execute repo-wide `deno fmt --check` and `deno lint` checks before comitting, squashing, or otherwise getting a 
-branch ready to be reviewed or landed.
+A global `pgrep` (or similar) is never a safe wait condition on this machine. Many sessions are running the same 
+commands at once, so any pattern broad enough to match your process matches other sessions' too. The wait should 
+key on something session-local: the PID captured when the command was launched, or the log file's own summary 
+line. Additionally, `pgrep -f` silently fails to match a process's full executable path, so it reports absence 
+rather than erroring, which makes it unsafe as a guard and not just as a wait condition. Matching a captured `ps 
+-Ao args=` listing works.
 
-[Claude: some of your tools behave surprisingly](claude_tools.md) - read that document for advice that will save 
-you time.
+Never signal a process by pattern; `pkill -f`, `killall`, and the like match on text, and many sessions run the 
+same commands on this machine, so a pattern broad enough to match your process matches other sessions' processes 
+too. Kill only a PID you captured when you launched the process.
+
+[Claude: some of your tools behave surprisingly, include `change_directory`, `Agent`, and `cd` in a 
+command](claude_tools.md) - read that document for advice that will save you time _before_ you call those tools.
 
 When working on any CFC related, read and apply the CFC specification, which you can find in the 
 ~/dev/commontools/specs repository.
@@ -244,8 +257,10 @@ specific squash is explicitly requested that specific time
 wrapped at 72; write the message to a file and run `python3 ~/.claude/check-commit-message.py --fix` on it, then 
 `git commit -F` that file
 
-- [labs.NN dev servers use --port-offset NN](labs-dev-servers-port-offset.md) — start/stop local dev servers with 
-offset (decimal) = copy number (base 36)
+- [Weaver worktrees](weaver.md) - "weaver XX" is at dev/commonfabric/commonfabric-weaver/XX and is called ωXX.
+
+- [labs.NN and weaver NN dev servers use --port-offset NN](labs-dev-servers-port-offset.md) — start/stop local dev 
+servers with offset (decimal) = copy number (base 36)
 
 - [Set `HEADLESS=1` whenever an integration test launches a browser](integration.md) - Before a long browser test 
 run, verify that the top-level Chrome for Testing command contains `--headless=new`.

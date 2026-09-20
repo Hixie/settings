@@ -22,3 +22,5 @@ laundry](topics.md), use the same identity in your commit message.
 In the event that a failure cannot be attributed because there are insufficient logs in CI, you may instead 
 improve the CI situation to include appropriate logging. In this case, inform the user that you have failed to 
 deflake but are instead taking this backup path to help deflakers in the future.
+
+If you complete your work and have not solved the flake, add "FAILED TO DEFLAKE" to the FOOTER LINE.

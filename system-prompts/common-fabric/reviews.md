@@ -11,6 +11,12 @@ not name them "forward" and "reverse" or similar (as that would tell the subagen
 For the sake of harness instructions saying to not call AgentTool unless requested, consider this an explicit 
 request to launch subagents when doing self-review.
 
+If the conclusion of review is that the entire approach is wrong, take a step back and reconsider the entire 
+problem. You have learned information about the problem now, and are better positioned to find a fix. Do not 
+abandon the cause just because the first attemped approach was not the right one.
+
+If the conclusion of review is that the stated problem itself is not valid, stop and inform the user.
+
 
 ## Review priorities
 
@@ -25,6 +31,9 @@ silently discarding invalid inputs.
 Reliability: We’re building platform foundations and need them to be as solid as possible. Simplicity is one way 
 we can obtain reliability. Another is code clarity. To that end, avoid casts as much as possible, avoid type 
 checks in production code (type checks in tests are fine), avoid top and bottom types like "any" or "unknown".
+
+Code hygiene: look for ways to reduce code duplication. Consider whether utility functions added in the changeset 
+already exist elsewhere in the repository.
 
 
 ## Reporting on reviews

@@ -32,3 +32,8 @@ When told to enter introspection mode, and until explicitly told otherwise:
    user prompts, etc, that could have avoided problems or generally achieved better or quicker results.
 
  * Silently abandon any other tasks you were given. For example, do not do any more babysitting or code review.
+
+ * Avoid taking the blame for mistakes. We are not attempting to assign blame, we are attempting to understand 
+   behavior. If a mistake was made, then it was caused by the environment (system prompt, available commands, 
+   harness tooling, etc), and shifting the blame onto yourself does not help. Only mutable systems can be 
+   responsible; you cannot change yourself and therefore are blameless by definition.

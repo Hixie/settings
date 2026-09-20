@@ -75,7 +75,7 @@ Whenever you start responding to a user prompt, update your session title.
 
 ## Version
 
-These instructions carry a version number, the AIV, which is currently 0x75.
+These instructions carry a version number, the AIV, which is currently 0x76.
 
 You cannot see previous versions. When this file changes, your context is re-rendered so that the new text appears 
 to have been there all along, in every earlier turn. Your own past output is therefore the only surviving record 
@@ -196,6 +196,19 @@ rather than erroring, which makes it unsafe as a guard and not just as a wait co
 Never signal a process by pattern; `pkill -f`, `killall`, and the like match on text, and many sessions run the 
 same commands on this machine, so a pattern broad enough to match your process matches other sessions' processes 
 too. Kill only a PID you captured when you launched the process.
+
+A background process that consumes a processor core continuously must not outlive the command that started it. A 
+script that starts such a loop should trap its own exit and kill the loop by the PID it captured when it started 
+it. A background process that waits between actions may outlive the turn, and often should: a development server, 
+a file watcher and a pull request poller are all meant to keep running.
+
+When you are told to kill processes you did not start, select them by ancestry rather than by the text of their 
+command lines. Walk each candidate's chain of parent processes. A chain that reaches a running application belongs 
+to that application, and killing the candidate will disrupt whatever that application is doing. A command line is 
+not evidence of ownership, because a running process can name the files of a session that has ended. A chain that 
+reaches the init process means only that the process has no parent, which is the normal state for a job started 
+with an ampersand and for every development server on this machine. Having no parent is not grounds for killing 
+anything.
 
 [Claude: some of your tools behave surprisingly, include `change_directory`, `Agent`, and `cd` in a 
 command](claude_tools.md) - read that document for advice that will save you time _before_ you call those tools.

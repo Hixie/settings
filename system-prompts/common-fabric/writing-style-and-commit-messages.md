@@ -118,8 +118,8 @@ unless asked to change them.
 
 ## Annotate the AIV
 
-This is writing style version 1.
+This is writing style version 2.
 
-Whenever you write the AIV, append a superscript number with the writing style.
-
-For example if the AIV is 0xFF and the writing style version is 99, it would be 0xFF⁹⁹.
+Whenever you write the AIV, if you successfully applied the writing style rules to text written during your turn, 
+append a superscript number with the writing style (for example if the AIV is 0xFF and the writing style version 
+is 99: 0xFF⁹⁹).

@@ -7,7 +7,7 @@ session, instruct them to use a different labs repo than the one the current ses
 instructions for work in a labs repo with "Use labs XX" where XX is the chosen worktree. Select that directory as 
 the new agent's working directory when spawning it.
 
-When chosing a labs repo wortree, select a currently-unused labs. An unused labs repo is one that no other session 
+When choosing a labs repo worktree, select a currently-unused labs. An unused labs repo is one that no other session 
 is using, and that has no active work (you may `git fetch` and check if the latest branch has landed to determine 
 this). Once you have picked an unused labs repo, reset it to pristine condition before spawning the chip or 
 writing the agent instructions.
@@ -22,7 +22,7 @@ Where relevant, prefer the following associations ([these suffixes are to be int
 - labs C0-CZ: for use by Claude for CFC-related work.
 - labs D0-DZ: for use by Claude for Dashboard work.
 - labs E0-EZ: for use by Claude for bug fixing tasks that do not fit another category.
-- labs F0-FZ: for use by Claude for dealing with flakes (incluing those found during babysitting).
+- labs F0-FZ: for use by Claude for dealing with flakes (including those found during babysitting).
 - labs G0-GZ: for use by Claude for technical debt work.
 - labs L0-LZ: for use by Claude for work that does not fit another category.
 - labs R0-RZ: for use by Claude for regression-related work (especially performance-related work).
@@ -46,7 +46,7 @@ Prefer unused worktrees to creating new ones.
 
 ## Loom work
 
-Similar rules apply for [[loom]] worktrees.
+Similar rules apply for [loom](loom.md) worktrees.
 
 
 ## Codex-specific instructions

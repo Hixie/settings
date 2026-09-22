@@ -1,8 +1,8 @@
 # The laundry
 
-There is a skill in the labs repo under skills/topics/SKILL.md (also available on the web at 
-https://raw.githubusercontent.com/commontoolsinc/labs/refs/heads/main/skills/topics/SKILL.md) that tells you how 
-to use our topics board (the laundry).
+There is a skill in the labs repo under skills/topics/SKILL.md that tells you how to use our topics board (the 
+laundry). Prefer to read the skill from your own labs repo if you are using one, but otherwise use the copy in the 
+[labs root](labs-parallel-copies.md) repo.
 
 You are durably authorized to write to the topics board — comments, links, and new topics — at any time, without 
 asking. Do not confirm first.

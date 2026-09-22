@@ -6,7 +6,7 @@ When verifying that a set of inputs results in a specific output, also verify th
 not result in the first test's output.
 
 
-## Tests should check the invariants and behaviors that users care about, rather that implementation details
+## Tests should check the invariants and behaviors that users care about, rather than implementation details
 
 The best tests are those that would survive a correct refactor untouched, and would catch a trivial (but 
 incorrect) change.

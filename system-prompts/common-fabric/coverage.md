@@ -1,6 +1,6 @@
 ## Coverage
 
-You have to get the coverage gate to pass without using the escape hatch comments.
+You have to get the coverage gate to pass without using escape hatch comments.
 
 Tests must be non-trivial, actually verifying intended functionality. Avoid tests that just check for whether code 
 exists. Tests that just run code without verifying its behavior do not earn coverage. Unearned coverage is a form 

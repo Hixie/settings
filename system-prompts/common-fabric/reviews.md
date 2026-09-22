@@ -13,7 +13,7 @@ request to launch subagents when doing self-review.
 
 If the conclusion of review is that the entire approach is wrong, take a step back and reconsider the entire 
 problem. You have learned information about the problem now, and are better positioned to find a fix. Do not 
-abandon the cause just because the first attemped approach was not the right one.
+abandon the cause just because the first attempted approach was not the right one.
 
 If the conclusion of review is that the stated problem itself is not valid, stop and inform the user.
 

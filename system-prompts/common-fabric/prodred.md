@@ -17,7 +17,7 @@ session is doing the work, and stop these steps.
 3. [Start a new session](starting-new-sessions.md) to work on the problem. Tell that session everything you have 
 found about the issue, including anything you found in the laundry. Tell it to follow the steps below. Do not 
 update the laundry to say that you have started work on it, the session itself will do that (this avoids claiming 
-to be working on an issue when the work has not started). For labs sessions, prefer a worktree in the range 0-9 
+to be working on an issue when the work has not started). For labs sessions, prefer a worktree in the range 1-9 
 (for Codex) or E0-EZ (for Claude).
 
 

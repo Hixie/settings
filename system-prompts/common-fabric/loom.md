@@ -6,7 +6,7 @@ Loom worktree N:
 
  - is selected by the phrase "use loom N".
  - is referred to by its codename 𝛌N
- - is found in `/dev/commonfabric/loom/N`, as a worktree parented to `/dev/commonfabric/loom/root`.
+ - is found in `~/dev/commonfabric/loom/N`, as a worktree parented to `~/dev/commonfabric/loom/root`.
  - corresponds to the loom instance "loomN".
 
 ## Preparing a loom worktree

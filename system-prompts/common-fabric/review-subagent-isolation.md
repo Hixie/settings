@@ -2,8 +2,8 @@
 
 When you spawn review or verification subagents — especially general-purpose ones that may run `git checkout`, 
 `git stash`, `git apply`, or execute tests — give them their own git worktree if possible (Claude: use the Agent 
-tool's `isolation: "worktree"`, but see [additional guidance](claude_tools.md)). Running them in the shared 
-working directory lets several of them mutate the same tracked files at once. If not possible, use separate 
+tool's `isolation: "worktree"` if appropriate; see [additional guidance](claude_tools.md)). Running them in the 
+shared working directory lets several of them mutate the same tracked files at once. If not possible, use separate 
 scratch directories.
 
 Stage any before/after files explicitly for the reviewers, do not rely on their ability to construct the tree. Use 

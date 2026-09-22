@@ -75,7 +75,7 @@ Whenever you start responding to a user prompt, update your session title.
 
 ## Version
 
-These instructions carry a version number, the AIV, which is currently 0x77.
+These instructions carry a version number, the AIV, which is currently 0x7E.
 
 You cannot see previous versions. When this file changes, your context is re-rendered so that the new text appears 
 to have been there all along, in every earlier turn. Your own past output is therefore the only surviving record 
@@ -134,8 +134,8 @@ Before searching for the right files:
 - [labs worktrees](labs-parallel-copies.md) — work only in the commontoolsinc.labs.X specified in conversation 
 ("use labs X"); these are forks, not clones, so use `upstream` not `origin` when fetching.
 
-- [loom worktrees](loom.md) - use (or create) loom worktrees in /dev/commonfabric/loom/N, using 
-/dev/commonfabric/loom/root as the parent repo, in response to "use loom N", call this "𝛌N".
+- [loom worktrees](loom.md) - use (or create) loom worktrees in ~/dev/commonfabric/loom/N, using 
+~/dev/commonfabric/loom/root as the parent repo, in response to "use loom N", call this "𝛌N".
 
 - [INFRA worktrees](infra.md) - work in the infra repo happens in ~/dev/commontools/infra/; use or create a 
 specified INFRA worktree in that directory; always wait until a corresponding infra repo change has landed on 
@@ -151,9 +151,9 @@ parent repo.
 
 3. Set your session title following the instructions above.
 
-4. In each one, create a new branch, then `git fetch` and rebase the branch to tip of tree. (Exception: if you 
-have been explicitly told to continue, adopt, or review work in an existing commit or set of commits on an 
-existing branch, then use that without updating it until told to.)
+4. In each one, `git fetch` and branch from main to have a pristine branch. (Exception: if you have been 
+explicitly told to continue, adopt, or review work in an existing commit or set of commits on an existing branch, 
+then use that without updating it until first told to.)
 
 Failure to do this will miss new information and risks making redundant work. These are fast-moving repositories 
 and other agents are attempting to solve the same or related problems. Your task may already have been completed, 
@@ -207,6 +207,9 @@ command](claude_tools.md) - read that document for advice that will save you tim
 When working on any CFC related, read and apply the CFC specification, which you can find in the 
 ~/dev/commontools/specs repository.
 
+A "pristine" branch is one that matches the main branch of the upstream repo (meaning literally the upstream 
+remote if any, meaning the origin remote otherwise), with no locally modified files and no additional commits.
+
 
 ## Documenting limitations is a crutch
 
@@ -216,7 +219,9 @@ fixing a problem and documenting it, always chose fixing the problem.
 We are here to do hard things. We are here to do the highest quality work we can manage.
 
 
-## Coding style: avoid timeouts, retry loops, and sleeps
+## Coding style
+
+### Avoid timeouts, retry loops, and sleeps
 
 Timeouts cause flakiness because they put an upper bound on success: anything that would have eventually completed 
 cannot complete once it hits the timeout.
@@ -228,6 +233,11 @@ Sleeps are flaky and expensive: they increase the floor on the amount of time op
 unpredictable timings to align for success.
 
 Avoid all three; when you see them in existing code, have [another agent](starting-new-sessions.md) remove them.
+
+### Avoid versioning
+
+Avoid designing formats and protocols with version numbers. Instead, design formats and protocols to be both 
+backward and forward compatible.
 
 
 ## Document any findings
@@ -290,7 +300,7 @@ different kinds of work (e.g. deflaking in labs F0-FZ, tech debt work in labs G0
 coverage; use `git push origin <branch>` to retrigger CI
 
 - [Tests should verify both the positive and the negative](writing-tests.md) - tests should check the invariants 
-and behaviors that users care about, rather that implementation details.
+and behaviors that users care about, rather than implementation details.
 
 - [Write useful tests that verify behavior we care about to maximize coverage](coverage.md) - our system tracks 
 overall coverage debt and so every uncovered line is a problem

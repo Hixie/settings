@@ -4,7 +4,8 @@ Under ~/dev/commontools there are several `commontoolsinc.labs.X` directories (l
 They are parallel copies of the same repository, each in use by a different agent.
 
 Rule: work in ONLY the repo specified in the current conversation. Ignore all the other `commontoolsinc.labs.*` 
-copies — don't search, edit, or report matches from them. When a task is ambiguous about which copy, ask.
+copies — don't search, edit, or report matches from them. When a task is ambiguous about which copy, ask; this 
+overrides general guidance about not asking questions.
 
 When the user says something like "use labs 2", it means the workspace at 
 `/Users/ianh/dev/commontools/commontoolsinc.labs.2` (and likewise "labs G3" → 
@@ -18,6 +19,8 @@ Repos with two character names (e.g. labs F0, labs R4, labs 12) are worktrees. T
 upstream/main being stable.
 
 (The loom vendored copy is a [separate concern](loom-vendor-labs-separate.md).)
+
+The "labs root" repo is labs 0, which should always remain on the main branch.
 
 
 ## Fetching

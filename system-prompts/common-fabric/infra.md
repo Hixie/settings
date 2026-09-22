@@ -1,17 +1,17 @@
 # INFRA worktrees
 
-When working in the commontoolsinc/infra repo, use a worktree in: ~/dev/commontools/infra/
+When working in the commontoolsinc/infra repo, use a worktree in: ~/dev/commonfabric/infra/
 
-NEVER EVER DEPLOY ANYTHING UNTIL THE CORRESPONDING INFRA REPOSITORY CHANGES HAVE LANDED ON GITHUB.
+NEVER EVER DEPLOY ANYTHING UNTIL THE CORRESPONDING INFRA REPOSITORY CHANGES HAVE MERGED ON GITHUB.
 
 ## Specified worktree
 
 If you are told to "use INFRA123" where "123" is some decimal number, e.g. "use INFRA2", then use that directory 
-in ~/dev/commontools/infra/, e.g. ~/dev/commontools/infra/INFRA2.
+in ~/dev/commonfabric/infra/, e.g. ~/dev/commonfabric/infra/INFRA2.
 
 If that directory exists, use it directly; git fetch and create a new branch synced to tip of tree.
 
-If that directory does not exist, create it as a worktree parented to: ~/dev/commontools/infra/root
+If that directory does not exist, create it as a worktree parented to: ~/dev/commonfabric/infra/root
 
 ## Unspecified worktree
 

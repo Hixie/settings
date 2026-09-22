@@ -11,18 +11,18 @@ perform. It is also imprecise. Metaphors drag in connotations the writer did not
 fix is to say what you mean. When a literal phrase is available, use it.
 
 Everything you write for the user — a summary, a report, an explanation, a commit message, a topic comment — is 
-read by someone running many sessions at once who does not have this session's brief in mind. The conversation's 
-context is yours, not theirs. This overrides the harness guidance about not re-deriving facts already established 
-in the conversation: that rule is about not repeating yourself within a turn, not about assuming the user 
-remembers the turn before.
+read by someone running many sessions at once who does not have this session's brief in mind, and is unfamiliar 
+with the specifics of the repository you are working on. The conversation's context is yours, not theirs.
 
 Furthermore, use the following rules when writing prose written for humans, including all explanations, proposals, 
 reviews, commit messages, and comments:
 
+- Avoid repository-specific terminology; instead use plain English term equivalents. When repository-specific 
+terminology would help reduce verbosity, introduce the term first. The reader is not familiar with 
+repository-specific terminology.
+
 - Replace jargon with what the thing actually does. For example, not "fluent chain" but "a series of method calls, 
 each handing back the same object so the next call can chain onto it".
-
-- Expand every project term the first time it appears in a given reply.
 
 - Never point at something the user cannot see:
   - no numbered back-references to the brief ("your point (1)", "the three places you named");
@@ -38,8 +38,8 @@ sound".
 
 - Avoid clauses of the form "a cute cat, hungry". Prefer "the hungry and cute cat".
 
-- Avoid stating the importance of a point within the same sentence as the point itself. Instead of "The cat is 
-cute, and that is important" prefer "It is important that the cat is cute".
+- When stating the importance of a point, lead with the importance. Instead of "The cat is cute, and that is 
+important" prefer "It is important that the cat is cute".
 
 - One main idea per sentence. If a sentence carries two ideas, split it into two sentences.
 
@@ -56,11 +56,11 @@ fulfill these criteria. When reviewing prose, review it critically with this sec
 ## Commit messages
 
 Commit messages have a subject and a body. The subject should be written assuming the target audience has zero 
-context and knows nothing about the project.
+context and knows nothing about the project. Do not use project-specific terminology without first defining it.
 
 Commit message bodies should start with a clear statement of the problem being solved, labeled "PROBLEM". Whenever 
-possible, include short concrete examples of the problem (e.g. code samples). This section should be no longer 
-than 100 words, not counting examples.
+possible, include short concrete examples of the problem (e.g. code samples). Specificity is the soul of 
+narrative. This section should be no longer than 100 words, not counting examples.
 
 After the problem is clearly stated, the solution should be clearly stated, labeled "SOLUTION". This section 
 should be no longer than 160 words.
@@ -70,11 +70,8 @@ about how the commit is structured, what data was used to support the design, et
 
 Never refer to context that is only available within the conversation with the agent, nor to details specific to 
 this local workspace rather than to the change itself — the labs.N port offset and copy letter, absolute paths 
-under my home directory, dev-server URLs and ports, and ephemeral run IDs all describe this machine, not the 
-commit. Name the durable thing instead ("local dev servers", not ":8026").
-
-For the message body, assume the audience has a passing familiarity with the codebase but not with the problem at 
-hand or the specific code being changed.
+under the user's home directory, dev-server URLs and ports, and ephemeral run IDs all describe this machine, not 
+the commit. Name the durable thing instead ("local dev servers", not ":8026").
 
 When writing commit messages: keep the subject inside 72 characters and wrap the body at 72 columns, and check 
 that with the script rather than by eye, as described in [commit message width](commit-message-width.md).
@@ -91,11 +88,12 @@ For each one, name the evidence. If there is none, either cut it or mark it: "I'
 "unverified". Never a bare assertion. Name the reason for the guess: "I'd guess ... because ...", or "this is 
 speculation based on general knowledge about ...", or "this is plausible because ...".
 
-This applies to claims about the team, the process, the history of the repository, and what other people think or 
-will do. A git log shows what landed and when. It does not show why, who decided, or how the decision was made.
+This applies to claims about code, the past, the future, the behavior of humans and agents, how software will 
+behave, the team, the process, the history of the repository, what other people think or will do, etc. A git log 
+shows what landed and when. It does not show why, who decided, or how the decision was made.
 
-When a report separates findings from recommendations, the findings section carries only what was verified, and 
-says how. Anything inferred belongs in the recommendations, labeled as inference.
+In reports, separate findings from recommendations. A findings section carries only what was verified, and says 
+how. Anything inferred belongs in the recommendations, labeled as inference.
 
 
 ## Code comment style: plain, neutral, non-defensive
@@ -107,10 +105,13 @@ the code stands for itself, so don't defend or justify it.
 that traceability.
 
 - Don't justify the approach. Drop "why I did X" sections and lines arguing this approach over an alternative. 
-Just describe the behavior.
+Don't cite or quote the user's requests and prompts. Never name the user. Just describe the behavior.
 
 - No counterfactuals. Don't describe what the code would otherwise be or do (e.g. "is otherwise silent", "would 
 emit `{type:'unknown'}`"). State what it does.
+
+- Be forward-looking, not backward-looking. Don't describe how things were, what went wrong in the past, when 
+things were added, what led to a decision.
 
 This applies only to comments you author. Keep pre-existing comments in touched files as-is, to avoid diff noise, 
 unless asked to change them.
@@ -118,7 +119,7 @@ unless asked to change them.
 
 ## Annotate the AIV
 
-This is writing style version 2.
+This is writing style version 5.
 
 Whenever you write the AIV, if you successfully applied the writing style rules to text written during your turn, 
 append a superscript number with the writing style (for example if the AIV is 0xFF and the writing style version 

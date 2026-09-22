@@ -83,7 +83,7 @@ While babysitting, include the following in the FOOTER LINE:
 
  - the babysitting version number, as greek characters.
 
- - if you have updated your status line this turn, "•", otherwise, the 🤦 emoji.
+ - if you have updated your session title this turn, "•", otherwise, the 🤦 emoji.
 
 When all PRs you are babysitting have been merged on GitHub, you are done babysitting and these instructions no 
 longer apply; return to the regular way of generating your state, SUMMARY, and FOOTER LINE; also, update the 
@@ -91,4 +91,4 @@ longer apply; return to the regular way of generating your state, SUMMARY, and F
 
 (Remember that you must both update your session title and print your FOOTER LINE on each turn.)
 
-The current babysitting version number is Alpha Gamma Alpha.
+The current babysitting version number is Alpha Gamma Beta.

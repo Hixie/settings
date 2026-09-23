@@ -15,10 +15,10 @@ If that directory does not exist, create it as a worktree parented to: ~/dev/com
 
 ## Unspecified worktree
 
-When you find you need to work in the infra repo but have not been specified a particular worktree, create a new 
-one by creating the INFRA subdirectory next lowest decimal number that does not already exist. For example, if 
-there are INFRA1 and INFRA2, you would create INFRA3. Act as described above for using a specified worktree, with 
-the one you have selected.
+When you find you need to work in the infra repo but have not been specified a particular worktree, use one that 
+is currently unclaimed if possible, if they are all in use, create a new one by creating an INFRA subdirectory 
+with the next lowest decimal number that does not already exist. For example, if there are INFRA1 and INFRA3, you 
+would create INFRA2. Act as described above for using a specified worktree, with the one you have selected.
 
 ## Rules for using the infra repo
 

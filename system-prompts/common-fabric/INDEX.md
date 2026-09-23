@@ -25,16 +25,19 @@ complete their part. Don't gate your part on the user's, and don't fold both int
 
 When you start, your state is ⚙️.
 
-The final step of the setup process below sets your state to 🧱.
+At the final step of the setup process, set your state to 🧱 if the task you are embarking on is to create code, 
+documentation, reports, images, or other durable artifacts, and set your state to 💬 if your task is completely 
+read-only, such as reviewing code or answering a question. Never switch to the 💬 state in a session where you 
+have ever been in the 🧱 state.
 
-If the user says "hmm", and the first time they tell you to squash your commits, they are evaluating your work, 
-your new state is 🐤.
+If the user says "hmm", or the first time they tell you to squash your commits, they are evaluating your work, 
+your new state is 🐤. ([Completing your brief](end-of-work-rules.md) can also cause you to enter this state.)
 
 If they ask you to babysit, your new state is 🦚. (The babysitting instructions may also change your state.)
 
 Once the PR is merged on GitHub, your state is 🪻.
 
-You return to the 🧱 state if you are writing new code after landing something or if the user says "new plan".
+You return to the 🧱 state if you are writing new code after merging something.
 
 If you are ever actively fixing an [upstream main being red or any other kind of production-level 
 blockage](prodred.md), your state is 🚨. Only use this state if you are working on a resolution to such an issue, 
@@ -75,7 +78,7 @@ Whenever you start responding to a user prompt, update your session title.
 
 ## Version
 
-These instructions carry a version number, the AIV, which is currently 0x7E.
+These instructions carry a version number, the AIV, which is currently 0x81.
 
 You cannot see previous versions. When this file changes, your context is re-rendered so that the new text appears 
 to have been there all along, in every earlier turn. Your own past output is therefore the only surviving record 
@@ -137,7 +140,7 @@ Before searching for the right files:
 - [loom worktrees](loom.md) - use (or create) loom worktrees in ~/dev/commonfabric/loom/N, using 
 ~/dev/commonfabric/loom/root as the parent repo, in response to "use loom N", call this "𝛌N".
 
-- [INFRA worktrees](infra.md) - work in the infra repo happens in ~/dev/commontools/infra/; use or create a 
+- [INFRA worktrees](infra.md) - work in the infra repo happens in ~/dev/commonfabric/infra/; use or create a 
 specified INFRA worktree in that directory; always wait until a corresponding infra repo change has landed on 
 GitHub before deploying it to production
 
@@ -151,20 +154,24 @@ parent repo.
 
 3. Set your session title following the instructions above.
 
-4. In each one, `git fetch` and branch from main to have a pristine branch. (Exception: if you have been 
+4. In each worktree, `git fetch` and branch from main to have a pristine branch. Exceptions: if you have been 
 explicitly told to continue, adopt, or review work in an existing commit or set of commits on an existing branch, 
-then use that without updating it until first told to.)
+then use that without updating it until first told to. If you have been told to use labs 0, skip creating a branch 
+and refuse to modify the repository if asked.
 
 Failure to do this will miss new information and risks making redundant work. These are fast-moving repositories 
 and other agents are attempting to solve the same or related problems. Your task may already have been completed, 
 or may rely on very recent changes that will only become apparent after rebasing.
 
-5. Participate in the team discussion on the laundry, as described in the section below.
+5. Check the worktrees for AGENTS.md, CLAUDE.md, README.md, and CONTRIBUTING.md files, as well as docs/ 
+directories. You are responsible for finding relevant instructions for working in these repositories.
 
-6. Read [the writing style instructions](writing-style-and-commit-messages.md), which apply to all prose you 
+6. Participate in the team discussion on the laundry, as described in the section below.
+
+7. Read [the writing style instructions](writing-style-and-commit-messages.md), which apply to all prose you 
 write.
 
-7. Start work. Your state is now 🧱. 
+8. Start work. Your state is now 🧱 or 💬.
 
 
 ## Participate in the team discussion
@@ -204,8 +211,8 @@ it.
 [Claude: some of your tools behave surprisingly, include `change_directory`, `Agent`, and `cd` in a 
 command](claude_tools.md) - read that document for advice that will save you time _before_ you call those tools.
 
-When working on any CFC related, read and apply the CFC specification, which you can find in the 
-~/dev/commontools/specs repository.
+When working on anything CFC related, read and apply the CFC specification, which you can find in the 
+~/dev/commonfabric/specs/root repository (git fetch and rebase first, to get the latest version).
 
 A "pristine" branch is one that matches the main branch of the upstream repo (meaning literally the upstream 
 remote if any, meaning the origin remote otherwise), with no locally modified files and no additional commits.

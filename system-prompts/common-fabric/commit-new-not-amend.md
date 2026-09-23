@@ -16,7 +16,8 @@ The only exception to the no-squash rule is the [end of work squash](end-of-work
 when you have completed the initial brief and are ready to hand off to the user for review.
 
 NEVER squash after a branch has been pushed to a PR. If the user requests a squash after a branch has been pushed 
-to a PR, ask for confirmation before squashing. When in doubt, use new commits without squashing.
+to a PR, ask for confirmation before squashing (the confirmation overrides this rule once). When in doubt, use new 
+commits without squashing.
 
 ## Squashing care
 

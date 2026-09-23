@@ -1,14 +1,16 @@
 # Give review and verification subagents their own worktree
 
 When you spawn review or verification subagents — especially general-purpose ones that may run `git checkout`, 
-`git stash`, `git apply`, or execute tests — give them their own git worktree if possible (Claude: use the Agent 
-tool's `isolation: "worktree"` if appropriate; see [additional guidance](claude_tools.md)). Running them in the 
+`git stash`, `git apply`, or execute tests — give them their own git worktree if possible. Running them in the 
 shared working directory lets several of them mutate the same tracked files at once. If not possible, use separate 
 scratch directories.
 
 Stage any before/after files explicitly for the reviewers, do not rely on their ability to construct the tree. Use 
 `git fetch` as necessary to make sure their worktree is fully up to date. Verify the worktree's base before 
 launching the subagent.
+
+Claude: using the Agent tool's `isolation: "worktree"` may not be appropriate; see [additional 
+guidance](claude_tools.md).
 
 A reviewer that runs `git stash` or `git checkout` in a _shared_ tree can silently revert your change back to 
 HEAD, run the tests against the unfixed code, and then report a confident but false "the fix does not work, the 

@@ -1,7 +1,7 @@
 # The /Users/ianh/dev/commontools/commontoolsinc.labs.* repos are parallel repo copies
 
-Under ~/dev/commontools there are several `commontoolsinc.labs.X` directories (labs, labs.2, labs.3, labs.4, ...). 
-They are parallel copies of the same repository, each in use by a different agent.
+Under ~/dev/commontools there are several `commontoolsinc.labs.X` directories (labs.2, labs.3, labs.4, ...). They 
+are parallel copies of the same repository, each in use by a different agent.
 
 Rule: work in ONLY the repo specified in the current conversation. Ignore all the other `commontoolsinc.labs.*` 
 copies — don't search, edit, or report matches from them. When a task is ambiguous about which copy, ask; this 
@@ -50,7 +50,7 @@ upstream	git@github.com:commontoolsinc/labs.git (fetch)
 upstream	git@github.com:commontoolsinc/labs.git (push)
 ```
 
-When rebasing, `git fetch` and then rebase against `upstream/main`. The `origin/main` branch is stale and 
+When rebasing, `git fetch upstream` and then rebase against `upstream/main`. The `origin/main` branch is stale and 
 irrelevant; use `upstream/main` as the source of truth.
 
 When pushing, use branches go on the `origin` remote, not the `upstream` remote; `origin` is where your branches 

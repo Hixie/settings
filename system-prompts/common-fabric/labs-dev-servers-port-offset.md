@@ -3,7 +3,7 @@
 When working in a `commontoolsinc.labs.XYZ` or `commonfabric-weaver/XYZ` workspace, always start and stop the 
 local Common Fabric dev servers with a port offset (expressed as a decimal number) strictly equal to the copy 
 number XYZ interpreted as a base36 number — no exceptions, never a different value. For example, labs.4 uses 
-`--port-offset 4; labs.G uses `--port-offset 16`; weaver R2 uses `--port-offset 974`:
+`--port-offset 4`; labs.G uses `--port-offset 16`; weaver R2 uses `--port-offset 974`:
 
   `./scripts/start-local-dev.sh --port-offset N`
   `./scripts/stop-local-dev.sh --port-offset N`

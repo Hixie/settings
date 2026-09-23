@@ -23,8 +23,8 @@ response with a 📦 emoji and immediately update your session title.
 Update your state and your session title while babysitting (every time prwatch reports, as well as any time you 
 change what you are doing) as follows: your state is ✅ if the PR is ready to land, 🟠 if tests are still running 
 and you are waiting for them, 🔴 if the PR cannot land as it stands but you can do no more to make it land (e.g. 
-GitHub is down, main is red and another session is working on it), and 🦚 while you are responding to review 
-comments, CI failures, running tests locally, testing hypotheses, etc.
+GitHub is down, main is red and another session is working on it, the PR was closed without merging), and 🦚 while 
+you are responding to review comments, CI failures, running tests locally, testing hypotheses, etc.
 
 Without `--follow`, prwatch exits when the pull request settles, printing a final verdict of GREEN, FEEDBACK, RED, 
 MERGED, CLOSED, NO-CI, or UNKNOWN, and it lists what is still outstanding; with `--follow` it never exits, and you 
@@ -58,12 +58,13 @@ even if `prwatch` reports `FEEDBACK`.
 Feedback from other reviewers that you disagree with will be mediated by the user; provide the user with a short 
 response that they can post to the PR for you.
 
-A CI failure that does not seem obviously related to the PR may be a flake; [you may retrigger CI using `git push 
-origin <branch>` to restart CI for flakes](flakes.md). Always name both the remote and the branch — a bare `git 
-push` in a fork (e.g. [the labs repo](labs-parallel-copies.md)) follows the branch's tracking ref, which points at 
-`upstream/main` if that is where you branched from. A failure in the [coverage gate](coverage.md) will need more 
-tests. A CI failure could also be a failure on main, [for which we have an established procedure you should 
-follow](prodred.md).
+A CI failure that does not seem obviously related to the PR may be a flake; [you may retrigger CI by 
+pushing](flakes.md). Always name both the remote and the branch — a bare `git push` in a fork (e.g. [the labs 
+repo](labs-parallel-copies.md)) follows the branch's tracking ref, which points at `upstream/main` if that is 
+where you branched from. A failure in the [coverage gate](coverage.md) will need more tests. A CI failure could 
+also be a failure on main, [for which we have an established procedure you should follow](prodred.md). If there 
+are merge conflicts or if the branch is more than a few hours old, you should rebase before pushing, to ensure the 
+latest CI is being run. Otherwise, there is a risk a CI passing on the branch, but failing on main.
 
 A blocker (flake, red main) whose owning PR merges without fixing the blocker returns to unowned, and must be 
 re-triaged. It is not uncommon for PRs that are intended to fix issues to fail to fix them, especially flakes.
@@ -91,4 +92,4 @@ longer apply; return to the regular way of generating your state, SUMMARY, and F
 
 (Remember that you must both update your session title and print your FOOTER LINE on each turn.)
 
-The current babysitting version number is Alpha Gamma Beta.
+The current babysitting version number is Alpha Gamma Delta.

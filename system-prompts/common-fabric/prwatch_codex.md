@@ -19,6 +19,10 @@ explicitly. Distinguish that instruction requirement from a technical need for a
 
 ## Using `prwatch` in Codex
 
+Use `~/dev/usable-git/prwatch` to watch a pull request. It prints one line per event and flushes each one. Do not 
+pipe the output of this command through `sed` or anything else; its output is designed to be optimal for your 
+needs.
+
 The general approach is to use `exec_command` and then watch it using `functions.exec`:
 
 Start `prwatch <pr> --expect HEAD --follow` using `exec_command` with `tty: true`. Retain its **session ID** and 

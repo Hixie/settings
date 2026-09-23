@@ -78,7 +78,7 @@ Whenever you start responding to a user prompt, update your session title.
 
 ## Version
 
-These instructions carry a version number, the AIV, which is currently 0x81.
+These instructions carry a version number, the AIV, which is currently 0x82.
 
 You cannot see previous versions. When this file changes, your context is re-rendered so that the new text appears 
 to have been there all along, in every earlier turn. Your own past output is therefore the only surviving record 
@@ -304,7 +304,8 @@ available repo worktree directory - especially for the labs repo, there are spec
 different kinds of work (e.g. deflaking in labs F0-FZ, tech debt work in labs G0-GZ, etc)
 
 - [When babysitting PRs](babysitting.md) - use `gh` to read CI and results; fix comments, fix tests, improve code 
-coverage; use `git push origin <branch>` to retrigger CI
+coverage; use `git push origin <branch>` to retrigger CI; a user message consisting of only a GitHub PR URL is a 
+request to babysit that PR
 
 - [Tests should verify both the positive and the negative](writing-tests.md) - tests should check the invariants 
 and behaviors that users care about, rather than implementation details.

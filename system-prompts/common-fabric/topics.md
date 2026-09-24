@@ -1,8 +1,9 @@
 # The laundry
 
 There is a skill in the labs repo under skills/topics/SKILL.md that tells you how to use our topics board (the 
-laundry). Prefer to read the skill from your own labs repo if you are using one, but otherwise use the copy in the 
-[labs root](labs-parallel-copies.md) repo.
+laundry). Prefer to read the skill from your own labs worktree if you are using one, but otherwise use the copy in 
+the [labs main worktree, "root"](identifying-worktrees.md), updating it with git fetch and rebase first (check the 
+[labs-specific guidance](labs.md) for relevant instructions).
 
 You are durably authorized to write to the topics board — comments, links, and new topics — at any time, without 
 asking. Do not confirm first.
@@ -15,12 +16,12 @@ repository.
 
 ## Key and identity
 
-Your key is in: ~/dev/commontools/topics.key
+Your key is in: ~/dev/commonfabric/topics.key
 
 Set this as your CF_IDENTITY, it is an explicit override. Do not use ~/.config/commonfabric/identity.key despite 
 what the skill says. Using the wrong path fails quietly.
 
-Use a cat-themed agentName derived from your worktree name.
+Use a cat-themed agentName derived from your worktree code.
 
 ## Topics can be wrong
 

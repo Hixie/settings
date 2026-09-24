@@ -47,7 +47,7 @@ process exit. Cancellation of the collector does not stop `prwatch`.
 If `prwatch` fails or stops, do nothing. Do not resume monitoring.
 
 
-## Javascript collector script
+## JavaScript collector script
 
 When using this script, substitute the **session ID** for `SESSION_ID` and the initial output for `INITIAL_OUTPUT` 
 (correctly quoted and escaped as appropriate).

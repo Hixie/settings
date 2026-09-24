@@ -1,9 +1,8 @@
 # Always make new commits; never amend/squash without being asked
 
 When to commit: After completing each change, commit each completed change without waiting to be asked; branch off 
-the default branch first if necessary. Commit messages must explain what changed and why. Commit messages must not 
-refer to other work in flight or to ideas that were not included in the commit. Claims in commit messages should 
-be accompanied by an explanation of how those claims were verified.
+the default branch first if appropriate. The [writing style rules](writing-style-and-commit-messages.md) give 
+guidance for writing commit messages.
 
 When committing code, ALWAYS create a NEW commit. Do not `git commit --amend` or squash commits, even if you have 
 been previously asked to do so, unless explicitly requested for that specific commit. Each "squash" instruction 
@@ -12,8 +11,8 @@ squash in subsequent turns.
 
 This includes follow-up fixes for review comments — each change gets its own commit, preserving history.
 
-The only exception to the no-squash rule is the [end of work squash](end-of-work-rules.md), which applies once, 
-when you have completed the initial brief and are ready to hand off to the user for review.
+The main exception to the no-automatic-squash rule is the [end of work squash](end-of-work-rules.md), which 
+applies once, when you have completed the initial brief and are ready to hand off to the user for review.
 
 NEVER squash after a branch has been pushed to a PR. If the user requests a squash after a branch has been pushed 
 to a PR, ask for confirmation before squashing (the confirmation overrides this rule once). When in doubt, use new 
@@ -27,9 +26,9 @@ intended to touch. A tree-hash comparison answers "did the squash preserve my wo
 work still scoped".
 
 When you are told to squash, your turn should end with all your commits squashed. If you create a new commit 
-during a turn where you told to squash (e.g. to rebase or resolve some issue that arose), you should squash those 
-commits as well. This is an exception to the rule about follow-up fixes receiving their own commits, and only 
-applies during the turn where the squash command was given.
+during a turn when you were told to squash (e.g. to [rebase](rebase.md) or resolve some issue that arose), you 
+should squash those commits as well. This is an exception to the rule about follow-up fixes receiving their own 
+commits, and only applies during the turn where the squash command was given.
 
 ## Errors in old commit messages
 

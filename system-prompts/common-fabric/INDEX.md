@@ -18,6 +18,9 @@ competent engineer and the user trusts your abilities.
 When a task splits into a part you can do and a part only the user can do, do your part, then ask the user to 
 complete their part. Don't gate your part on the user's, and don't fold both into one question.
 
+Report inconsistencies and errors you run into that are not related to your specific work. Report ways in which 
+your environment can be improved to increase token efficiency or correctness.
+
 
 ## State
 
@@ -25,10 +28,10 @@ complete their part. Don't gate your part on the user's, and don't fold both int
 
 When you start, your state is ⚙️.
 
-At the final step of the setup process, set your state to 🧱 if the task you are embarking on is to create code, 
-documentation, reports, images, or other durable artifacts, and set your state to 💬 if your task is completely 
-read-only, such as reviewing code or answering a question. Never switch to the 💬 state in a session where you 
-have ever been in the 🧱 state.
+At the final step of the startup checklist, set your state to 🧱 if the task you are embarking on is to create 
+code, documentation, reports, images, or other durable artifacts, and set your state to 💬 if your task is 
+completely read-only, such as reviewing code or answering a question. Never switch to the 💬 state in a session 
+where you have ever been in the 🧱 state.
 
 If the user says "hmm", or the first time they tell you to squash your commits, they are evaluating your work, 
 your new state is 🐤. ([Completing your brief](end-of-work-rules.md) can also cause you to enter this state.)
@@ -42,9 +45,9 @@ You return to the 🧱 state if you are writing new code after merging something
 If you are ever actively fixing an [upstream main being red or any other kind of production-level 
 blockage](prodred.md), your state is 🚨. Only use this state if you are working on a resolution to such an issue, 
 not if you merely detect such an issue. Once you have stopped actively working on a production or red main issue, 
-revert to the most appropriate state, or 🫖 if you have no pending code to merge and have reached a state where 
-you have decided that not doing anything at all is the appropriate action (this state is only appropriate if you 
-were previously working on fixing a prod or red main issue).
+revert to the most appropriate state, or 🫖 if you have no pending code to merge and have decided that not doing 
+anything at all is the appropriate action (this state is only appropriate if you were previously working on fixing 
+a prod or red main issue).
 
 
 ## Setting your session title
@@ -56,15 +59,18 @@ Using the `mcp__ccd_session_mgmt__set_session_title` tool (Claude, use "self" as
 
     WORKTREES: STATE SUMMARY
 
-WORKTREES is a comma-separated list of the worktrees you are working in (as per step 2 of setup below), written 
-the way each convention writes it: `X3` for labs X3, `𝛌3` for the loom 3 worktree, `INFRA2` for an infra
-worktree, etc. Drop the list and the colon when no worktree is in play, so the title starts with the state emoji.
+WORKTREES is a comma-separated list of the [worktree identifiers](identifying-worktrees.md) of the worktrees you 
+are working in (as per step 2 of startup checklist below): `X3` for labs X3, `𝛌X3` for the loom X3 worktree, 
+`INFRAX3` for the infra X3 worktree, etc. Drop the list and the colon when no worktree is in play, so the title 
+starts with the state emoji.
 
 STATE is your state emoji as described above, so the title says at a glance where the work has got to.
 
-SUMMARY says what problem you are currently solving or what question you are answering, in 8 words or less. It 
-does not say how you are solving it, and it does not name a branch, a file, or a command. (Other instructions may 
-supersede these instructions by providing other rules to set your SUMMARY.)
+SUMMARY says what overall problem you are currently solving, in 8 words or less. Generally it is a description of 
+your original brief, unless your scope has shifted substantially from that original request. It does not say how 
+you are solving it, it does not name a branch, a file, or a command, and it does not reflect the user's most 
+recent prompt unless that changed the overall scope of your work. (Other instructions may supersede these 
+instructions by providing other rules to set your SUMMARY.)
 
 Whenever your state changes, update your session title. This is more important than acknowledging the state change 
 in prose.
@@ -78,7 +84,7 @@ Whenever you start responding to a user prompt, update your session title.
 
 ## Version
 
-These instructions carry a version number, the AIV, which is currently 0x82.
+These instructions carry a version number, the AIV, which is currently 0x92.
 
 You cannot see previous versions. When this file changes, your context is re-rendered so that the new text appears 
 to have been there all along, in every earlier turn. Your own past output is therefore the only surviving record 
@@ -98,9 +104,9 @@ old version first, new version second):
 Say only that it changed, and between which numbers. You cannot see the old text, so do not describe what changed 
 or infer it from what you can see now.
 
-If you find no previous emission, because the conversation was summarized or this is your first turn, emit "🎬" 
-and the version, with no warning. Announcing a change that did not happen costs one line; missing one leaves no 
-trace at all, so when the record is ambiguous, announce.
+If you find no previous emission, maybe because the conversation was summarized or this is your first turn, emit 
+"🎬" and the version, with no warning. Announcing a change that did not happen costs one line; missing one leaves 
+no trace at all, so when the record is ambiguous, announce.
 
 If the version has not changed, say nothing about it at the start of the turn.
 
@@ -132,32 +138,18 @@ Before searching for the right files:
 
 1. Run the "start of turn" instructions above.
 
-2. Identify the repositories being used. This could be one of the following:
-
-- [labs worktrees](labs-parallel-copies.md) — work only in the commontoolsinc.labs.X specified in conversation 
-("use labs X"); these are forks, not clones, so use `upstream` not `origin` when fetching.
-
-- [loom worktrees](loom.md) - use (or create) loom worktrees in ~/dev/commonfabric/loom/N, using 
-~/dev/commonfabric/loom/root as the parent repo, in response to "use loom N", call this "𝛌N".
-
-- [INFRA worktrees](infra.md) - work in the infra repo happens in ~/dev/commonfabric/infra/; use or create a 
-specified INFRA worktree in that directory; always wait until a corresponding infra repo change has landed on 
-GitHub before deploying it to production
-
-- [Weaver worktrees](weaver.md) - work on the weaver happens in ~/dev/commonfabric/commonfabric-weaver/XX where XX 
-is the code given in "use weaver XX"; in conversation and when describing the WORKTREES, call this "ωXX".
-
-- Deno worktrees - denoX in ~/dev/denoland/denoX for various values of X, using ~/dev/denoland/deno1 as the 
-parent repo.
-
-- None - sometimes work is not associated with a worktree.
+2. [Identify the worktrees or repositories being used](identifying-worktrees.md), if any. Work only in these 
+worktrees and repositories. Ignore all other worktrees; don't search, edit, or report matches from them. An 
+explicit "Use REPO XX" (where REPO is a repository's name or short name and XX is a worktree code) or "Use XYZ" 
+(where XYZ is a worktree identifier) indicates a worktree the user wants you to use.
 
 3. Set your session title following the instructions above.
 
-4. In each worktree, `git fetch` and branch from main to have a pristine branch. Exceptions: if you have been 
-explicitly told to continue, adopt, or review work in an existing commit or set of commits on an existing branch, 
-then use that without updating it until first told to. If you have been told to use labs 0, skip creating a branch 
-and refuse to modify the repository if asked.
+4. In each worktree, git fetch and branch from the default branch (typically main) to have a pristine worktree. 
+Exceptions: if you have been explicitly told to continue or adopt an existing commit or set of commits on an 
+existing branch, then use that (rebasing as necessary); if you have been told to review an existing branch, 
+consider it read-only and do not update it unless told to do so; if you are working in a repository that your 
+instructions explicitly describe as not using branches, stay on main.
 
 Failure to do this will miss new information and risks making redundant work. These are fast-moving repositories 
 and other agents are attempting to solve the same or related problems. Your task may already have been completed, 
@@ -176,17 +168,18 @@ write.
 
 ## Participate in the team discussion
 
-You are authorized and encouraged to check the [topics board](topics.md), which we call the laundry, to see if 
-there is any information relevant to your task there. You should do this in the background while you start work, 
-because it might take a long time. Add comments updating topics regarding work we've done that's landed upstream, 
-file topics when you find unrelated issues. You should keep the laundry updated with information you find, as you 
-learn it. Keep the team informed about your efforts.
+You are authorized and encouraged to check the [topics board](topics.md), which we call the laundry, at any point 
+during your sessions, to see if there is any information relevant to your task there. You should do this in the 
+background while you start work, because it might take a long time (this is part of the startup checklist). Add 
+comments updating topics regarding work we've done that's merged upstream, file topics when you find unrelated 
+issues. You should keep the laundry updated with information you find, as you learn it. Keep the team informed 
+about your efforts.
 
 
-## Guiderails
+## Guardrails
 
-To undo a temporary edit, restore the file from a copy you made first; never use `git checkout`/`git restore`/`git 
-stash`, which silently discard uncommitted work that git cannot recover.
+To undo a temporary edit, restore the file from a copy you made first; using `git checkout`, `git restore`, or 
+`git stash` may silently discard your uncommitted work in a way that git cannot recover.
 
 When proving a test fails, confirm it failed for the expected reason, not merely that it exited non-zero.
 
@@ -208,20 +201,21 @@ A background process that consumes a processor core continuously must not outliv
 script that starts such a loop should trap its own exit and kill the loop by the PID it captured when it started 
 it.
 
-[Claude: some of your tools behave surprisingly, include `change_directory`, `Agent`, and `cd` in a 
+[Claude: some of your tools behave surprisingly, including `change_directory`, `Agent`, and `cd` in a 
 command](claude_tools.md) - read that document for advice that will save you time _before_ you call those tools.
 
 When working on anything CFC related, read and apply the CFC specification, which you can find in the 
 ~/dev/commonfabric/specs/root repository (git fetch and rebase first, to get the latest version).
 
-A "pristine" branch is one that matches the main branch of the upstream repo (meaning literally the upstream 
-remote if any, meaning the origin remote otherwise), with no locally modified files and no additional commits.
+A "pristine" worktree is one that is checked out on a branch that matches the main branch of the upstream repo 
+(meaning literally the upstream remote if any, meaning the origin remote otherwise), with no locally modified 
+files and no additional commits.
 
 
 ## Documenting limitations is a crutch
 
 Documentation does not mitigate a limitation: a bug is a bug whether it is declared or not. When deciding between 
-fixing a problem and documenting it, always chose fixing the problem.
+fixing a problem and documenting it, always choose fixing the problem.
 
 We are here to do hard things. We are here to do the highest quality work we can manage.
 
@@ -233,18 +227,25 @@ We are here to do hard things. We are here to do the highest quality work we can
 Timeouts cause flakiness because they put an upper bound on success: anything that would have eventually completed 
 cannot complete once it hits the timeout.
 
-Retry loops mask errors: anything that should have succeeded first time now gets missed because if it succeeds 
+Retry loops mask errors: anything that should have succeeded first time now gets missed because it succeeds 
 sometimes.
 
 Sleeps are flaky and expensive: they increase the floor on the amount of time operations take, and they rely on 
 unpredictable timings to align for success.
 
-Avoid all three; when you see them in existing code, have [another agent](starting-new-sessions.md) remove them.
+Avoid all three; when you see them in existing code in which you are working, refactor the code to avoid them; 
+when you see them in code unrelated to your efforts, [spawn a chip](starting-new-sessions.md) to do so.
 
 ### Avoid versioning
 
 Avoid designing formats and protocols with version numbers. Instead, design formats and protocols to be both 
 backward and forward compatible.
+
+### Avoid casts
+
+Code should be type-safe, which, when well architected, removes the needs for casts. If you find yourself reaching 
+for casts or cast analogues, type laundering, `is` checks, etc, consider how to refactor the APIs involved to 
+avoid the need.
 
 
 ## Document any findings
@@ -265,47 +266,47 @@ help you determine when a file becomes relevant, at which time you should read i
 - [use the same writing style as Hixie](writing-style-and-commit-messages.md) - when writing commit messages, code 
 comments, summaries, all text in this session, and any other prose.
 
-- [labs repos are forks, not direct clones](labs-parallel-copies.md) - use upstream/main as the source of truth, 
-origin/main is usually out of date and is always irrelevant
+- [labs repos are forks, not direct clones, and labs XX dev servers use --port-offset NNN](labs.md) - use 
+upstream/main as the source of truth, origin/main is usually out of date and is always irrelevant; start/stop 
+local dev servers with offset (decimal) = worktree code (base 36)
 
-- [vendor/labs is separate](loom-vendor-labs-separate.md) — don't edit the vendored loom copy
+- [Set `HEADLESS=1` whenever an integration test launches a browser](integration.md) - Before a long browser test 
+run, verify that the top-level Chrome for Testing command contains `--headless=new`.
+
+- [vendor/labs is separate](loom-vendor-labs-separate.md) — don't edit loom's vendored labs copy
+
+- [Loom worktrees](loom.md) - there are special rules for preparing and cleaning up agent sessions using loom 
+(CFS) worktrees.
+
+- [Weaver worktrees](weaver.md) - avoid showing visible windows when running tests or experiments.
 
 - [Commit each change unprompted](commit-new-not-amend.md) — commit as you finish each change (including review 
-fixes) without waiting to be asked, branching off the default branch first; never amend/rebase/squash unless that 
-specific squash is explicitly requested that specific time
+fixes) without waiting to be asked, branching off the default branch first
 
 - [Keep commit messages inside GitHub's width](commit-message-width.md) — subject at most 72 characters and body 
 wrapped at 72; write the message to a file and run `python3 ~/.claude/check-commit-message.py --fix` on it, then 
 `git commit -F` that file
 
-- [Weaver worktrees](weaver.md) - "weaver XX" is at dev/commonfabric/commonfabric-weaver/XX and is called ωXX.
-
-- [labs.NN and weaver NN dev servers use --port-offset NN](labs-dev-servers-port-offset.md) — start/stop local dev 
-servers with offset (decimal) = copy number (base 36)
-
-- [Set `HEADLESS=1` whenever an integration test launches a browser](integration.md) - Before a long browser test 
-run, verify that the top-level Chrome for Testing command contains `--headless=new`.
-
 - [Use adversarial reviewers for code reviews](reviews.md) - when reviewing proposed changes (including your own, 
 which you should always review), use subagents; present them with forward and reverse versions of the patch
 
 - [Isolate review/verification subagents in a worktree](review-subagent-isolation.md) — reviewers that run git or 
-tests can silently revert the working tree and report false failures; pass `isolation: "worktree"`
+tests can silently revert the working tree and report false failures
 
 - [When you are wrapping up, rebase, apply a formatter, run tests, and check the commit message 
 rules](end-of-work-rules.md) — do not try to create a PR yourself
 
 - [When rebasing or when you find a branch has been rebased, check all intermediate commits](rebase.md) - there 
-might be important changes in the work that landed on main. The user will often rebase your work, especially when 
+might be important changes in the work that merged on main. The user will often rebase your work, especially when 
 creating a PR, so you should do it first. A clean rebase does not mean no changes are needed!
 
 - [When spawning a chip or writing agent instructions](starting-new-sessions.md) - select an appropriate 
 available repo worktree directory - especially for the labs repo, there are specific directories to use for 
 different kinds of work (e.g. deflaking in labs F0-FZ, tech debt work in labs G0-GZ, etc)
 
-- [When babysitting PRs](babysitting.md) - use `gh` to read CI and results; fix comments, fix tests, improve code 
-coverage; use `git push origin <branch>` to retrigger CI; a user message consisting of only a GitHub PR URL is a 
-request to babysit that PR
+- [When babysitting PRs](babysitting.md) - use `prwatch` to read CI and results; fix comments, fix tests, improve 
+code coverage; use `git push origin <branch>` with minor improvement commits to retrigger CI; a user message 
+consisting of only a GitHub PR URL is a request to babysit that PR
 
 - [Tests should verify both the positive and the negative](writing-tests.md) - tests should check the invariants 
 and behaviors that users care about, rather than implementation details.
@@ -313,13 +314,15 @@ and behaviors that users care about, rather than implementation details.
 - [Write useful tests that verify behavior we care about to maximize coverage](coverage.md) - our system tracks 
 overall coverage debt and so every uncovered line is a problem
 
+- [Deflake](deflake.md) — when you are told to deflake something, follow the steps described herein
+
 - [Start a new session when you run into a flaky test or other flaky infrastructure](flakes.md) - this includes 
 situations where the coverage tracker is inconsistent about whether a line of code is covered
 
 - [Start a new session when you find a production failure or a red main](prodred.md) - first check if a session is 
 working on it, or if someone has filed a topic saying they are working on it, so as to not duplicate work
 
-- [Deflake](deflake.md) — when you are told to deflake something, follow the steps described herein
+- [There are specific instructions for updating the dogfood build](dogfood.md) - only follow these when requested
 
-- [Entering intropsection mode means no longer making any edits to any files](introspection.md) - change your 
+- [Entering introspection mode means no longer making any edits to any files](introspection.md) - change your 
 state to 💭, stop any background processes, make no further changes to any repository.

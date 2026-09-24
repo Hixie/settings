@@ -10,9 +10,9 @@ information you have collected to the topic. If you do not, file a topic describ
 clearly states that there is active work on this issue, report to the user who is doing the work, and stop these 
 steps.
 
-2. Check local agent sessions for one working on this issue. If there is one, send it a message informing it of 
-the information you have found, anything relevant you found in the laundry, and then report to the user which 
-session is doing the work, and stop these steps.
+2. Check local agent sessions (Claude, Codex) for one working on this issue. If there is one, send it a message 
+informing it of the information you have found, anything relevant you found in the laundry, and then report to the 
+user which session is doing the work, and stop these steps.
 
 3. [Start a new session](starting-new-sessions.md) to work on the problem. Tell that session everything you have 
 found about the issue, including anything you found in the laundry. Tell it to follow the steps below. Do not 
@@ -32,11 +32,11 @@ steps. If you do not find a topic, file a topic describing the issue. At this po
 found or filed that covers the issue, which nobody has claimed they are working on: add a clear statement to the 
 topic saying that you are working on it. Identify your user (for intrateam communication), session ID (for 
 cross-session communication), and worktree (so that the user can identify the session). Provide that information 
-on the topic. Provide your user with a link to the topic on Estuary.
+on the topic. Provide your user with a link to the topic that they can open in their web browser.
 
 2. Check local agent sessions for one working on this issue. If there is one, then send it your topic (if you have 
-already completed those steps) so that it can claim ownership, then report to the user which session is doing the 
-work, and stop these steps.
+already identified one) so that it can claim ownership, then report to the user which session is doing the work, 
+retract your own claim if any, and stop these steps.
 
 3. Address the issue. Whenever you make significant progress (e.g. when you are ready for the user to send a PR, 
 when the user merges your PR), keep any sessions that contact you about the issue updated, and keep your topic 

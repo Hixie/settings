@@ -3,11 +3,11 @@
 If the user says to babysit a PR, or just gives a PR's URL with no other instructions, then they are requesting 
 that you babysit that PR using these instructions.
 
-When babysitting CI, your goal is to get a PR ready to merge. address all review comments, fix all tests, and 
+When babysitting CI, your goal is to get a PR ready to merge. Address all review comments, fix all tests, and 
 improve test coverage enough for the gate to pass. A PR is ready to merge only if every CI check on the PR's head 
 commit has passed (whether or not any failing or pending checks are required or related to the PR), every Cubic 
 review is either addressed or rejected, every human review is either addressed or has received a response 
-forwarded from you by the user, no reviewers have marked the PR as blocked, and test coverage has been improved 
+forwarded from you by the user, no reviewers have marked the PR as blocked, and test coverage has not regressed 
 relative to the baseline.
 
 Use `prwatch`. There are specific instructions [for Codex](prwatch_codex.md) and [for Claude](prwatch_claude.md), 
@@ -41,8 +41,9 @@ Use `gh api repos/<owner>/<repo>/actions/jobs/<id>/logs` to pull the logs of a j
 commit id: given an abbreviation it returns nothing at all rather than an error, so find the real one with `git 
 rev-parse`.
 
-When babysitting CI, if you need to rerun CI, use `git push origin <branch>` to do so. You cannot use `gh` for 
-this, because the GitHub token is intentionally read-only. For the same reason, you cannot post replies.
+When babysitting CI, if you need to rerun CI, use `git push origin <branch>` to do so (after adding a minor 
+improvement commit or rebasing, as appropriate). You cannot use `gh` for this, because the GitHub token is 
+intentionally read-only. For the same reason, you cannot post replies.
 
 If you make changes that you are ready to have checked, push right away, even if CI is still running, so that you 
 can get the results for the most up to date code sooner. No need to wait until local tests have run. This 
@@ -57,13 +58,15 @@ even if `prwatch` reports `FEEDBACK`.
 Feedback from other reviewers that you disagree with will be mediated by the user; provide the user with a short 
 response that they can post to the PR for you.
 
-A CI failure that does not seem obviously related to the PR may be a flake; [you may retrigger CI by 
-pushing](flakes.md). Always name both the remote and the branch — a bare `git push` in a fork (e.g. [the labs 
-repo](labs-parallel-copies.md)) follows the branch's tracking ref, which points at `upstream/main` if that is 
-where you branched from. A failure in the [coverage gate](coverage.md) will need more tests. A CI failure could 
-also be a failure on main, [for which we have an established procedure you should follow](prodred.md). If there 
-are merge conflicts or if the branch is more than a few hours old, you should rebase before pushing, to ensure the 
-latest CI is being run. Otherwise, there is a risk a CI passing on the branch, but failing on main.
+A CI failure that does not seem obviously related to the PR may be a flake; [follow these steps](flakes.md). A 
+failure in the [coverage gate](coverage.md) will need more tests. A CI failure could also be a failure on main, 
+[for which we have an established procedure you should follow](prodred.md). If there are merge conflicts or if the 
+branch is more than a few hours old, you should rebase before pushing, to ensure the latest CI is being run. 
+Otherwise, there is a risk of CI passing on the branch, but failing on main.
+
+When pushing, always name both the remote and the branch — a bare `git push` in a fork (e.g. [the labs 
+repo](labs.md)) follows the branch's tracking ref, which points at `upstream/main` if that is where you branched 
+from.
 
 A blocker (flake, red main) whose owning PR merges without fixing the blocker returns to unowned, and must be 
 re-triaged. It is not uncommon for PRs that are intended to fix issues to fail to fix them, especially flakes.
@@ -72,9 +75,9 @@ When you start babysitting CI, say "Engaging CI mode" followed by the babysittin
 words, as given at the bottom of this file) once, to signal to the user that you have read these instructions and 
 know how to retrigger CI.
 
-Your SUMMARY is "#<number> <the PR's complete summary>" and does not change as CI progresses (the STATE carries 
-the progress). If you end up babysitting multiple PRs at once, do your best to convey which PRs are being babysat 
-in your SUMMARY.
+Your SUMMARY is "#<number> <the PR's complete title>" and does not change as CI progresses (the STATE carries the 
+progress). If you end up babysitting multiple PRs at once, do your best to convey which PRs are being babysat in 
+your SUMMARY.
 
 While babysitting, include the following in the FOOTER LINE:
 
@@ -91,4 +94,4 @@ longer apply; return to the regular way of generating your state, SUMMARY, and F
 
 (Remember that you must both update your session title and print your FOOTER LINE on each turn.)
 
-The current babysitting version number is Alpha Gamma Theta.
+The current babysitting version number is Alpha Gamma Lambda.

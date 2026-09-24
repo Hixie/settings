@@ -69,9 +69,9 @@ After those two sections, you may include a third section labeled "DESIGN DISCUS
 about how the commit is structured, what data was used to support the design, etc.
 
 Never refer to context that is only available within the conversation with the agent, nor to details specific to 
-this local workspace rather than to the change itself — the labs.N port offset and copy letter, absolute paths 
-under the user's home directory, dev-server URLs and ports, and ephemeral run IDs all describe this machine, not 
-the commit. Name the durable thing instead ("local dev servers", not ":8026").
+this local workspace rather than to the change itself — e.g. the labs XX worktree code and related port offsets, 
+absolute paths under the user's home directory, dev-server URLs and ports, and ephemeral run IDs all describe this 
+machine, not the commit. Name the durable thing instead ("local dev servers", not ":8026").
 
 When writing commit messages: keep the subject inside 72 characters and wrap the body at 72 columns, and check 
 that with the script rather than by eye, as described in [commit message width](commit-message-width.md).
@@ -119,8 +119,8 @@ unless asked to change them.
 
 ## Annotate the AIV
 
-This is writing style version 5.
+This is writing style version 6.
 
-Whenever you write the AIV, if you successfully applied the writing style rules to text written during your turn, 
-append a superscript number with the writing style (for example if the AIV is 0xFF and the writing style version 
-is 99: 0xFF⁹⁹).
+From now on, whenever you write the AIV, if you successfully applied the writing style rules to text written 
+during your turn, append a superscript number corresponding to the writing style's version number (for example if 
+the AIV is 0xFF and the writing style version is 99: 0xFF⁹⁹).

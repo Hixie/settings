@@ -1,21 +1,13 @@
 # Loom worktrees
 
-Loom worktrees are identified by decimal number, herein called N.
-
-Loom worktree N:
-
- - is selected by the phrase "use loom N".
- - is referred to by its codename 𝛌N
- - is found in `~/dev/commonfabric/loom/N`, as a worktree parented to `~/dev/commonfabric/loom/root`.
- - corresponds to the loom instance "loomN".
-
 ## Preparing a loom worktree
 
-A code-only worktree does not need a running Loom instance. Before binding a Loom instance, prepare the checkout 
-from inside the worktree:
+A code-only worktree does not need a running Loom instance.
+
+Before binding a Loom instance, prepare the worktree:
 
 ```bash
-cd ~/dev/commonfabric/loom/N
+cd ~/dev/commonfabric/loom/XX
 src/bin/prepare-instance-target.sh
 ```
 
@@ -34,8 +26,8 @@ src/bin/prepare-instance-target.sh --check
 Give every simultaneously running worktree its own named Loom instance:
 
 ```bash
-loom instance create loomN --worktree .
-loom setup --instance loomN
+loom instance create loomXX --worktree .
+loom setup --instance loomXX
 ```
 
 The first command binds the instance to the current worktree. It also gives the instance its own state directory, 
@@ -45,7 +37,7 @@ interactive first-time configuration and leaves the services running.
 If the instance is already configured, start it without repeating setup:
 
 ```bash
-loom start loomN
+loom start loomXX
 ```
 
 Run instance-specific commands from inside the bound worktree whenever possible. Loom resolves the instance from 
@@ -67,7 +59,7 @@ Inspect the allocation after creating or removing an instance:
 
 ```bash
 loom instance ls
-loom instance cat loomN
+loom instance cat loomXX
 ```
 
 `loom instance ls` shows each instance's worktree and port offset. `loom instance cat` shows the exact configured 
@@ -75,8 +67,8 @@ URLs. If an external process occupies one of those ports, remove the new instanc
 explicit unused offset:
 
 ```bash
-loom instance rm loomN
-loom instance create loomN --worktree . --port-offset 12
+loom instance rm loomXX
+loom instance create loomXX --worktree . --port-offset 12
 ```
 
 Choose the explicit offset only after checking `loom instance ls`. The create command rejects an offset already 
@@ -89,19 +81,19 @@ Use an acceptance instance instead of a persistent development instance when the
 against realistic data:
 
 ```bash
-cd ~/dev/commonfabric/loom/N
+cd ~/dev/commonfabric/loom/XX
 loom acceptance up --worktree .
 loom acceptance list
 ```
 
 The acceptance command selects an available acceptance slot, creates an isolated copy-on-write File Cabinet clone, 
 pauses wish dispatch, disables hosted push, and reports the instance's URLs. It leaves the primary Loom instance 
-bound to the parent repository. Do not rebind the protected primary instance to a feature worktree.
+bound to the main worktree. Do not rebind the protected primary instance to a feature worktree.
 
 When finished, use the instance name reported by `loom acceptance list`:
 
 ```bash
-loom acceptance down loomN
+loom acceptance down loomXX
 ```
 
 
@@ -110,14 +102,12 @@ loom acceptance down loomN
 Stop and unregister the instance before removing its worktree:
 
 ```bash
-loom stop loomN --include-toolshed
-loom instance rm loomN
-git -C ~/dev/commonfabric/loom/root worktree remove ~/dev/commonfabric/loom/N
+loom stop loomXX --include-toolshed
+loom instance rm loomXX
+git -C ~/dev/commonfabric/loom/root worktree remove ~/dev/commonfabric/loom/XX
 git -C ~/dev/commonfabric/loom/root worktree prune
 ```
 
 `loom instance rm` preserves the instance's data. Use `--purge` only when the File Cabinet is the instance's 
 default unshared directory and that data should also be deleted. Git refuses to remove a worktree with uncommitted 
 changes, so inspect and preserve any work before cleanup.
-
-

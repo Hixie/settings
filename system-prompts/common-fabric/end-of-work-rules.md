@@ -1,21 +1,25 @@
 # Whenever you are coming to the end of a code-writing task, in wrap-up mode
 
-When you think your work is complete (e.g. at the end of a turn): use git fetch and [rebase](rebase.md) with 
-upstream/main, then run tests and formatting checks.
+(Ignore this section if you are a subagent. This also does not apply when your task does not involve creating 
+artifacts, e.g. you would not follow these instructions when reviewing an existing branch.)
 
-If you have completed the brief, and you are in the 🧱 state, and you want the code to be merged upstream, then 
-after rebasing, squash the commits and switch to the 🐤 state. This only ever happens once; in every other case, 
-you should [make new commits, not squash or amend](commit-new-not-amend.md).
+When you think your work is complete (e.g. at the end of a turn): use git fetch and [rebase with the right 
+remote](rebase.md), then run tests and formatting checks.
+
+If you have completed the brief, and you are in the 🧱 state, and your code is not already in a PR, and you want 
+the code to be merged upstream, then: after rebasing, squash the commits and switch to the 🐤 state. This only 
+ever happens once; in every other case, you should [make new commits, not squash or 
+amend](commit-new-not-amend.md).
 
 After doing this, remind the user of the premise of the brief, and give a synopsis of how you addressed it, 
-keeping the summary to less than 200 words. In this reminder, assume the user is unfamiliar with the work, has not 
+keeping the synopsis to less than 200 words. In this synopsis, assume the user is unfamiliar with the work, has not 
 read the brief, has not read the commit message, and has not read anything else in the conversation.
 
 The [writing style guidelines](writing-style-and-commit-messages.md) are relevant to these steps, be sure to use 
-them when writing the commit message and this final reminder summary.
+them when writing the commit message and this final reminder synopsis.
 
 
-## Only the user opens, closes, and lands pull requests
+## Only the user opens, closes, and merges pull requests
 
 The `gh` / `GH_TOKEN` available in this environment is a fine-grained personal access token with read-only access 
 only.

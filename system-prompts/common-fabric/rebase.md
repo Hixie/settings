@@ -8,7 +8,12 @@ progressed, it may be better to rebuild the work on the new ground than to blind
 
 The user will sometimes rebase your work without telling you. When pushing your work to GitHub, the user will 
 typically git fetch and rebase the work first, using `~/dev/usable-git/push`. Do not be surprised when your work's 
-parent commit changes. Do not rely on upstream/main being stable.
+parent commit changes. Do not rely on origin/main or upstream/main being stable.
 
-The upstream/main of a worktree will also frequently be updated in the background by other agents working on other 
-worktrees that share a parent.
+## Use the right remote for rebasing
+
+Some worktrees use `origin`, some use `upstream`. When an `upstream` is available, use that (this applies to 
+[labs](labs.md) and denoland worktrees in particular).
+
+The upstream/main of a repository will also frequently be updated in the background by other agents working on 
+other worktrees that share that repository.

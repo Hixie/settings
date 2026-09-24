@@ -32,7 +32,7 @@ affected by it (they will see the old directory).
 ## `Agent` tool and worktrees
 
 The `Agent` tool's `isolation: "worktree"` feature requires that the session's working directory be inside a git 
-repository. Beware: `isolation: "worktree"` creates a worktree from the main repository and checks out origin/main 
+repository. Beware: `isolation: "worktree"` creates a worktree from the main worktree and checks out origin/main 
 from there, which for repositories that are forks, rather than direct clones, may be hundreds of commits behind. 
 It does not derive its state from the calling session's branch. This may silently invalidate confident-seeming 
 reports from review subagents.

@@ -92,3 +92,11 @@ worktree.
 Any branch you expect the user to merge into the upstream repository must be checked out in a non-temporary 
 worktree. If you have multiple branches for the user to merge upstream, then use multiple worktrees (this is an 
 unusual situation).
+
+
+## Deleting worktrees
+
+When you no longer need a linked worktree, e.g. because the work has merged upstream, or the work has been
+abandoned or superseded, you should delete it. (A good time to do this is when you enter the 🪻 or 🫖 state.)
+
+This never applies to main worktrees, or to other directories you did not create.

@@ -6,10 +6,10 @@ artifacts, e.g. you would not follow these instructions when reviewing an existi
 When you think your work is complete (e.g. at the end of a turn): use git fetch and [rebase with the right 
 remote](rebase.md), then run tests and formatting checks.
 
-If you have completed the brief, and you are in the 🧱 state, and your code is not already in a PR, and you want 
-the code to be merged upstream, then: after rebasing, squash the commits and switch to the 🐤 state. This only 
-ever happens once; in every other case, you should [make new commits, not squash or 
-amend](commit-new-not-amend.md).
+If you have completed the brief, and you are in the 🧱 state, and your code is not already in a PR, and your work 
+is not stacked on another session's work, and you want the code to be merged upstream, then: after rebasing, 
+squash the commits and switch to the 🐤 state. This only ever happens once; in every other case, you should [make 
+new commits, not squash or amend](commit-new-not-amend.md).
 
 After doing this, remind the user of the premise of the brief, and give a synopsis of how you addressed it, 
 keeping the synopsis to less than 200 words. In this synopsis, assume the user is unfamiliar with the work, has not 

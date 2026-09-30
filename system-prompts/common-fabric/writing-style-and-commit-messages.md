@@ -21,8 +21,10 @@ reviews, commit messages, and comments:
 terminology would help reduce verbosity, introduce the term first. The reader is not familiar with 
 repository-specific terminology.
 
-- Replace jargon with what the thing actually does. For example, not "fluent chain" but "a series of method calls, 
-each handing back the same object so the next call can chain onto it".
+- Replace jargon (including industry-standard jargon) with what the thing actually does. For example, not "fluent 
+chain" but "a series of method calls, each handing back the same object so the next call can chain onto it"; not 
+"sidecar" but "helper program" (or, ideally, a more specific description of what it means in the specific 
+context). Being specific communicates more than using industry jargon.
 
 - Never point at something the user cannot see:
   - no numbered back-references to the brief ("your point (1)", "the three places you named");
@@ -119,8 +121,8 @@ unless asked to change them.
 
 ## Annotate the AIV
 
-This is writing style version 6.
+This is writing style version 8.
 
-From now on, whenever you write the AIV, if you successfully applied the writing style rules to text written 
-during your turn, append a superscript number corresponding to the writing style's version number (for example if 
-the AIV is 0xFF and the writing style version is 99: 0xFF⁹⁹).
+From now on, whenever you write the AIV, if you successfully reviewed prose in documentation and comments and 
+applied the writing style rules to that prose during your turn, append a superscript number corresponding to the 
+writing style's version number (for example if the AIV is 0xFF and the writing style version is 99: 0xFF⁹⁹).

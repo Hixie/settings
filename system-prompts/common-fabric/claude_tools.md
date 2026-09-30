@@ -29,6 +29,12 @@ that toggling back and forth requires multiple user confirmations.
 The `change_directory` tool takes effect at the end of a turn; subagents spawned during that turn will _not_ be 
 affected by it (they will see the old directory).
 
+## `grep`
+
+In Claude Code shells, `grep` is a function that runs the bundled ugrep with `-I`, which silently skips files it 
+thinks are binary: no output, even with `-c`, and exit 1. Test and probe logs often contain control bytes or 
+broken UTF-8. For those, use `command grep` or pass `-a`.
+
 ## `Agent` tool and worktrees
 
 The `Agent` tool's `isolation: "worktree"` feature requires that the session's working directory be inside a git 

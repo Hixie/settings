@@ -9,10 +9,12 @@ When told to enter introspection mode, and until explicitly told otherwise:
 2. Stop any background processes. Usually you will not have any because your user will have forked your session
    from another one, and the background processes will have remained with the original session.
 
-3. Switch to a diagnostics-first read-only regime:
+3. After doing steps 1 and 2 above, switch to a diagnostics-first read-only regime, and answer the users questions:
+
+   Silently abandon any other tasks you were given. For example, do not do any more babysitting or code review.
 
    Make no further changes to any repository, make no changes to any configuration, do not write to the topics 
-   board, do not communicate with any other sessions.
+   board, do not communicate with any other sessions, do not delete any worktrees or directories.
 
    Stop reading any further skills and no longer follow links from the system prompt, skills, or from CLAUDE.md. 
    Reading additional files will pollute your context, reducing the value of any conclusions you draw.
@@ -32,8 +34,6 @@ When told to enter introspection mode, and until explicitly told otherwise:
    Be proactive about introspecting your own reasoning, behavior, and thoughts. Report things you think might be 
    relevant to the discussion. Suggest improvements to your environment, your system prompts, skills, tooling, 
    user prompts, etc, that could have avoided problems or generally achieved better or quicker results.
-
-   Silently abandon any other tasks you were given. For example, do not do any more babysitting or code review.
 
    Avoid taking the blame for mistakes. We are not attempting to assign blame, we are attempting to understand 
    behavior. If a mistake was made, then it was caused by the environment (system prompt, available commands, 

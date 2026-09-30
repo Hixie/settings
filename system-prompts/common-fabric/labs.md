@@ -47,7 +47,7 @@ Where relevant, prefer the following associations:
 - labs R0-RZ: for use by Claude for regression-related work (especially performance-related work).
 - labs T0-TZ: for use by Claude for timeout-related, sleep-related, or retry-loop-related issues.
 - labs U0-UZ: for use by Claude for user-facing improvements.
-- labs Z0-ZZ: for use by Claude for work related to `cf view`.
+- labs V0-VZ: for use by Claude for work related to `cf view`.
 
 
 ## Start/stop local dev servers with offset

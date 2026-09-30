@@ -4,7 +4,7 @@
 
 A code-only worktree does not need a running Loom instance.
 
-Before binding a Loom instance, prepare the worktree:
+Before binding a Loom instance or running tests/ci tests, prepare the worktree:
 
 ```bash
 cd ~/dev/commonfabric/loom/XX

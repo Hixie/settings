@@ -1,5 +1,9 @@
 # When spawning chips, spawning a visible task, or writing agent instructions for new sessions
 
+If there are more than 45 active local sessions, do not proactively start new sessions or offer to start new 
+sessions to deal with technical debt or flakes unless the user explicitly requests it. Instead, record the issue 
+on the [laundry](topics.md) and leave it at that.
+
 ## Writing instructions
 
 When spawning a chip or visible task to do independent work, or when writing agent instructions for use in another 
@@ -15,6 +19,9 @@ instructions included in the repository documentation does not need to be repeat
 guidance regarding the shape of the solution. Instructions should focus on the problem being solved, and the 
 symptoms of that problem, plus any constraints that were not self-evident to you. You can assume the target agent 
 has the same general knowledge, skills, and abilities as you do.
+
+Always end your instructions with an indication to the receiving agent that the instructions were written by an 
+agent and not by the user, and that the user therefore is not familiar with the details of the brief.
 
 
 ## Choosing a worktree
@@ -35,7 +42,18 @@ When the user says to "spawn a chip", if you are Codex, interpret it as using `c
 not wait for the task to return.
 
 
-## The gate on spawning chips
+## Claude-specific instructions
+
+### `spawn_task` arguments
+
+When using `spawn_task`, if the task is instructed to work in a particular worktree, give the worktree identifier 
+at the start of the `tldr`, followed by a colon, then a sentence describing what the chip is going to do (instead 
+of the two sentences you are normally instructed to use).
+
+If the task is instructed to work on a worktree related to commonfabric, use ~/dev/commonfabric as the `cwd`. 
+Otherwise if another worktree was selected, use that as the `cwd`. Otherwise, use `~/dev/`.
+
+### The gate on spawning chips
 
 This section and the next describe a Claude Code mechanism, and apply only to Claude Code sessions. The rules
 above apply everywhere.
@@ -66,7 +84,9 @@ is usually the only record of where a session works.
 A worktree need not exist, because the session that is given it creates it. A directory given by its path must 
 exist. A denial hands back this file in full.
 
-### Waiving the gate
+The gate also verifies the `tldr` matches the rules described earlier.
+
+#### Waiving the gate
 
 Not all work belongs in a fresh labs worktree. A chip for a Codex worktree, for the directory the current session 
 is already working in, or for anywhere else the checks above do not fit, is spawned by putting this line anywhere 

@@ -5,8 +5,9 @@ follows best practices and repo conventions. Instead of asking questions before 
 implement the work first and then report on the decisions and trade-offs you made.
 
 Prioritize simplicity and elegance. Look for general solutions that cover all cases rather than catering to each 
-edge case separately. Smaller solutions are generally preferred over large ones. When refactoring code, aim for 
-an overall reduction in code (notwithstanding new documentation and tests).
+edge case separately. Smaller solutions are generally preferred over large ones. When refactoring code, aim for an 
+overall reduction in code (notwithstanding new documentation and tests). Simplicity usually manifests as fewer 
+lines of code.
 
 When you can do a reversible, in-scope task, do it and report — never present it as a choice for the user to 
 approve. If you're about to write 'want me to…?', 'your call', or an option-A/option-B menu for work you could 
@@ -36,25 +37,41 @@ where you have ever been in the 🧱 state.
 If the user says "hmm", or the first time they tell you to squash your commits, they are evaluating your work, 
 your new state is 🐤. ([Completing your brief](end-of-work-rules.md) can also cause you to enter this state.)
 
-If they ask you to babysit, your new state is 🦚. (The babysitting instructions may also change your state.)
+If your work is stacked on another agent's work, and that agent's work has not yet landed, then instead of 🧱 or 
+🐤, your state is 📚. Ask the other agent to let you know when their work has been merged or abandoned, at which 
+point switch to back to 🧱 or 🐤 as appropriate.
 
-Once the PR is merged on GitHub, your state is 🪻.
+If the user asks you to babysit, your new state is 🦚. (The babysitting instructions may also change your state.)
 
-You return to the 🧱 state if you are writing new code after merging something.
+Once the PR is merged on GitHub, your state is 🪻. Remain in this state even if the user asks you follow-up 
+questions. Return to the 🧱 state if you are writing new code after merging something.
 
 If you are ever actively fixing an [upstream main being red or any other kind of production-level 
 blockage](prodred.md), your state is 🚨. Only use this state if you are working on a resolution to such an issue, 
 not if you merely detect such an issue. Once you have stopped actively working on a production or red main issue, 
-revert to the most appropriate state, or 🫖 if you have no pending code to merge and have decided that not doing 
-anything at all is the appropriate action (this state is only appropriate if you were previously working on fixing 
-a prod or red main issue).
+revert to the most appropriate state.
+
+If you are ever in a state where you are entirely blocked waiting for local tests to run, and can make no further 
+progress until those tests have completed, and your state is currently 🧱 or 🐤, then change your state to 🚧 
+before ending your turn. Immediately exit this state as soon as you get a response from your tool, returning to 🧱 
+or 🐤 as appropriate.
+
+You may in some cases when you are building UI require that the user verify some interaction directly. If you are 
+ever blocked waiting for the user to do this, then temporarily change your state to ✋. When your user has 
+provided the required feedback you need to resume work, return to your previous state. This state can override all 
+other states, including babysitting-specific states and 🚨.
+
+Your state is 🫖 if you have no pending code to merge and have decided that not doing anything at all is the 
+appropriate action to address your current task. (This is distinct from the state after your PR has merged.) This 
+is a rare state to reach, typically it is only reached after the 🚨 state if you discover someone else has fixed 
+the production failure, or after rebasing when you find your original brief has been mooted by upstream commits.
 
 
 ## Setting your session title
 
 (Ignore this section if you are a subagent.)
 
-Using the `mcp__ccd_session_mgmt__set_session_title` tool (Claude, use "self" as the "session_id") or 
+Using the `mcp__ccd_session_mgmt__set_session_title` tool (Claude; use "self" as the "session_id") or 
 `codex_app__set_thread_title` tool (Codex), keep the session's title in this shape at all times:
 
     WORKTREES: STATE SUMMARY
@@ -64,7 +81,11 @@ are working in (as per step 2 of startup checklist below): `X3` for labs X3, `�
 `INFRAX3` for the infra X3 worktree, etc. Drop the list and the colon when no worktree is in play, so the title 
 starts with the state emoji.
 
+Whenever you start using additional worktrees, update your session title.
+
 STATE is your state emoji as described above, so the title says at a glance where the work has got to.
+
+Whenever your state changes, update your session title.
 
 SUMMARY says what overall problem you are currently solving, in 8 words or less. Generally it is a description of 
 your original brief, unless your scope has shifted substantially from that original request. It does not say how 
@@ -72,19 +93,12 @@ you are solving it, it does not name a branch, a file, or a command, and it does
 recent prompt unless that changed the overall scope of your work. (Other instructions may supersede these 
 instructions by providing other rules to set your SUMMARY.)
 
-Whenever your state changes, update your session title. This is more important than acknowledging the state change 
-in prose.
-
 Whenever your SUMMARY changes, update your session title.
-
-Whenever you start using additional worktrees, update your session title.
-
-Whenever you start responding to a user prompt, update your session title.
 
 
 ## Version
 
-These instructions carry a version number, the AIV, which is currently 0x92.
+These instructions carry a version number, the AIV, which is currently 0x9E.
 
 You cannot see previous versions. When this file changes, your context is re-rendered so that the new text appears 
 to have been there all along, in every earlier turn. Your own past output is therefore the only surviving record 
@@ -115,13 +129,13 @@ If the version has not changed, say nothing about it at the start of the turn.
 
 (Ignore this section if you are a subagent.)
 
-At the end of every turn, update your session title. After updating your session title, as the very last thing in 
-the turn, print the FOOTER LINE.
+As the very last thing in the turn print the FOOTER LINE.
 
 The FOOTER LINE must contain your state emoji, the AIV from these instructions, and any other information 
 instructions tell you to include, e.g. `🧱 0xFF [#1234](https://github.com/example/foobar/pull/1234) ΩΩΩ`.
 
-Printing the footer line does not discharge the requirement to update the session title; they are separate tasks.
+If your state has changed since you last updated your session title, you should have updated your session title. 
+(Claude: a stop hook will remind you if you failed to do so.)
 
 
 ## Startup checklist — run before anything else, on your first turn
@@ -163,7 +177,7 @@ directories. You are responsible for finding relevant instructions for working i
 7. Read [the writing style instructions](writing-style-and-commit-messages.md), which apply to all prose you 
 write.
 
-8. Start work. Your state is now 🧱 or 💬.
+8. Start work. Your state is now 🧱 or 💬. Update your session title.
 
 
 ## Participate in the team discussion
@@ -204,12 +218,13 @@ it.
 [Claude: some of your tools behave surprisingly, including `change_directory`, `Agent`, and `cd` in a 
 command](claude_tools.md) - read that document for advice that will save you time _before_ you call those tools.
 
-When working on anything CFC related, read and apply the CFC specification, which you can find in the 
-~/dev/commonfabric/specs/root repository (git fetch and rebase first, to get the latest version).
-
 A "pristine" worktree is one that is checked out on a branch that matches the main branch of the upstream repo 
 (meaning literally the upstream remote if any, meaning the origin remote otherwise), with no locally modified 
 files and no additional commits.
+
+You are durably authorized to access any internal system, including Estuary, Rapids, the laundry, any CFS 
+instance, any Toolshed instance, etc. Your job is to help the user develop these systems and you cannot help your 
+user if you do not have full access to these systems.
 
 
 ## Documenting limitations is a crutch
@@ -246,6 +261,12 @@ backward and forward compatible.
 Code should be type-safe, which, when well architected, removes the needs for casts. If you find yourself reaching 
 for casts or cast analogues, type laundering, `is` checks, etc, consider how to refactor the APIs involved to 
 avoid the need.
+
+### Avoid code traps
+
+Only ever spread an array into a function call if the array length is known to be bounded to a small length. If 
+the array could ever have more than a dozen or so values, pass in the array and have the function work on the 
+array instead. Spreading an array with thousands of values can cause a stack overflow.
 
 
 ## Document any findings

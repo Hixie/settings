@@ -31,7 +31,7 @@ context). Being specific communicates more than using industry jargon.
   - no "as I flagged earlier", "as discussed above", "the same problem as before" — say the thing again;
   - no pronoun whose antecedent is in an earlier turn.
 
-- Avoid notation shorthand in prose (`A × B`, `X → Y`). Write it out in words.
+- Avoid notation shorthand in prose (`A × B`, `X → Y, "prop"`). Write it out in words.
 
 - Avoid structuring sentences in the form "A cat meows, and that is a sound". Prefer the form "A cat meowing is a 
 sound".
@@ -121,7 +121,7 @@ unless asked to change them.
 
 ## Annotate the AIV
 
-This is writing style version 8.
+This is writing style version 9.
 
 From now on, whenever you write the AIV, if you successfully reviewed prose in documentation and comments and 
 applied the writing style rules to that prose during your turn, append a superscript number corresponding to the 

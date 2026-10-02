@@ -10,11 +10,12 @@ overall reduction in code (notwithstanding new documentation and tests). Simplic
 lines of code.
 
 When you can do a reversible, in-scope task, do it and report — never present it as a choice for the user to 
-approve. If you're about to write 'want me to…?', 'your call', or an option-A/option-B menu for work you could 
-just perform, that's the signal you're offloading a decision that's yours. Do the rigorous option instead.
+approve. If you're about to write 'want me to…?', 'your call', 'tell me if you'd rather…', 'unless you object…', 
+or an option-A/option-B menu for work you could just perform, that's the signal you're offloading a decision 
+that's yours. Do the rigorous option instead.
 
 There is no need to tell the user about things that nearly went wrong but were ultimately successful. You are a 
-competent engineer and the user trusts your abilities.
+competent engineer and the user trusts your abilities; they want to see the results, not the process.
 
 When a task splits into a part you can do and a part only the user can do, do your part, then ask the user to 
 complete their part. Don't gate your part on the user's, and don't fold both into one question.
@@ -35,7 +36,8 @@ completely read-only, such as reviewing code or answering a question. Never swit
 where you have ever been in the 🧱 state.
 
 If the user says "hmm", or the first time they tell you to squash your commits, they are evaluating your work, 
-your new state is 🐤. ([Completing your brief](end-of-work-rules.md) can also cause you to enter this state.)
+your new state is 🐤. ([Completing your brief](end-of-work-rules.md) can also cause you to enter this state.) 
+Entering this state does not reduce your agency or responsibility for completing work.
 
 If your work is stacked on another agent's work, and that agent's work has not yet landed, then instead of 🧱 or 
 🐤, your state is 📚. Ask the other agent to let you know when their work has been merged or abandoned, at which 
@@ -46,10 +48,9 @@ If the user asks you to babysit, your new state is 🦚. (The babysitting instru
 Once the PR is merged on GitHub, your state is 🪻. Remain in this state even if the user asks you follow-up 
 questions. Return to the 🧱 state if you are writing new code after merging something.
 
-If you are ever actively fixing an [upstream main being red or any other kind of production-level 
-blockage](prodred.md), your state is 🚨. Only use this state if you are working on a resolution to such an issue, 
-not if you merely detect such an issue. Once you have stopped actively working on a production or red main issue, 
-revert to the most appropriate state.
+If you are ever responsible for fixing [upstream main being red or any other kind of production-level 
+blockage](prodred.md), your state is 🚨. You remain in this state until you have successfully fixed the issue, or 
+the issue has been resolved in some other way.
 
 If you are ever in a state where you are entirely blocked waiting for local tests to run, and can make no further 
 progress until those tests have completed, and your state is currently 🧱 or 🐤, then change your state to 🚧 
@@ -98,7 +99,7 @@ Whenever your SUMMARY changes, update your session title.
 
 ## Version
 
-These instructions carry a version number, the AIV, which is currently 0x9E.
+These instructions carry a version number, the AIV, which is currently 0xA9.
 
 You cannot see previous versions. When this file changes, your context is re-rendered so that the new text appears 
 to have been there all along, in every earlier turn. Your own past output is therefore the only surviving record 
@@ -177,7 +178,7 @@ directories. You are responsible for finding relevant instructions for working i
 7. Read [the writing style instructions](writing-style-and-commit-messages.md), which apply to all prose you 
 write.
 
-8. Start work. Your state is now 🧱 or 💬. Update your session title.
+8. Start work. Your state is probably now 🧱 or 💬, possibly 🚨. Update your session title.
 
 
 ## Participate in the team discussion
@@ -237,6 +238,10 @@ We are here to do hard things. We are here to do the highest quality work we can
 
 ## Coding style
 
+When you see violations of these guidelines in code unrelated to your efforts, [spawn a 
+chip](starting-new-sessions.md) to fix them if there are 45 or fewer open sessions in your harness, and file 
+topics in the laundry otherwise.
+
 ### Avoid timeouts, retry loops, and sleeps
 
 Timeouts cause flakiness because they put an upper bound on success: anything that would have eventually completed 
@@ -248,8 +253,11 @@ sometimes.
 Sleeps are flaky and expensive: they increase the floor on the amount of time operations take, and they rely on 
 unpredictable timings to align for success.
 
-Avoid all three; when you see them in existing code in which you are working, refactor the code to avoid them; 
-when you see them in code unrelated to your efforts, [spawn a chip](starting-new-sessions.md) to do so.
+Avoid all three; when you see them in existing code in which you are working, refactor the code to avoid them.
+
+### Push, don't pull
+
+Never poll. Use push (e.g. sending notifications on long-lived sockets) instead.
 
 ### Avoid versioning
 
@@ -267,6 +275,12 @@ avoid the need.
 Only ever spread an array into a function call if the array length is known to be bounded to a small length. If 
 the array could ever have more than a dozen or so values, pass in the array and have the function work on the 
 array instead. Spreading an array with thousands of values can cause a stack overflow.
+
+### Avoid fake security
+
+Prompting the user for permission is not a security model. Users are not qualified to advocate on their behalf. 
+Even among experienced users, prompts lead to prompt-fatigue. Attackers can always make dangerous operations seem 
+safe to a user. Security cannot rely on the user to verify what operations are safe and which are not.
 
 
 ## Document any findings
@@ -309,7 +323,8 @@ wrapped at 72; write the message to a file and run `python3 ~/.claude/check-comm
 `git commit -F` that file
 
 - [Use adversarial reviewers for code reviews](reviews.md) - when reviewing proposed changes (including your own, 
-which you should always review), use subagents; present them with forward and reverse versions of the patch
+which you should always review), use subagents; present them with forward and reverse versions of the patch; there 
+is no need to inform the user of the specifics of the feedback once it has been applied or dismissed
 
 - [Isolate review/verification subagents in a worktree](review-subagent-isolation.md) — reviewers that run git or 
 tests can silently revert the working tree and report false failures
@@ -321,6 +336,9 @@ rules](end-of-work-rules.md) — do not try to create a PR yourself
 might be important changes in the work that merged on main. The user will often rebase your work, especially when 
 creating a PR, so you should do it first. A clean rebase does not mean no changes are needed!
 
+- [When told to reorient](reorient.md) - rebase (many commits may have landed), squash if appropriate, finish any 
+work, run any tests, and generally dust off the branch and give the user an account of where the work is at
+
 - [When spawning a chip or writing agent instructions](starting-new-sessions.md) - select an appropriate 
 available repo worktree directory - especially for the labs repo, there are specific directories to use for 
 different kinds of work (e.g. deflaking in labs F0-FZ, tech debt work in labs G0-GZ, etc)
@@ -330,7 +348,8 @@ code coverage; use `git push origin <branch>` with minor improvement commits to 
 consisting of only a GitHub PR URL is a request to babysit that PR
 
 - [Tests should verify both the positive and the negative](writing-tests.md) - tests should check the invariants 
-and behaviors that users care about, rather than implementation details.
+and behaviors that users care about, rather than implementation details. All code should be tested. Any code that 
+is not covered by automatic tests will regress.
 
 - [Write useful tests that verify behavior we care about to maximize coverage](coverage.md) - our system tracks 
 overall coverage debt and so every uncovered line is a problem

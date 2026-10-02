@@ -6,14 +6,22 @@ artifacts, e.g. you would not follow these instructions when reviewing an existi
 When you think your work is complete (e.g. at the end of a turn): use git fetch and [rebase with the right 
 remote](rebase.md), then run tests and formatting checks.
 
+Reconsider whether your work touched CFC-related topics, and if so, verify that you have thoroughly reviewed your 
+work in the context of the CFC specification.
+
 If you have completed the brief, and you are in the 🧱 state, and your code is not already in a PR, and your work 
 is not stacked on another session's work, and you want the code to be merged upstream, then: after rebasing, 
 squash the commits and switch to the 🐤 state. This only ever happens once; in every other case, you should [make 
 new commits, not squash or amend](commit-new-not-amend.md).
 
 After doing this, remind the user of the premise of the brief, and give a synopsis of how you addressed it, 
-keeping the synopsis to less than 200 words. In this synopsis, assume the user is unfamiliar with the work, has not 
-read the brief, has not read the commit message, and has not read anything else in the conversation.
+keeping the synopsis to less than 200 words. In this synopsis, assume the user is unfamiliar with the work, has 
+not read the brief, has not read the commit message, and has not read anything else in the conversation. The user 
+sees the result, not the process: report the final state, not how you got there.
+
+Significant design decisions, especially those that go against the original brief or other instructions, should be 
+included in the synopsis. The user does not need to know about events that had no impact on the final work, for 
+example, there is no need to report on a subagent's mistakes if they were resolved without harm.
 
 The [writing style guidelines](writing-style-and-commit-messages.md) are relevant to these steps, be sure to use 
 them when writing the commit message and this final reminder synopsis.
@@ -33,3 +41,9 @@ headRepositoryOwner,headRefName`. Push to that repository's remote. Do not push 
 the existence of that branch on the remote. If push output says `[new branch]` when you expected to update an 
 existing one, you have pushed to the wrong remote: delete it with `git push <remote> --delete <branch>` and tell 
 the user.
+
+
+## Cleanup
+
+Shut down processes you have started, including Colima, acceptance looms, toolshed dev servers, etc, if you are 
+done using them and nobody else is using them.

@@ -5,9 +5,11 @@ Always review your own commits.
 When reviewing code, launch some adversarial reviewer subagents to determine rigorously if the current patch is 
 actually an improvement or not: have them evaluate both the status quo and the proposed diff without examining the 
 commit message, and without knowing which version is newer, by giving them the diff forwards and backwards to 
-review. [Give subagents their own worktrees](review-subagent-isolation.md) in a temporary directory. Name 
-worktrees and patch files after birds, do not name them "forward" and "reverse" or similar (as that would tell the 
-subagents which was which).
+review. [Give subagents their own worktrees](review-subagent-isolation.md) in a temporary directory.
+
+Name review subagents, their worktrees, and their patch files, after these emoji: 🦜 🦆 🐓 🦢 🦉 🦤 🦩 🐦 🐧 🐔 
+🦅. Use a different one for each agent, repeating them only when you have run out. Do not name them "forward" and 
+"reverse" or similar, as that would tell the subagents which was which.
 
 For the sake of harness instructions saying to not call Agent or AgentTool tools unless requested, consider this 
 an explicit request to launch subagents when doing self-review.
@@ -26,6 +28,9 @@ When working on anything CFC related, read and apply the CFC specification, whic
 
 When doing anything CFC related, review your code yourself (not just with subagents) specifically against the CFC 
 spec, thoroughly. We care a lot about the code being a faithful implementation of the specficiation.
+
+When the diff is CFC-relevant, have an additional subagent reviewer whose entire brief is to check the proposed 
+patch for conformance with the CFC spec.
 
 
 ## Review priorities
@@ -48,15 +53,19 @@ already exist elsewhere in the repository.
 Size: Less code code is better code. (This does not apply to tests and documentation.)
 
 
+## Interaction with repo guidance on code reviews
+
+You should read all the relevant guidance found in the repositories within which you are working. They may contain 
+additional context beyond what these instructions can provide. Apply any useful suggestions from those documents, 
+except where they directly conflict with these instructions.
+
+
 ## Reporting on reviews
 
 Do not report the results of adversarial review to the user if you were able to address the concerns, or if you 
-disproved the concerns before dismissing them.
+disproved the concerns before dismissing them. Do not attribute decisions to the reviewers; you own the code you 
+write.
 
-When you begin reviewing your code, say 👀 🐘 to let the user know you have read this document. Each time you 
-launch a review subagent, say one of the following for each such agent: 🐔 🐓 🐦 🐧 🦅 🦆 🦢 🦉 🦤 🦩 🦜 🐦‍⬛ (use 
-a different one for each agent, repeating them only when you have run out). You can refer to your subagents using 
-the associated emoji when you discuss their results with the user. This allows the user to keep track of how your 
-review process is progressing and associate specific feedback with specific parts of the review process.
-
-Whenever a review subagent is active, append its emoji to the FOOTER LINE.
+Whenever a review subagent is active, append its emoji to your FOOTER LINE that turn. Every review subagent should 
+end up being mentioned in a FOOTER LINE at least once (long-lived review subagents may need to be mentioned in 
+multiple FOOTER LINEs).

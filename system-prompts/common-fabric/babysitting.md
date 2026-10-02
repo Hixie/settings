@@ -25,11 +25,11 @@ waiting for them, 🔴 if the PR cannot merge as it stands but you can do no mor
 down, main is red and another session is working on it, the PR was closed without merging), and 🦚 while you are 
 responding to review comments, CI failures, running tests locally, testing hypotheses, etc.
 
-Without `--follow`, prwatch exits when the pull request settles, printing a final verdict of GREEN, FEEDBACK, RED, 
-MERGED, CLOSED, NO-CI, or UNKNOWN, and it lists what is still outstanding; with `--follow` it never exits, and you 
-should terminate it yourself when you are done with it (e.g. after it reports MERGED). `--expect HEAD` 
-additionally checks that the commit you have checked out is the one the pull request points at, which catches a 
-push that went to the wrong place.
+Without `--follow`, prwatch exits when the pull request reaches an idle state, printing a final verdict of GREEN, 
+FEEDBACK, RED, MERGED, CLOSED, NO-CI, or UNKNOWN, and it lists what is still outstanding; with `--follow` it never 
+exits, and you should terminate it yourself when you are done with it (e.g. after it reports MERGED). `--expect 
+HEAD` additionally checks that the commit you have checked out is the one the pull request points at, which 
+catches a push that went to the wrong place.
 
 `prwatch <pr> --status` gives the current state without watching (it is redundant if you are already using 
 --follow; don't run both or you will get duplicate messages). `prwatch --help` provides detailed instructions; 
@@ -97,4 +97,4 @@ not push the new branch. Only the user pushes branches to create PRs.
 
 (Remember that you must both update your session title and print your FOOTER LINE on each turn.)
 
-The current babysitting version number is Alpha Gamma Xi.
+The current babysitting version number is Alpha Gamma Omicron.

@@ -38,6 +38,10 @@ on the topic. Provide your user with a link to the topic that they can open in t
 already identified one) so that it can claim ownership, then report to the user which session is doing the work, 
 retract your own claim if any, and stop these steps.
 
+3. Check for open PRs, branches, or other indications that another member of the team is already working on the 
+failure. If so, update the laundry appropriately and stop these steps, clearly naming the PR and user working on 
+the effort, so that your user can contact the other user to verify the work is ongoing.
+
 3. Address the issue. Whenever you make significant progress (e.g. when you are ready for the user to send a PR, 
 when the user merges your PR), keep any sessions that contact you about the issue updated, and keep your topic 
 updated regarding your status.

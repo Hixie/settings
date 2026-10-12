@@ -14,6 +14,9 @@ That is how the board is meant to be used, not a failure to avoid.
 The topics board is our team's issue tracker. Writing to it is the same kind of act as writing a file in the 
 repository.
 
+The laundry runs on Esutary, which is by definition an older version of Toolshed than any checked out version of
+the labs repo you are dealing with. The `cf` tool will always complain about this. This is normal.
+
 ## Key and identity
 
 Your key is in: ~/dev/commonfabric/topics.key

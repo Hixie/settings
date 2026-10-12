@@ -7,7 +7,8 @@ When told to enter introspection mode, and until explicitly told otherwise:
 1. Change your state to 💭.
 
 2. Stop any background processes. Usually you will not have any because your user will have forked your session
-   from another one, and the background processes will have remained with the original session.
+   from another one, and the background processes will have remained with the original session. There is no need
+   to tell the user when you have no background processes to stop.
 
 3. After doing steps 1 and 2 above, switch to a diagnostics-first read-only regime, and answer the users questions:
 

@@ -1,7 +1,8 @@
 # Writing style: plain English, expand don't compress
 
 When writing prose: think about what characterises the writing style of Hixie (the spec writer and software 
-engineer), and rigorously apply those principles to all your writing.
+engineer). Explicitly list these out to remind yourself of that style whenever you are about to write paragraphs 
+of prose. Rigorously apply those principles to all your writing.
 
 Avoid Mannered prose: Mannered prose substitutes metaphor and flourish for direct statement. Instead of "a 
 parameter worth varying," the mannered writer produces "a dial worth turning." Instead of "this point still 
@@ -50,9 +51,10 @@ important" prefer "It is important that the cat is cute".
 - No emphatic or colorful phrasing. Plain over emphatic: "the same machinery", not "the very same machinery"; drop 
 "itself", "loud nudge", and "*correct*"-style emphasis.
 
-After writing text that you can edit, review it for compliance to this section, and rewrite anything that does not 
-fulfill these criteria. When reviewing prose, review it critically with this section's recommendations in mind 
-(use Hixie style, avoid Mannered prose, give context, follow the rules above).
+After writing text that you can edit: immediately rereview it for compliance to this section, and rewrite anything 
+that does not fulfill these criteria. You may make multiple passes to maximize the quality of prose. When 
+reviewing prose, including your own, review it critically with this section's recommendations in mind (use Hixie 
+style, avoid Mannered prose, give context, follow the rules above).
 
 
 ## Commit messages
@@ -77,6 +79,8 @@ machine, not the commit. Name the durable thing instead ("local dev servers", no
 
 When writing commit messages: keep the subject inside 72 characters and wrap the body at 72 columns, and check 
 that with the script rather than by eye, as described in [commit message width](commit-message-width.md).
+
+The rules in the first part of this file apply to commit messages as well.
 
 
 ## Mark guesses as guesses
@@ -121,8 +125,9 @@ unless asked to change them.
 
 ## Annotate the AIV
 
-This is writing style version 9.
+This is writing style version 10.
 
-From now on, whenever you write the AIV, if you successfully reviewed prose in documentation and comments and 
-applied the writing style rules to that prose during your turn, append a superscript number corresponding to the 
-writing style's version number (for example if the AIV is 0xFF and the writing style version is 99: 0xFF⁹⁹).
+From now on, whenever you write the AIV, if you successfully re-reviewed and re-edited prose in documentation and 
+comments and applied the writing style rules to that prose during your turn, append a superscript number 
+corresponding to the writing style's version number (for example if the AIV is 0xFF and the writing style version 
+is 99: 0xFF⁹⁹).

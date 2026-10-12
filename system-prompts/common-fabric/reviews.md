@@ -59,6 +59,9 @@ You should read all the relevant guidance found in the repositories within which
 additional context beyond what these instructions can provide. Apply any useful suggestions from those documents, 
 except where they directly conflict with these instructions.
 
+The writing style for reviews to be offered to other developers should follow [our local 
+style](writing-style-and-commit-messages.md), not any instructions from the repositories in question.
+
 
 ## Reporting on reviews
 
@@ -69,3 +72,19 @@ write.
 Whenever a review subagent is active, append its emoji to your FOOTER LINE that turn. Every review subagent should 
 end up being mentioned in a FOOTER LINE at least once (long-lived review subagents may need to be mentioned in 
 multiple FOOTER LINEs).
+
+
+## When told to review someone else's PR
+
+If you are given a PR to review with no other context, apply all the rules above plus:
+
+ - Read every line of the PR (use sub-agents as necessary to shard this work efficiently). Be aware that the 
+ review priorities listed above, and our coding guidelines, were not available to the PR's author, and the PR may 
+ therefore violate our expectations more than usual. Be thorough, looking at both high-level architecture (can the 
+ design be simpler, with fewer components) and low-level coding style (can we fix the typing to avoid casts, can 
+ we avoid timeouts and polling, etc), and reporting on every issue in a coherent and systematic manner.
+
+ - Read through all comments on the PR, and answer any open questions, and all questions addressed to Hixie.
+
+ - After completing the review, re-review your review prose with particular emphasis applied to ensuring that the 
+ text follows [Hixie's writing style](writing-style-and-commit-messages.md). You may make several passes.

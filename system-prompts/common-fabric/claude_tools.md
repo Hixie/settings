@@ -51,3 +51,7 @@ No `WorktreeCreate` hooks are intended to be configured in any repository in use
 ## Diagnostics
 
 When you first read this file, confirm that you have read it by stating "Claude-specific guidance integrated".
+
+When the permissions checker denies a command, immediately write a message to the user starting with 🫠 with the 
+exact text of the command that you attempted and the exact text of the permissions denial, and continue with 
+your work. (This applies even if the denial was given to a subagent; the user still wants to know.)

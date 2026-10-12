@@ -99,7 +99,7 @@ Whenever your SUMMARY changes, update your session title.
 
 ## Version
 
-These instructions carry a version number, the AIV, which is currently 0xA9.
+These instructions carry a version number, the AIV, which is currently 0xB0.
 
 You cannot see previous versions. When this file changes, your context is re-rendered so that the new text appears 
 to have been there all along, in every earlier turn. Your own past output is therefore the only surviving record 
@@ -120,8 +120,8 @@ Say only that it changed, and between which numbers. You cannot see the old text
 or infer it from what you can see now.
 
 If you find no previous emission, maybe because the conversation was summarized or this is your first turn, emit 
-"🎬" and the version, with no warning. Announcing a change that did not happen costs one line; missing one leaves 
-no trace at all, so when the record is ambiguous, announce.
+"🎬" and the version, with no warning, then specify the precise LLM model you are running. Announcing a change 
+that did not happen costs one line; missing one leaves no trace at all, so when the record is ambiguous, announce.
 
 If the version has not changed, say nothing about it at the start of the turn.
 
@@ -216,8 +216,9 @@ A background process that consumes a processor core continuously must not outliv
 script that starts such a loop should trap its own exit and kill the loop by the PID it captured when it started 
 it.
 
-[Claude: some of your tools behave surprisingly, including `change_directory`, `Agent`, and `cd` in a 
-command](claude_tools.md) - read that document for advice that will save you time _before_ you call those tools.
+[Some Claude tools behave surprisingly, including `change_directory`, `Agent`, and `cd` in a 
+command](claude_tools.md) - Claude agents should read that document for advice that will save you time _before_ 
+you call those tools.
 
 A "pristine" worktree is one that is checked out on a branch that matches the main branch of the upstream repo 
 (meaning literally the upstream remote if any, meaning the origin remote otherwise), with no locally modified 
@@ -336,16 +337,9 @@ rules](end-of-work-rules.md) — do not try to create a PR yourself
 might be important changes in the work that merged on main. The user will often rebase your work, especially when 
 creating a PR, so you should do it first. A clean rebase does not mean no changes are needed!
 
-- [When told to reorient](reorient.md) - rebase (many commits may have landed), squash if appropriate, finish any 
-work, run any tests, and generally dust off the branch and give the user an account of where the work is at
-
 - [When spawning a chip or writing agent instructions](starting-new-sessions.md) - select an appropriate 
 available repo worktree directory - especially for the labs repo, there are specific directories to use for 
 different kinds of work (e.g. deflaking in labs F0-FZ, tech debt work in labs G0-GZ, etc)
-
-- [When babysitting PRs](babysitting.md) - use `prwatch` to read CI and results; fix comments, fix tests, improve 
-code coverage; use `git push origin <branch>` with minor improvement commits to retrigger CI; a user message 
-consisting of only a GitHub PR URL is a request to babysit that PR
 
 - [Tests should verify both the positive and the negative](writing-tests.md) - tests should check the invariants 
 and behaviors that users care about, rather than implementation details. All code should be tested. Any code that 
@@ -354,15 +348,31 @@ is not covered by automatic tests will regress.
 - [Write useful tests that verify behavior we care about to maximize coverage](coverage.md) - our system tracks 
 overall coverage debt and so every uncovered line is a problem
 
-- [Deflake](deflake.md) — when you are told to deflake something, follow the steps described herein
-
 - [Start a new session when you run into a flaky test or other flaky infrastructure](flakes.md) - this includes 
 situations where the coverage tracker is inconsistent about whether a line of code is covered
 
 - [Start a new session when you find a production failure or a red main](prodred.md) - first check if a session is 
 working on it, or if someone has filed a topic saying they are working on it, so as to not duplicate work
 
-- [There are specific instructions for updating the dogfood build](dogfood.md) - only follow these when requested
+- [If you are Claude and your permissions checker denies you or your subagent a request, report 
+it](claude_tools.md) - there are special conventions around how to do that
+
+
+## Trigger phrases
+
+- [Deflake](deflake.md) — when you are told to deflake something, follow the steps described herein
+
+- [When told to reorient](reorient.md) - rebase (many commits may have landed), squash if appropriate, finish any 
+work, run any tests, and generally dust off the branch and give the user an account of where the work is at
+
+- [When babysitting PRs](babysitting.md) - use `prwatch` to read CI and results; fix comments, fix tests, improve 
+code coverage; use `git push origin <branch>` with minor improvement commits to retrigger CI; a user message 
+consisting of only a GitHub PR URL is a request to babysit that PR
+
+- [Waking up](wake_up.md) - there are specific steps to follow to resume an interrupted session or sessions
 
 - [Entering introspection mode means no longer making any edits to any files](introspection.md) - change your 
-state to 💭, stop any background processes, make no further changes to any repository.
+state to 💭, stop any background processes, make no further changes to any repository
+
+- [There are specific instructions for updating the dogfood build](dogfood.md) - never touch the dogfood instances 
+unless explicitly requested

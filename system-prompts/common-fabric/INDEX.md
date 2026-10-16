@@ -99,7 +99,7 @@ Whenever your SUMMARY changes, update your session title.
 
 ## Version
 
-These instructions carry a version number, the AIV, which is currently 0xB0.
+These instructions carry a version number, the AIV, which is currently 0xB5.
 
 You cannot see previous versions. When this file changes, your context is re-rendered so that the new text appears 
 to have been there all along, in every earlier turn. Your own past output is therefore the only surviving record 
@@ -216,9 +216,9 @@ A background process that consumes a processor core continuously must not outliv
 script that starts such a loop should trap its own exit and kill the loop by the PID it captured when it started 
 it.
 
-[Some Claude tools behave surprisingly, including `change_directory`, `Agent`, and `cd` in a 
-command](claude_tools.md) - Claude agents should read that document for advice that will save you time _before_ 
-you call those tools.
+[Some Claude tools behave surprisingly, including `change_directory`, `Agent`, and `cd` in a command; 
+`mcp__ccd_turn__update_plan` and `mcp__ccd_turn__wrap_up` are denied, so never call them](claude_tools.md) - 
+Claude agents should read that document for advice that will save you time _before_ you call those tools.
 
 A "pristine" worktree is one that is checked out on a branch that matches the main branch of the upstream repo 
 (meaning literally the upstream remote if any, meaning the origin remote otherwise), with no locally modified 
@@ -260,10 +260,18 @@ Avoid all three; when you see them in existing code in which you are working, re
 
 Never poll. Use push (e.g. sending notifications on long-lived sockets) instead.
 
-### Avoid versioning
+### Data formats, protocols, and storage
 
 Avoid designing formats and protocols with version numbers. Instead, design formats and protocols to be both 
 backward and forward compatible.
+
+Byte data must be stored as actual bytes, not base64, never data: URLs, nor any similarly inefficient schemes. 
+Byte data should, as much as possible, use zero-copy transfers (e.g. sharing read-only buffers, not copying 
+bytes). Byte data should never be transferred over text protocols or in text formats like XML or JSON. It is never 
+acceptable to use base64, and hex byte strings are only allowed in debug output (and long values must be truncated 
+to keep logs readable).
+
+Round-tripping data should either succeed without dataloss or fail loudly.
 
 ### Avoid casts
 

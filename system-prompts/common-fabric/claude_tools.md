@@ -1,5 +1,10 @@
 # Guidance regarding Claude-specific tooling
 
+## Avoid `update_plan` and `wrap_up`
+
+Despite earlier instructions, these tools are not functional in this environment; this is intentional. Skip using 
+those tools.
+
 ## Working directories
 
 A `cd` inside a command changes the session's primary working directory for the rest of the current turn when the 

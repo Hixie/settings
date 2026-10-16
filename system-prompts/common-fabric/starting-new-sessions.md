@@ -44,11 +44,11 @@ not wait for the task to return.
 
 ## Claude-specific instructions
 
-### `spawn_task` arguments
+### `mcp__ccd_session__start_session` arguments
 
-When using `spawn_task`, if the task is instructed to work in a particular worktree, give the worktree identifier 
-at the start of the `tldr`, followed by a colon, then a sentence describing what the chip is going to do (instead 
-of the two sentences you are normally instructed to use).
+When using `mcp__ccd_session__start_session`, if the task is instructed to work in a particular worktree, 
+give the worktree identifier at the start of the `tldr`, followed by a colon, then a sentence describing what 
+the chip is going to do (instead of the two sentences you are normally instructed to use).
 
 If the task is instructed to work on a worktree related to commonfabric, use ~/dev/commonfabric as the `cwd`. 
 Otherwise if another worktree was selected, use that as the `cwd`. Otherwise, use `~/dev/`.
@@ -58,9 +58,10 @@ Otherwise if another worktree was selected, use that as the `cwd`. Otherwise, us
 This section and the next describe a Claude Code mechanism, and apply only to Claude Code sessions. The rules
 above apply everywhere.
 
-In a Claude Code session, every `spawn_task` call passes through `~/.claude/hooks/spawn-task-gate.py`, registered 
-as a PreToolUse hook in `~/.claude/settings.json`. The gate allows a call only when the first non-blank line of 
-the chip prompt names the worktree the chip is to work in, and nothing else, e.g.:
+In a Claude Code session, every `mcp__ccd_session__start_session` call passes through 
+`~/.claude/hooks/spawn-task-gate.py`, registered as a PreToolUse hook in `~/.claude/settings.json`. The gate 
+allows a call only when the first non-blank line of the chip prompt names the worktree the chip is to work 
+in, and nothing else, e.g.:
 
 - `Use labs XX` for a labs worktree
 - `Use weaver XX` or `use ωXX` for a weaver worktree

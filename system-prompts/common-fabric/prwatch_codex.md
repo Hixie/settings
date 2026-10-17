@@ -31,14 +31,25 @@ needs.
 
 The general approach is to use `exec_command` and then watch it using `functions.exec`:
 
-Start `prwatch <pr> --expect HEAD --follow` using `exec_command` with `tty: true`. Retain its **session ID** and 
-initial output. Start one background `functions.exec` cell with the collector script below. Retain the returned 
-**cell ID**.
+Start `prwatch <pr> --expect HEAD --follow` using `exec_command` with `tty: true` and `max_output_tokens: 10000`.
+If `original_token_count` is at least 10000, the initial output might be truncated. Send Ctrl-C to the returned
+session ID if there is one, confirm process exit, report that monitoring stopped, and do not start the collector.
+Otherwise, retain the **session ID** and initial output. Start one background `functions.exec` cell with the
+collector script below. Retain the returned **cell ID**.
 
-Keep the turn open and wait with `clock.sleep` with the longest duration supported by the tool (typically this is 
-43200000ms -- this will be a short, bounded wait because the `prwatch` tool will interrupt the wait). 
-Notifications interrupt the wait. Handle the notifications, run the global "end of turn" steps (despite not 
-actually ending the turn), then wait again. 
+Do not act on the initial `exec_command` output directly; the collector filters and emits it. The initial
+`functions.exec` result can already contain a collector event as well as the cell ID. Handle that event before
+waiting, and call `functions.wait` only when the result says the collector is still running.
+
+Keep the turn open with one `functions.wait` call using the collector cell ID and the longest duration supported
+by the tool (43200000ms is known to work). The collector calls `yield_control()` when it has output, which
+interrupts this wait. Do not repeatedly call `functions.wait` with a short duration; every empty return invokes
+the model and wastes tokens. Handle the returned event, run the global "end of turn" steps (despite not actually
+ending the turn), then begin another long wait.
+
+The collector's internal `write_stdin` calls do not invoke the model. User input can also interrupt the long
+wait, so this does not prevent the user from redirecting the task. Handle the user input first. If babysitting
+remains active, begin another long wait on the same collector cell; do not start another collector.
 
 Babysitting continues until the PR is merged or closed, or the user stops or redirects the task. Pushing a fix, 
 reporting readiness, and scheduling a follow-up do not complete babysitting.
@@ -50,7 +61,11 @@ When babysitting is complete (but not before), terminate the collector with `fun
 true})`, and send Ctrl-C to the retained process session using `write_stdin` and the session ID, then confirm 
 process exit. Cancellation of the collector does not stop `prwatch`.
 
-If `prwatch` fails or stops, do nothing. Do not resume monitoring.
+If `prwatch` fails or stops, process its final event as described below, then do not resume monitoring.
+
+A `prwatch_exit` event can contain final output. Handle that output before handling the exit, then do not wait on
+the collector or resume monitoring. If the collector reports `prwatch_collector_error`, stop the retained
+`prwatch` process with Ctrl-C, report that monitoring stopped, and do not restart it.
 
 
 ## JavaScript collector script
@@ -61,6 +76,7 @@ When using this script, substitute the **session ID** for `SESSION_ID` and the i
 ```js
 // @exec: {"yield_time_ms": 1000}
 const sessionId = SESSION_ID;
+const collectorTokenLimit = 10000;
 let result = { session_id: sessionId, output: INITIAL_OUTPUT };
 let pending = "";
 let keepContinuation = true;
@@ -101,12 +117,13 @@ try {
     }
 
     if (output.length || exited) {
-      notify({
+      text(JSON.stringify({
         type: exited ? "prwatch_exit" : "prwatch_output",
         session_id: sessionId,
-        output: output.join("\n"),
         ...(exited ? { exit_code: result.exit_code } : {}),
-      });
+      }));
+      if (output.length) text(output.join("\n"));
+      await yield_control();
     }
 
     if (exited) break;
@@ -115,18 +132,42 @@ try {
       session_id: sessionId,
       chars: "",
       yield_time_ms: 5000,
-      max_output_tokens: 10000,
+      max_output_tokens: collectorTokenLimit,
     });
+
+    if (
+      result.original_token_count !== undefined &&
+      result.original_token_count >= collectorTokenLimit
+    ) {
+      throw new Error(
+        `prwatch output exceeded the ${collectorTokenLimit}-token collector limit`
+      );
+    }
   }
 } catch (error) {
-  notify({
+  text(JSON.stringify({
     type: "prwatch_collector_error",
     session_id: sessionId,
     error: String(error),
-    buffered_output: pending,
-  });
+  }));
+  if (pending) text(pending);
+  await yield_control();
 }
 ```
+
+After the initial `functions.exec` call yields the collector cell ID, wait for its next event like this:
+
+```js
+functions.wait({
+  cell_id: CELL_ID,
+  yield_time_ms: 43200000,
+  max_tokens: 20000,
+});
+```
+
+`text()` puts the event metadata and raw `prwatch` output in the primary tool result without expanding the output
+through JSON escaping. `yield_control()` wakes the long wait immediately. Using `notify()` alone is insufficient:
+its output can remain queued until an unrelated timeout wakes the model.
 
 If you think this script can be improved, try your improvement, then report it to the user so these instructions 
 can be updated.

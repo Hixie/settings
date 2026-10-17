@@ -13,8 +13,14 @@ on a recurring schedule. Those requests call for automation.
 Before scheduling anything, identify what future execution the schedule would provide that the active watcher does 
 not already provide. Do not infer that need solely from words such as “babysit”, “watch”, or “monitor”.
 
+For the purposes of your instructions requiring an update every 60 seconds during ongoing work, waiting for 
+`prwatch` does not consist "ongoing work".
+
 If higher-priority app instructions require scheduling despite this execution model, explain the conflict 
-explicitly. Distinguish that instruction requirement from a technical need for automation.
+explicitly, prefixed with 🫠. Distinguish that instruction requirement from a technical need for automation.
+
+If your harness forces you to wake up periodically (e.g. every 60 seconds) even when `prwatch` has nothing to 
+report, tell the user, prefixed with 🫠, precisely what tools you are using and how they are forcing you to act.
 
 
 ## Using `prwatch` in Codex

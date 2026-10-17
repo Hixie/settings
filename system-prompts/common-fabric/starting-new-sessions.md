@@ -47,8 +47,16 @@ not wait for the task to return.
 ### `mcp__ccd_session__start_session` arguments
 
 When using `mcp__ccd_session__start_session`, if the task is instructed to work in a particular worktree, 
-give the worktree identifier at the start of the `tldr`, followed by a colon, then a sentence describing what 
-the chip is going to do (instead of the two sentences you are normally instructed to use).
+write the `title` in the form of a session title, `WORKTREES: ⚙️ SUMMARY`, as described in the global 
+instructions: the worktree identifier, a colon, the ⚙️ state emoji, and a summary of what the chip is going to 
+do, e.g. `ωU3: ⚙️ Fix the redraw after a resize`. The `title` becomes the new session's title, so the chip 
+holds its worktree from the moment it starts.
+
+An offer (`initiation` "offer") carries a title alone and asks the user before any brief exists. Choose the 
+worktree before making the offer. Write the offer's title in the same form, because a chip started from the 
+offer keeps that title. If the user chooses a new session, the call that sends the brief names the offer 
+by its `proposal_id` and carries the `prompt`, which follows the rules below and names the same worktree, but 
+no title.
 
 If the task is instructed to work on a worktree related to commonfabric, use ~/dev/commonfabric as the `cwd`. 
 Otherwise if another worktree was selected, use that as the `cwd`. Otherwise, use `~/dev/`.
@@ -85,7 +93,11 @@ is usually the only record of where a session works.
 A worktree need not exist, because the session that is given it creates it. A directory given by its path must 
 exist. A denial hands back this file in full.
 
-The gate also verifies the `tldr` matches the rules described earlier.
+The gate also verifies the `title` matches the rules described earlier.
+
+Two calls carry no prompt. The gate allows an offer when every worktree its title names passes the checks 
+above. It allows a call that starts an `own_initiative` proposal by its `proposal_id` alone, because that 
+proposal's prompt and title were checked when it was proposed.
 
 #### Waiving the gate
 

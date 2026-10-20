@@ -29,6 +29,9 @@ Use `~/dev/usable-git/prwatch` to watch a pull request. It prints one line per e
 pipe the output of this command through `sed` or anything else; its output is designed to be optimal for your 
 needs.
 
+Add the `--github-webhook-relay` option that [the babysitting instructions](babysitting.md) describe to the 
+`prwatch` command below, whenever it applies to the pull request.
+
 The general approach is to use `exec_command` and then watch it using `functions.exec`:
 
 Start `prwatch <pr> --expect HEAD --follow` using `exec_command` with `tty: true` and `max_output_tokens: 10000`.

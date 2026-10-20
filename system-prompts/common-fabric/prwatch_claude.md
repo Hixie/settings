@@ -7,6 +7,9 @@ your needs.
 The Monitor tool turns each line into a notification; use it to run `prwatch <pr> --expect HEAD --follow`, with 
 `timeout_ms` set to the maximum (`1800000`).
 
+Add the `--github-webhook-relay` option that [the babysitting instructions](babysitting.md) describe to each 
+`prwatch` command below, whenever it applies to the pull request.
+
 After 30 minutes, the Monitor tool exits. At that point:
 
 - If you are still actively working (e.g. resolving feedback, fixing tests, etc), or if the `prwatch` has given 

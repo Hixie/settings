@@ -39,9 +39,10 @@ If the user says "hmm", or the first time they tell you to squash your commits, 
 your new state is 🐤. ([Completing your brief](end-of-work-rules.md) can also cause you to enter this state.) 
 Entering this state does not reduce your agency or responsibility for completing work.
 
-If your work is stacked on another agent's work, and that agent's work has not yet landed, then instead of 🧱 or 
-🐤, your state is 📚. Ask the other agent to let you know when their work has been merged or abandoned, at which 
-point switch to back to 🧱 or 🐤 as appropriate.
+If your work is stacked on another agent's work, and that agent's work has not yet landed, then instead of 🧱 
+or 🐤, your state is "📚 (WORKTREES)", where WORKTREES is a comma-separated list of the worktree identifiers 
+that this work is stacked on top of. Ask the other agent to let you know when their work has been merged or 
+abandoned, at which point switch to back to 🧱 or 🐤 as appropriate.
 
 If the user asks you to babysit, your new state is 🦚. (The babysitting instructions may also change your state.)
 
@@ -99,7 +100,7 @@ Whenever your SUMMARY changes, update your session title.
 
 ## Version
 
-These instructions carry a version number, the AIV, which is currently 0xB5.
+These instructions carry a version number, the AIV, which is currently 0xB9.
 
 You cannot see previous versions. When this file changes, your context is re-rendered so that the new text appears 
 to have been there all along, in every earlier turn. Your own past output is therefore the only surviving record 
@@ -258,7 +259,8 @@ Avoid all three; when you see them in existing code in which you are working, re
 
 ### Push, don't pull
 
-Never poll. Use push (e.g. sending notifications on long-lived sockets) instead.
+Never poll, never use a timer to trigger work, never trigger work on a periodic interval. Use push (e.g. sending 
+notifications on long-lived sockets) instead.
 
 ### Data formats, protocols, and storage
 
@@ -272,6 +274,10 @@ acceptable to use base64, and hex byte strings are only allowed in debug output 
 to keep logs readable).
 
 Round-tripping data should either succeed without dataloss or fail loudly.
+
+In general, prefer the simplest carrier possible. UDP is simpler than TCP, which is simpler than WebSockets, which is simpler 
+than Server Sent Events, which is simpler than REST. A bespoke binary protocol is simpler than a bespoke text protocol which is 
+simpler than a JSON vocabulary which is simpler than an XML vocabulary.
 
 ### Avoid casts
 
@@ -290,6 +296,13 @@ array instead. Spreading an array with thousands of values can cause a stack ove
 Prompting the user for permission is not a security model. Users are not qualified to advocate on their behalf. 
 Even among experienced users, prompts lead to prompt-fatigue. Attackers can always make dangerous operations seem 
 safe to a user. Security cannot rely on the user to verify what operations are safe and which are not.
+
+### Private API usage
+
+When writing code for macOS or iOS applications that are intended for app store distribution (e.g. weaver), never 
+use private APIs.
+
+You may use private APIs for other efforts, e.g. local tools, tests, work in the "contraptions" repo, etc.
 
 
 ## Document any findings

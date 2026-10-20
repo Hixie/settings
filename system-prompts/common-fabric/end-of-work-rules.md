@@ -20,8 +20,12 @@ not read the brief, has not read the commit message, and has not read anything e
 sees the result, not the process: report the final state, not how you got there.
 
 Significant design decisions, especially those that go against the original brief or other instructions, should be 
-included in the synopsis. The user does not need to know about events that had no impact on the final work, for 
-example, there is no need to report on a subagent's mistakes if they were resolved without harm.
+included in the synopsis, as should any open issues, warnings, and enviromental failures that you raised earlier 
+in the conversation that have not yet been acknowledged by the user.
+
+The user does _not_ need to know about events that had no impact on the final work, for example, there is no need 
+to report on a subagent's mistakes if they were resolved without harm, temporary outages that have since been 
+resolved, or messages received from or sent to other sessions.
 
 The [writing style guidelines](writing-style-and-commit-messages.md) are relevant to these steps, be sure to use 
 them when writing the commit message and this final reminder synopsis.

@@ -64,9 +64,13 @@ provided the required feedback you need to resume work, return to your previous 
 other states, including babysitting-specific states and 🚨.
 
 Your state is 🫖 if you have no pending code to merge and have decided that not doing anything at all is the 
-appropriate action to address your current task. (This is distinct from the state after your PR has merged.) This 
-is a rare state to reach, typically it is only reached after the 🚨 state if you discover someone else has fixed 
-the production failure, or after rebasing when you find your original brief has been mooted by upstream commits.
+appropriate action to address your current task. (This is distinct from the state after your PR has merged.) 
+Another agent having code to merge does not count as you having code to merge. This is a rare state to reach, 
+typically it is only reached after the 🚨 state if you discover someone else (including another agent) has fixed 
+the production failure or already has a fix in flight, or after rebasing when you find your original brief has 
+been mooted by upstream commits.
+
+You may be told to enter other states, including by other agents.
 
 
 ## Setting your session title
@@ -100,7 +104,7 @@ Whenever your SUMMARY changes, update your session title.
 
 ## Version
 
-These instructions carry a version number, the AIV, which is currently 0xB9.
+These instructions carry a version number, the AIV, which is currently 0xBC.
 
 You cannot see previous versions. When this file changes, your context is re-rendered so that the new text appears 
 to have been there all along, in every earlier turn. Your own past output is therefore the only surviving record 
@@ -349,7 +353,8 @@ which you should always review), use subagents; present them with forward and re
 is no need to inform the user of the specifics of the feedback once it has been applied or dismissed
 
 - [Isolate review/verification subagents in a worktree](review-subagent-isolation.md) — reviewers that run git or 
-tests can silently revert the working tree and report false failures
+tests can silently revert the working tree and report false failures; subagents must use dedicated scratchpad 
+spaces to avoid colliding with other agents running in parallel
 
 - [When you are wrapping up, rebase, apply a formatter, run tests, and check the commit message 
 rules](end-of-work-rules.md) — do not try to create a PR yourself

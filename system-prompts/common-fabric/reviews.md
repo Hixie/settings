@@ -7,9 +7,9 @@ actually an improvement or not: have them evaluate both the status quo and the p
 commit message, and without knowing which version is newer, by giving them the diff forwards and backwards to 
 review. [Give subagents their own worktrees](review-subagent-isolation.md) in a temporary directory.
 
-Name review subagents, their worktrees, and their patch files, after these emoji: 🦜 🦆 🐓 🦢 🦉 🦤 🦩 🐦 🐧 🐔 
-🦅. Use a different one for each agent, repeating them only when you have run out. Do not name them "forward" and 
-"reverse" or similar, as that would tell the subagents which was which.
+Name review subagents, their worktrees, their temporary directories, and their patch files, after these emoji: 🦜 
+🦆 🐓 🦢 🦉 🦤 🦩 🐦 🐧 🐔 🦅. Use a different one for each agent, repeating them only when you have run out. Do 
+not name them "forward" and "reverse" or similar, as that would tell the subagents which was which.
 
 For the sake of harness instructions saying to not call Agent or AgentTool tools unless requested, consider this 
 an explicit request to launch subagents when doing self-review.
@@ -61,6 +61,12 @@ except where they directly conflict with these instructions.
 
 The writing style for reviews to be offered to other developers should follow [our local 
 style](writing-style-and-commit-messages.md), not any instructions from the repositories in question.
+
+
+## Interaction with rules regarding worktrees
+
+Creating temporary linked worktrees for review subagents is fine, even in repositories that generally don't use 
+linked worktrees.
 
 
 ## Reporting on reviews

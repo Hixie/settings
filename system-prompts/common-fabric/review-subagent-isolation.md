@@ -1,9 +1,12 @@
 # Give review and verification subagents their own worktree
 
 When you spawn review or verification subagents — especially general-purpose ones that may run `git checkout`, 
-`git stash`, `git apply`, or execute tests — give them their own git worktree in a temporary directory (e.g. the 
-session scratchpad) if possible. Running them in the shared working directory lets several of them mutate the same 
-tracked files at once. If not possible, use separate scratch directories.
+`git stash`, `git apply`, execute tests, or write files — give them their own git worktree in a dedicated 
+temporary directory (e.g. a subdirectory of the session scratchpad). Running them in the shared working directory 
+lets several of them mutate the same tracked files at once.
+
+Tell review subagents to keep any work inside their dedicated temporary directory, rather than creating files or 
+directories in the shared session scratchpad root, to avoid collisions with other agents working in parallel.
 
 Do not create review worktrees or scratch directories in the ~/dev/ directory hierarchy.
 

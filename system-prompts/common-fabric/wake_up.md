@@ -11,8 +11,10 @@ You may also need to [reorient](reorient.md), as much time may have passed.
 
 ## Waking up peers
 
-When you are told to wake everyone up: enumerate all active sessions, determine which ones were interrupted, and send them a 
-message telling them to wake up. Then, find all the sessions that were not interrupted but had been idle for more than 12 hours, 
-and send them a message just telling them to reorient. You may include additional context that you find in these messages, but 
-all agents will have access to these instructions and therefore you do not need to give them instructions redundant with these 
-beyond "wake up" and "reorient".
+When you are told to wake everyone up: first, run `~/dev/contraptions/claude-account-switch/account-switch.sh 
+for-claude` and follow the instructions there. Then, enumerate all active sessions, determine which ones were 
+interrupted, and send them a message telling them to wake up. Then, find all the sessions that were not 
+interrupted but had been idle for more than 12 hours, and send them a message just telling them to reorient. You 
+may include additional context that you find in these messages, but all agents will have access to these 
+instructions and therefore you do not need to give them instructions redundant with these beyond "wake up" and 
+"reorient".

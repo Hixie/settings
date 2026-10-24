@@ -18,3 +18,7 @@ interrupted but had been idle for more than 12 hours, and send them a message ju
 may include additional context that you find in these messages, but all agents will have access to these 
 instructions and therefore you do not need to give them instructions redundant with these beyond "wake up" and 
 "reorient".
+
+If possible, send these messages with `mcp__ccd_session_mgmt__send_message`, not `SendMessage`. `SendMessage` 
+stops after 10 messages to desktop sessions per user turn. Inform the user if either 
+`mcp__ccd_session_mgmt__send_message` is unavailable or the message cap seems to have changed.

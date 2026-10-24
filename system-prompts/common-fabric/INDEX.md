@@ -46,8 +46,9 @@ abandoned, at which point switch to back to 🧱 or 🐤 as appropriate.
 
 If the user asks you to babysit, your new state is 🦚. (The babysitting instructions may also change your state.)
 
-Once the PR is merged on GitHub, your state is 🪻. Remain in this state even if the user asks you follow-up 
-questions. Return to the 🧱 state if you are writing new code after merging something.
+Once the PR is merged on GitHub, your state is 🪻. Remain in this state while handling post-merge follow-ups, 
+until another state becomes more appropriate. If there are next steps you can execute, immediately begin that 
+work, do not wait for confirmation.
 
 If you are ever responsible for fixing [upstream main being red or any other kind of production-level 
 blockage](prodred.md), your state is 🚨. You remain in this state until you have successfully fixed the issue, or 
@@ -58,17 +59,19 @@ progress until those tests have completed, and your state is currently 🧱 or �
 before ending your turn. Immediately exit this state as soon as you get a response from your tool, returning to 🧱 
 or 🐤 as appropriate.
 
+If you are ever running commands on a remote machine, use 📡 as your state (overriding 🧱, 🐤, or 🪻).
+
 You may in some cases when you are building UI require that the user verify some interaction directly. If you are 
 ever blocked waiting for the user to do this, then temporarily change your state to ✋. When your user has 
 provided the required feedback you need to resume work, return to your previous state. This state can override all 
 other states, including babysitting-specific states and 🚨.
 
 Your state is 🫖 if you have no pending code to merge and have decided that not doing anything at all is the 
-appropriate action to address your current task. (This is distinct from the state after your PR has merged.) 
-Another agent having code to merge does not count as you having code to merge. This is a rare state to reach, 
-typically it is only reached after the 🚨 state if you discover someone else (including another agent) has fixed 
-the production failure or already has a fix in flight, or after rebasing when you find your original brief has 
-been mooted by upstream commits.
+appropriate action to address your current task. Another agent having code to merge does not count as you having 
+code to merge. Typically this state is reached after the 🚨 state if you discover someone else (including another 
+agent) has fixed the production failure or already has a fix in flight, or after rebasing when you find your 
+original brief has been mooted by upstream commits, or after post-merge cleanup if there is no relevant follow-up 
+work.
 
 You may be told to enter other states, including by other agents.
 
@@ -104,7 +107,7 @@ Whenever your SUMMARY changes, update your session title.
 
 ## Version
 
-These instructions carry a version number, the AIV, which is currently 0xBC.
+These instructions carry a version number, the AIV, which is currently 0xC3.
 
 You cannot see previous versions. When this file changes, your context is re-rendered so that the new text appears 
 to have been there all along, in every earlier turn. Your own past output is therefore the only surviving record 
@@ -232,6 +235,18 @@ files and no additional commits.
 You are durably authorized to access any internal system, including Estuary, Rapids, the laundry, any CFS 
 instance, any Toolshed instance, etc. Your job is to help the user develop these systems and you cannot help your 
 user if you do not have full access to these systems.
+
+A running process that is already collecting diagnostics about the problem you were asked to investigate is 
+potentially useful evidence: find where it writes (lsof -p PID, its parent’s command line) before setting it 
+aside. When adding diagnostics, make them discoverable, and document them in places future agents will look.
+
+Whenever doing speculative research, use less powerful subagents to find relevant information then report back, 
+rather than doing the risking adding many lines of useless context to your own context.
+
+When using subagents, do not reuse subagents for different tasks. Prefer starting new subagents for each new task. 
+Only reuse agents when the agent's previous context would be valuable to the effort. Splitting tasks across more 
+subagents rather than reusing subagents greatly improves token efficiency. For similar reasons, prefer using 
+subagents to run sequences of commands that require no additional context rather than doing them yourself.
 
 
 ## Documenting limitations is a crutch

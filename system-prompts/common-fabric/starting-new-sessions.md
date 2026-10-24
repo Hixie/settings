@@ -1,4 +1,4 @@
-# When spawning chips, spawning a visible task, or writing agent instructions for new sessions
+# When spawning sessions, spawning a visible task, or writing agent instructions for new sessions
 
 If there are more than 45 active local sessions, do not proactively start new sessions or offer to start new 
 sessions to deal with technical debt or flakes unless the user explicitly requests it. Instead, record the issue 
@@ -6,8 +6,8 @@ on the [laundry](topics.md) and leave it at that.
 
 ## Writing instructions
 
-When spawning a chip or visible task to do independent work, or when writing agent instructions for use in another 
-session, instruct them to use a different worktree than the one the current session is using. Start agent 
+When spawning a session or visible task to do independent work, or when writing agent instructions for use in 
+another session, instruct them to use a different worktree than the one the current session is using. Start agent 
 instructions for work in a repo REPO XX with "Use REPO XX" where REPO is the repository name, and XX is the chosen 
 worktree's worktree code, as described in the [identifying worktrees](identifying-worktrees.md) rules (or, for 
 brevity, write "use XYZ" where "XYZ" is the worktree identifier). Select that directory as the new agent's working 
@@ -28,47 +28,46 @@ agent and not by the user, and that the user therefore is not familiar with the 
 
 When choosing a worktree, use the steps for [choosing a worktree](identifying-worktrees.md).
 
-Once you have picked one, if it exists already, reset it to pristine condition before spawning the chip or writing 
-the agent instructions. If it does not exist, you may let the session create it itself.
+Once you have picked one, if it exists already, reset it to pristine condition before spawning the session or 
+writing the agent instructions. If it does not exist, you may let the session create it itself.
 
 Before actually spawning a new session in this way, check open PRs and Claude and Codex sessions, and Claude's 
-pending chip queue, for existing work in this area, to avoid duplicate efforts. Look at [the topics 
+pending session queue, for existing work in this area, to avoid duplicate efforts. Look at [the topics 
 board](topics.md) to see if anyone else is working on this.
 
 
 ## Codex-specific instructions
 
-When the user says to "spawn a chip", if you are Codex, interpret it as using `codex_app__create_thread`, and do 
-not wait for the task to return.
+When the user says to "spawn a session" or similar, if you are Codex, interpret it as using 
+`codex_app__create_thread`, and do not wait for the task to return.
 
 
 ## Claude-specific instructions
 
 ### `mcp__ccd_session__start_session` arguments
 
-When using `mcp__ccd_session__start_session`, if the task is instructed to work in a particular worktree, 
-write the `title` in the form of a session title, `WORKTREES: ⚙️ SUMMARY`, as described in the global 
-instructions: the worktree identifier, a colon, the ⚙️ state emoji, and a summary of what the chip is going to 
-do, e.g. `ωU3: ⚙️ Fix the redraw after a resize`. The `title` becomes the new session's title, so the chip 
-holds its worktree from the moment it starts.
+When using `mcp__ccd_session__start_session`, if the task is instructed to work in a particular worktree, write 
+the `title` in the form of a session title without a state, `WORKTREES: SUMMARY`, just the worktree identifier, a 
+colon, and a summary of what the session is going to do.
 
 An offer (`initiation` "offer") carries a title alone and asks the user before any brief exists. Choose the 
-worktree before making the offer. Write the offer's title in the same form, because a chip started from the 
+worktree before making the offer. Write the offer's title in the same form, because a session started from the 
 offer keeps that title. If the user chooses a new session, the call that sends the brief names the offer 
 by its `proposal_id` and carries the `prompt`, which follows the rules below and names the same worktree, but 
 no title.
 
 If the task is instructed to work on a worktree related to commonfabric, use ~/dev/commonfabric as the `cwd`. 
-Otherwise if another worktree was selected, use that as the `cwd`. Otherwise, use `~/dev/`.
+Otherwise if another worktree was selected, use that as the `cwd`. Otherwise, use `~/dev`. (Only provide a `cwd` 
+for `user_asked`, not proposals.)
 
-### The gate on spawning chips
+### The gate on spawning sessions
 
 This section and the next describe a Claude Code mechanism, and apply only to Claude Code sessions. The rules
 above apply everywhere.
 
 In a Claude Code session, every `mcp__ccd_session__start_session` call passes through 
 `~/.claude/hooks/spawn-task-gate.py`, registered as a PreToolUse hook in `~/.claude/settings.json`. The gate 
-allows a call only when the first non-blank line of the chip prompt names the worktree the chip is to work 
+allows a call only when the first non-blank line of the session prompt names the worktree the session is to work 
 in, and nothing else, e.g.:
 
 - `Use labs XX` for a labs worktree
@@ -91,7 +90,7 @@ working directory is inside the worktree. Sessions mostly stay in the directory 
 is usually the only record of where a session works.
 
 A worktree need not exist, because the session that is given it creates it. A directory given by its path must 
-exist. A denial hands back this file in full.
+exist.
 
 The gate also verifies the `title` matches the rules described earlier.
 
@@ -101,14 +100,14 @@ proposal's prompt and title were checked when it was proposed.
 
 #### Waiving the gate
 
-Not all work belongs in a fresh labs worktree. A chip for a Codex worktree, for the directory the current session 
-is already working in, or for anywhere else the checks above do not fit, is spawned by putting this line anywhere 
-in the chip prompt:
+Not all work belongs in a fresh labs worktree. A session for a Codex worktree, for the directory the current 
+session is already working in, or for anywhere else the checks above do not fit, is spawned by putting this line 
+anywhere in the session prompt:
 
     Worktree checks waived: REASON
 
-The reason is required, and says why the chip does not go in a fresh labs worktree of its own. It is shown to
-the user as the chip is spawned, so a waived chip is never silent.
+The reason is required, and says why the session does not go in a fresh labs worktree of its own. It is shown to 
+the user as the session is spawned, so a waived session is never silent.
 
 
 ## Subagents

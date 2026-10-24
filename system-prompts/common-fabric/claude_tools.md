@@ -5,6 +5,19 @@
 Despite earlier instructions, these tools are not functional in this environment; this is intentional. Skip using 
 those tools.
 
+## Reading files with `Read` and `grep`
+
+In Claude Code shells, `grep` is a function that runs the bundled ugrep with `-I`, which silently skips files it 
+thinks are binary: no output, even with `-c`, and exit 1. Test and probe logs often contain control bytes or 
+broken UTF-8. For those, use `command grep` or pass `-a`.
+
+Rather than `cat`, `head`, or `sed`, prefer reading with the `Read` tool, paging with `offset` and `limit` (up to 
+2,000 lines a page). Use `Bash` to search (`grep`, `rg`) and to run commands, not to print file contents. Bash 
+output over 30,000 characters is saved to a file with only a preview shown, which costs an extra call.
+
+When writing briefs for [review subagents](reviews.md), tell them the precise path to the patch you want them to 
+read, and name the `Read` tool explicitly as the mechanism they should use to read it.
+
 ## Working directories
 
 A `cd` inside a command changes the session's primary working directory for the rest of the current turn when the 
@@ -33,12 +46,6 @@ that toggling back and forth requires multiple user confirmations.
 
 The `change_directory` tool takes effect at the end of a turn; subagents spawned during that turn will _not_ be 
 affected by it (they will see the old directory).
-
-## `grep`
-
-In Claude Code shells, `grep` is a function that runs the bundled ugrep with `-I`, which silently skips files it 
-thinks are binary: no output, even with `-c`, and exit 1. Test and probe logs often contain control bytes or 
-broken UTF-8. For those, use `command grep` or pass `-a`.
 
 ## `Agent` tool and worktrees
 

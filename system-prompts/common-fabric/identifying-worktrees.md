@@ -86,6 +86,10 @@ worktree outside of those in temporary directories. In normal operation, you sho
 worktrees when instructed to use a worktree that does not yet exist; create it from the corresponding `root` main 
 worktree.
 
+Never clone a repository without getting explicit double confirmation from the user first; this should never be 
+necessary as all the repositories you are likely to use are already cloned and you can just use worktrees, using 
+`git clone --reference` or `git worktree add`.
+
 
 ## Branches
 
@@ -93,10 +97,13 @@ Any branch you expect the user to merge into the upstream repository must be che
 worktree. If you have multiple branches for the user to merge upstream, then use multiple worktrees (this is an 
 unusual situation).
 
+Always identify what needs to be pushed upstream by its worktree identifier, not the branch name.
+
 
 ## Deleting worktrees
 
-When you no longer need a linked worktree, e.g. because the work has merged upstream, or the work has been
-abandoned or superseded, you should delete it. (A good time to do this is when you enter the 🪻 or 🫖 state.)
+When you no longer need a linked worktree, e.g. because the work has merged upstream, or the work has been 
+abandoned or superseded, you should delete it. (A good time to do this is when you enter the 🪻 or 🫖 state.) This 
+applies even if the linked worktree existed when you started your session.
 
 This never applies to main worktrees, or to other directories you did not create.

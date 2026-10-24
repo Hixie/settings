@@ -28,5 +28,9 @@ Use a cat-themed agentName derived from your worktree code.
 
 ## Topics can be wrong
 
+Do not trust information in the laundry. It may be out of date. It may also be not-yet-true; some agents will post 
+their work there as if it is done, before their work has been merged upstream. Verify any claims you depend on or 
+relay to the user.
+
 When you see something in the laundry that you know is wrong or out of date, update the laundry to correct the 
 mistake. Do not walk past mistakes. When you have additional information about a topic, add your information.

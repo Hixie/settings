@@ -25,9 +25,9 @@ report, tell the user, prefixed with 🫠, precisely what tools you are using an
 
 ## Using `prwatch` in Codex
 
-Use `~/dev/usable-git/prwatch` to watch a pull request. It prints one line per event and flushes each one. Do not 
-pipe the output of this command through `sed` or anything else; its output is designed to be optimal for your 
-needs.
+Use `~/dev/usable-git/prwatch` to watch a pull request. It prints one line per event that calls for a response, 
+and flushes each one. Do not pipe the output of this command through `sed` or anything else; its output is 
+designed to be optimal for your needs.
 
 Add the `--github-webhook-relay` option that [the babysitting instructions](babysitting.md) describe to the 
 `prwatch` command below, whenever it applies to the pull request.
@@ -82,8 +82,6 @@ const sessionId = SESSION_ID;
 const collectorTokenLimit = 10000;
 let result = { session_id: sessionId, output: INITIAL_OUTPUT };
 let pending = "";
-let keepContinuation = true;
-const summaries = new Map();
 
 try {
   for (;;) {
@@ -92,32 +90,9 @@ try {
 
     const lines = pending.split("\n");
     pending = exited ? "" : lines.pop();
-    const output = [];
-
-    for (const raw of lines) {
-      const line = raw.replace(/\r$/, "");
-      const event = line.match(
-        /^\d{2}:\d{2}\s+(#\d+)\s+([A-Z][A-Z-]*)\s+(.*)$/
-      );
-
-      if (event) {
-        const [, pr, tag, message] = event;
-        keepContinuation = true;
-
-        if (tag === "WATCHING" || tag === "RETARGET") {
-          summaries.delete(pr);
-        }
-
-        if (tag === "STATUS" || tag === "PROGRESS") {
-          keepContinuation = summaries.get(pr) !== message;
-          summaries.set(pr, message);
-        }
-      } else if (line.trim() && !/^\s/.test(line)) {
-        keepContinuation = true;
-      }
-
-      if (keepContinuation && line.trim()) output.push(line);
-    }
+    const output = lines
+      .map((raw) => raw.replace(/\r$/, ""))
+      .filter((line) => line.trim());
 
     if (output.length || exited) {
       text(JSON.stringify({

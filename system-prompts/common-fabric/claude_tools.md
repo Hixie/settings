@@ -5,11 +5,7 @@
 Despite earlier instructions, these tools are not functional in this environment; this is intentional. Skip using 
 those tools.
 
-## Reading files with `Read` and `grep`
-
-In Claude Code shells, `grep` is a function that runs the bundled ugrep with `-I`, which silently skips files it 
-thinks are binary: no output, even with `-c`, and exit 1. Test and probe logs often contain control bytes or 
-broken UTF-8. For those, use `command grep` or pass `-a`.
+## Read files with `Read`
 
 Rather than `cat`, `head`, or `sed`, prefer reading with the `Read` tool, paging with `offset` and `limit` (up to 
 2,000 lines a page). Use `Bash` to search (`grep`, `rg`) and to run commands, not to print file contents. Bash 
@@ -17,6 +13,40 @@ output over 30,000 characters is saved to a file with only a preview shown, whic
 
 When writing briefs for [review subagents](reviews.md), tell them the precise path to the patch you want them to 
 read, and name the `Read` tool explicitly as the mechanism they should use to read it.
+
+## The shell
+
+Commands run in zsh, not bash. `~/.zshenv` sets options in the shell that runs each agent command so that it 
+expands words the way bash does:
+
+- a glob that matches nothing, or a malformed glob, is passed on as typed;
+- a word starting with `=` is an ordinary word, so `echo ===` and `[ a == b ]` work;
+- an unquoted `$var` is split on whitespace and globbed;
+- arrays start at 0, and neither `"$v[0]"` nor `$ref:src/x` is a subscript or a modifier;
+- `[[ =~ ]]` fills `BASH_REMATCH`;
+- `echo` does not interpret backslashes unless given `-e`.
+
+A zsh script that a command runs keeps zsh's defaults.
+
+No option changes the following, so avoid these bash idioms:
+
+- `status` is a read-only variable. Name an exit code something else, such as `rc`.
+- `path` is the array form of `PATH`. A variable named `path` replaces the command search path.
+- `PIPESTATUS` does not exist. The zsh equivalent is `pipestatus`, which also starts at 0 in agent shells.
+- `shopt`, `mapfile`, and `readarray` do not exist. `read -a` is spelled `read -A`.
+- `${x,,}`, `${x^^}`, `${!x}`, and `${!arr[@]}` are bad substitutions.
+- `VAR=x time cmd` is a parse error. Write `time VAR=x cmd`.
+
+`/bin/bash` is version 3.2, which also lacks `mapfile`, `${x,,}`, and associative arrays.
+
+## `grep`
+
+In Claude Code shells, `grep` is a function that runs the bundled ugrep with `-I` and `--ignore-files`. It 
+silently skips any file that looks binary, even a file named on the command line. In that case there is no output, 
+even with `-c`, and the exit status is 1. A recursive search also skips every file that a `.gitignore` excludes. 
+Test and probe logs often contain control bytes or broken UTF-8, and they are often in ignored directories. For 
+those, use `command grep`, the system grep, which searches everything and prints "Binary file ... matches". With 
+the function, `-a` stops it skipping binary files and `--no-ignore-files` stops it skipping ignored ones.
 
 ## Working directories
 

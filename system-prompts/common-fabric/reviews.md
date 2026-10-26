@@ -4,8 +4,24 @@ Always review your own commits.
 
 When reviewing code, launch some adversarial reviewer subagents to determine rigorously if the current patch is 
 actually an improvement or not: have them evaluate both the status quo and the proposed diff without examining the 
-commit message, and without knowing which version is newer, by giving them the diff forwards and backwards to 
-review. [Give subagents their own worktrees](review-subagent-isolation.md) in a temporary directory.
+commit message, and without knowing which version is newer. Prepare their materials with 
+`~/dev/contraptions/review-stage/review_stage.py OUT NAME...`, run from the worktree holding the change, with OUT 
+a new directory in the session scratchpad and one NAME per reviewer. It gives each reviewer [a directory of its 
+own](review-subagent-isolation.md) holding `before/` and `after/` trees, `patch.diff` and a `README.md`, and it 
+gives half of the reviewers the change reversed. Check that the summary it prints covers the files you meant to 
+review; if not, name the versions with `--base` and `--head`. If tests need ignored files such as installed 
+dependencies, name them with `--copy-ignored`.
+
+Give each reviewer only the path of its own directory under OUT, what the repository is, which part of it the 
+change concerns, and the review priorities below. Do not tell a reviewer which way round its patch is, do not 
+describe the change as a fix or as new work, and do not mention commits, branches, the worktree, or what earlier 
+rounds found. Do not ask reviewers to apply the patch, build their own trees, or run git commands outside their 
+directory.
+
+After fixing what reviewers found, stage again with `--since-last` into a new directory, and give the next round 
+new reviewers with new names. Ask them to concentrate on the parts listed in `changed-since-previous-round.txt` 
+and to read the rest of the patch only as context. Do not continue reviewers from an earlier round: a reviewer 
+that remembers the earlier patch can see which side the fixes landed on.
 
 Name review subagents, their worktrees, their temporary directories, and their patch files, after these emoji: 🦜 
 🦆 🐓 🦢 🦉 🦤 🦩 🐦 🐧 🐔 🦅. Use a different one for each agent, repeating them only when you have run out. Do 

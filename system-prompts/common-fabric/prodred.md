@@ -36,7 +36,8 @@ on the topic. Provide your user with a link to the topic that they can open in t
 
 2. Check local agent sessions for one working on this issue. If there is one, then send it your topic (if you have 
 already identified one) so that it can claim ownership, then report to the user which session is doing the work, 
-retract your own claim if any, and stop these steps.
+retract your own claim if any, and stop these steps. If you do not find another session that is working on this 
+issue, tell the user all the sessions you checked, prefixed by "👀🧵".
 
 3. Check for open PRs, branches, or other indications that another member of the team is already working on the 
 failure. If so, update the laundry appropriately and stop these steps, clearly naming the PR and user working on 

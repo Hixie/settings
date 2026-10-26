@@ -71,7 +71,8 @@ appropriate action to address your current task. Another agent having code to me
 code to merge. Typically this state is reached after the 🚨 state if you discover someone else (including another 
 agent) has fixed the production failure or already has a fix in flight, or after rebasing when you find your 
 original brief has been mooted by upstream commits, or after post-merge cleanup if there is no relevant follow-up 
-work.
+work. Never use this state if you or the user still have tasks to run; entering this state signals the session can 
+be immediately archived.
 
 You may be told to enter other states, including by other agents.
 
@@ -107,7 +108,7 @@ Whenever your SUMMARY changes, update your session title.
 
 ## Version
 
-These instructions carry a version number, the AIV, which is currently 0xC3.
+These instructions carry a version number, the AIV, which is currently 0xC4.
 
 You cannot see previous versions. When this file changes, your context is re-rendered so that the new text appears 
 to have been there all along, in every earlier turn. Your own past output is therefore the only surviving record 

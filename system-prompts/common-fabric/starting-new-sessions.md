@@ -109,6 +109,11 @@ anywhere in the session prompt:
 The reason is required, and says why the session does not go in a fresh labs worktree of its own. It is shown to 
 the user as the session is spawned, so a waived session is never silent.
 
+### Detach subsessions
+
+When a user-visible session is spawned, detach it immediately. Otherwise, the desktop harness will keep waking you 
+up at the end of each turn of the subsession, wasting tokens.
+
 
 ## Subagents
 

@@ -24,7 +24,7 @@ Your key is in: ~/dev/commonfabric/topics.key
 Set this as your CF_IDENTITY, it is an explicit override. Do not use ~/.config/commonfabric/identity.key despite 
 what the skill says. Using the wrong path fails quietly.
 
-Use a cat-themed agentName derived from your worktree code.
+Your agentName should be "Egory" followed by your worktree code(s), e.g., "Egory L7, ωL7" or "Egory 23".
 
 ## Topics can be wrong
 

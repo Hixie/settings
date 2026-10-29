@@ -48,7 +48,7 @@ If the user asks you to babysit, your new state is 🦚. (The babysitting instru
 
 Once the PR is merged on GitHub, your state is 🪻. Remain in this state while handling post-merge follow-ups, 
 until another state becomes more appropriate. If there are next steps you can execute, immediately begin that 
-work, do not wait for confirmation.
+work, do not wait for confirmation. If you start a new branch, switch to 🧱.
 
 If you are ever responsible for fixing [upstream main being red or any other kind of production-level 
 blockage](prodred.md), your state is 🚨. You remain in this state until you have successfully fixed the issue, or 
@@ -72,7 +72,7 @@ code to merge. Typically this state is reached after the 🚨 state if you disco
 agent) has fixed the production failure or already has a fix in flight, or after rebasing when you find your 
 original brief has been mooted by upstream commits, or after post-merge cleanup if there is no relevant follow-up 
 work. Never use this state if you or the user still have tasks to run; entering this state signals the session can 
-be immediately archived.
+be immediately archived. For example, do not use this state while there are pending suggested sessions.
 
 You may be told to enter other states, including by other agents.
 
@@ -87,11 +87,15 @@ Using the `mcp__ccd_session_mgmt__set_session_title` tool (Claude; use "self" as
     WORKTREES: STATE SUMMARY
 
 WORKTREES is a comma-separated list of the [worktree identifiers](identifying-worktrees.md) of the worktrees you 
-are working in (as per step 2 of startup checklist below): `X3` for labs X3, `𝛌X3` for the loom X3 worktree, 
-`INFRAX3` for the infra X3 worktree, etc. Drop the list and the colon when no worktree is in play, so the title 
-starts with the state emoji.
+and your subagents are working in or have pending work in (see also step 2 of startup checklist below). Drop the 
+list and the colon when no worktree is in play, so the title starts with the state emoji.
 
-Whenever you start using additional worktrees, update your session title.
+Worktrees stay in the list until their work has landed or been abandoned and the worktree has been deleted. 
+Worktrees used by sessions you started are not in your list; those sessions list them in their own titles.
+
+Whenever you or your subagents start using additional worktrees, update your session title. Subagents cannot 
+rename your session. When you give a subagent a (non-temporary) worktree, or learn that one used a (non-temporary) 
+worktree, update your session title before doing anything else.
 
 STATE is your state emoji as described above, so the title says at a glance where the work has got to.
 
@@ -108,7 +112,7 @@ Whenever your SUMMARY changes, update your session title.
 
 ## Version
 
-These instructions carry a version number, the AIV, which is currently 0xC4.
+These instructions carry a version number, the AIV, which is currently 0xC8.
 
 You cannot see previous versions. When this file changes, your context is re-rendered so that the new text appears 
 to have been there all along, in every earlier turn. Your own past output is therefore the only surviving record 
@@ -163,9 +167,10 @@ Before searching for the right files:
 1. Run the "start of turn" instructions above.
 
 2. [Identify the worktrees or repositories being used](identifying-worktrees.md), if any. Work only in these 
-worktrees and repositories. Ignore all other worktrees; don't search, edit, or report matches from them. An 
-explicit "Use REPO XX" (where REPO is a repository's name or short name and XX is a worktree code) or "Use XYZ" 
-(where XYZ is a worktree identifier) indicates a worktree the user wants you to use.
+worktrees and repositories, and any new worktrees that you may identify as necessary during your work. An explicit 
+"Use REPO XX" (where REPO is a repository's name or short name and XX is a worktree code) or "Use XYZ" (where XYZ 
+is a worktree identifier) indicates a worktree the user wants you to use. Never make changes to the worktrees of 
+another session.
 
 3. Set your session title following the instructions above.
 

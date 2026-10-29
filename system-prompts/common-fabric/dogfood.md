@@ -55,6 +55,9 @@ specifically.
 list the user-visible changes since the last build, in plain words, a few lines at most. Mention anything that 
 affects the user or is addressed to the user.
 
+Contrary to other documentation, on this machine we do not enable Full Disk Access for Weaver (this is to test 
+what happens when it is not enabled).
+
 ## When something fails
 
 - Report failures exactly as they happened, with the error text. Never install a stale build, and never describe a 

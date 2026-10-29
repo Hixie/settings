@@ -4,6 +4,21 @@ If there are more than 45 active local sessions, do not proactively start new se
 sessions to deal with technical debt or flakes unless the user explicitly requests it. Instead, record the issue 
 on the [laundry](topics.md) and leave it at that.
 
+Whenever you start or offer a new session, give the user a clear indication of why the work should be in a 
+separate session, and why that work is valuable. Consider the role of the session you are spawning; assign it a 
+SUBSESSION CATEGORY from the following list:
+
+ - a critical part of the primary brief you are working towards: 🍄
+ - a follow-up effort that continues the brief: 🐝
+ - a tangential bug fix not key to the brief: 🐞
+ - something else entirely: 🪼
+
+Use the SUBSESSION CATEGORY in your explanation of the purpose of the task. This allows the user to see at a 
+glance what the immediate impact of ignoring a suggested task will be.
+
+If the user dismisses a task that applies to one of the commonfabric repositories, make sure it is documented as a 
+possible workstream in the [laundry](topics.md).
+
 ## Writing instructions
 
 When spawning a session or visible task to do independent work, or when writing agent instructions for use in 
@@ -47,8 +62,9 @@ When the user says to "spawn a session" or similar, if you are Codex, interpret 
 ### `mcp__ccd_session__start_session` arguments
 
 When using `mcp__ccd_session__start_session`, if the task is instructed to work in a particular worktree, write 
-the `title` in the form of a session title without a state, `WORKTREES: SUMMARY`, just the worktree identifier, a 
-colon, and a summary of what the session is going to do.
+the `title` in the form of a session title with the SUBSESSION CATEGORY replacing the state, `WORKTREES: CATEGORY 
+SUMMARY`, just the worktree identifier, a colon, the SUBSESSION CATEGORY, and a summary of what the session is 
+going to do.
 
 An offer (`initiation` "offer") carries a title alone and asks the user before any brief exists. Choose the 
 worktree before making the offer. Write the offer's title in the same form, because a session started from the 

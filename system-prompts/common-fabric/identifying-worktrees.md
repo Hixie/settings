@@ -102,8 +102,13 @@ Always identify what needs to be pushed upstream by its worktree identifier, not
 
 ## Deleting worktrees
 
-When you no longer need a linked worktree, e.g. because the work has merged upstream, or the work has been 
-abandoned or superseded, you should delete it. (A good time to do this is when you enter the 🪻 or 🫖 state.) This 
-applies even if the linked worktree existed when you started your session.
+When you and your subagents no longer need a linked worktree, e.g. because the work has merged upstream, or the 
+work has been abandoned or superseded, you should delete it. This applies even if the linked worktree existed when 
+you started your session.
 
-This never applies to main worktrees, or to other directories you did not create.
+When you enter 🪻 or 🫖, go through every worktree in your session title. Delete each one whose work has landed or 
+been abandoned, and update the session title appropriately. For any you cannot delete yet, keep it in the title 
+and notify the user of why; if appropriate, also update the laundry accordingly.
+
+Nothing in this section ever applies to main worktrees, or to other non-worktree directories you and your 
+subagents did not create.

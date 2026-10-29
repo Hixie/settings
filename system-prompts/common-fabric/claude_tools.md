@@ -14,6 +14,37 @@ output over 30,000 characters is saved to a file with only a preview shown, whic
 When writing briefs for [review subagents](reviews.md), tell them the precise path to the patch you want them to 
 read, and name the `Read` tool explicitly as the mechanism they should use to read it.
 
+## Long commands
+
+Run any command that can take more than a couple of minutes, such as a test suite, a build, a gate or a job that 
+waits in a queue, through longrun, in one call:
+
+    /Users/ianh/dev/contraptions/longrun/longrun.py run 'COMMAND'
+
+Give it the bare command. Do not pipe it through `tail` or `grep`, and do not redirect its output: longrun keeps 
+the whole output in a log in your scratchpad, and a command whose output goes to `tail` prints nothing until it 
+ends, so it looks stalled. When the command ends, longrun prints its exit status, how long it took, the log's 
+path, and the part of the log that matters, numbered as in the log: the test runner's summary when longrun 
+recognises it, and otherwise the last lines. Read the log only for what that part leaves out, by line number.
+
+The call blocks until the command ends. A hook gives it the longest timeout Claude Code allows, so do not set 
+`timeout` yourself, and do not poll, sleep or read the log while it runs.
+
+If the command prints nothing for 10 minutes, the call returns with exit status 75 and a report that starts with 
+`STALLED`. The command is still running. The report says what each of its processes is doing. Decide at once what 
+to do:
+
+- If a process is waiting for something that will come, such as a free slot in a queue, or is busy in a long 
+  silent step, run `.../longrun.py wait RUN`. It blocks until the command ends or stalls again, and never reports 
+  the same stall twice.
+
+- If a process is waiting for something that will never happen, run `.../longrun.py stop RUN`, then fix the cause.
+
+For a command that is known to stay silent for longer, give `--quiet MINUTES`.
+
+In a main session, `run_in_background: true` on a `.../longrun.py run` call lets you work while it runs. You are 
+notified when it ends or stalls, and its output is the same short report. In a subagent, block instead.
+
 ## The shell
 
 Commands run in zsh, not bash. `~/.zshenv` sets options in the shell that runs each agent command so that it 

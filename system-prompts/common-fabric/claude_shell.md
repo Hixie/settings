@@ -49,6 +49,25 @@ running has a bug to fix.
 In a main session, `run_in_background: true` on a `.../longrun.py run` call lets you work while it runs. You are 
 notified when it ends or stalls, and its output is the same short report. In a subagent, block instead.
 
+## Stopping processes
+
+To stop a process you started, use `TaskStop` for a background task and `.../longrun.py stop RUN` for a longrun 
+run. The permission classifier allows both.
+
+Do not run `kill` on a PID you found with `ps`, `lsof`, or `pgrep`. The permission classifier sees your command but 
+not the output of your earlier commands, so it cannot tell that the process is yours, and it denies the command. 
+If you have lost the handle on a process of yours, for example to a context summary, report its PID, working 
+directory, and command line to the user.
+
+## One outward action per command
+
+Run a command that changes something outside your worktree and scratchpad in a Bash call of its own. Examples are a 
+push, a process signal, a worktree removal, a deploy, and a topics board write. Do not prefix it with `cd`, chain 
+it with `&&` or `;`, pipe it, or bundle reads with it. Run the checks it depends on in an earlier call.
+
+The permission classifier judges a whole command at once, so a denial of one step loses every other step in that 
+command. A permission allow rule applies only when every part of a compound command matches it.
+
 ## The shell
 
 Commands run in zsh, not bash. `~/.zshenv` sets options in the shell that runs each agent command so that it 
@@ -114,4 +133,4 @@ affected by it (they will see the old directory).
 
 ## Versioning
 
-When you first read this file, tell the user: Read 🐚 1.
+When you first read this file, tell the user: Read 🐚 2.

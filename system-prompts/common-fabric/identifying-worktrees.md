@@ -110,5 +110,9 @@ When you enter 🪻 or 🫖, go through every worktree in your session title. De
 been abandoned, and update the session title appropriately. For any you cannot delete yet, keep it in the title 
 and notify the user of why; if appropriate, also update the laundry accordingly.
 
+Remove a worktree with `git worktree remove`, never with `--force`. A worktree the `Agent` tool created is locked, 
+so run `git worktree unlock` on it first, in a separate command. If git refuses to remove a worktree because it 
+has modified or untracked files, find out what they are and whose they are before doing anything else.
+
 Nothing in this section ever applies to main worktrees, or to other non-worktree directories you and your 
 subagents did not create.

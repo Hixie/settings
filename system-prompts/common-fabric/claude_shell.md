@@ -54,10 +54,25 @@ notified when it ends or stalls, and its output is the same short report. In a s
 To stop a process you started, use `TaskStop` for a background task and `.../longrun.py stop RUN` for a longrun 
 run. The permission classifier allows both.
 
+To stop any other process of yours, such as one whose handle you lost to a context summary and found again with 
+`ps`, `lsof`, or `pgrep`, run:
+
+    /Users/ianh/dev/contraptions/claude-stop-own/claude-stop-own.py [--tree] [--signal NAME] PID ...
+
+It signals a PID only when the process descends from your Claude process, runs in your own 
+`~/dev/commonfabric/REPO/XX` worktree, or names your scratchpad as its working directory or on its command line. 
+It refuses every other PID, printing the process's working directory and command line, and then exits with status 
+1. `--tree` also stops each descendant that meets one of those conditions itself.
+
+A permission rule allows claude-stop-own without consulting the classifier, but only when it is the whole command. 
+Find the PID in an earlier call, and do not put a `cd` before it, pipe into it, use `$(...)` in its arguments, or 
+set a variable in front of it. Run it with the environment Claude Code gives you: do not set `CLAUDE_PID`, 
+`CLAUDE_CODE_SESSION_ID`, or `HOME` for it, and do not change directory into another session's worktree to run it.
+
 Do not run `kill` on a PID you found with `ps`, `lsof`, or `pgrep`. The permission classifier sees your command but 
-not the output of your earlier commands, so it cannot tell that the process is yours, and it denies the command. 
-If you have lost the handle on a process of yours, for example to a context summary, report its PID, working 
-directory, and command line to the user.
+not the output of your earlier commands, so it cannot tell that the process is yours, and it denies the command. If 
+claude-stop-own refuses a process that you believe is yours, report its PID, working directory, and command line to 
+the user rather than working around the refusal.
 
 ## One outward action per command
 
@@ -133,4 +148,4 @@ affected by it (they will see the old directory).
 
 ## Versioning
 
-When you first read this file, tell the user: Read 🐚 2.
+When you first read this file, tell the user: Read 🐚 3.

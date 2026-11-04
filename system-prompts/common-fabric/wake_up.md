@@ -9,16 +9,22 @@ cleaned up.
 
 You may also need to [reorient](reorient.md), as much time may have passed.
 
-## Waking up peers
+
+# Waking up peers
+
+_This section only applies to Claude_.
 
 When you are told to wake everyone up: first, run `~/dev/contraptions/claude-account-switch/account-switch.sh 
-for-claude` and follow the instructions there. Then, enumerate all active sessions, determine which ones were 
-interrupted, and send them a message telling them to wake up. Then, find all the sessions that were not 
-interrupted but had been idle for more than 12 hours, and send them a message just telling them to reorient. You 
-may include additional context that you find in these messages, but all agents will have access to these 
-instructions and therefore you do not need to give them instructions redundant with these beyond "wake up" and 
-"reorient".
+for-claude` and follow the instructions there.
 
-If possible, send these messages with `mcp__ccd_session_mgmt__send_message`, not `SendMessage`. `SendMessage` 
-stops after 10 messages to desktop sessions per user turn. Inform the user if either 
-`mcp__ccd_session_mgmt__send_message` is unavailable or the message cap seems to have changed.
+Then, enumerate all active sessions, determine which ones were interrupted or had active processes that got 
+interrupted, and send them a message telling them to wake up.
+
+Then, find all the sessions that were not interrupted but had been idle for more than 12 hours and whose state is 
+not ⏸️, and send them a message just telling them to reorient.
+
+You may include additional context in these messages if doing so might be helpful for the sessions, but all agents 
+will have access to these instructions and therefore you do not need to give them instructions redundant with 
+these beyond "wake up" and "reorient".
+
+See also [the instructions that help you avoid traps in your harness](claude_tools.md).

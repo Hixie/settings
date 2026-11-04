@@ -9,7 +9,8 @@ commit message, and without knowing which version is newer. Prepare their materi
 a new directory in the session scratchpad and one NAME per reviewer. It gives each reviewer [a directory of its 
 own](review-subagent-isolation.md) holding `before/` and `after/` trees, `patch.diff` and a `README.md`, and it 
 gives half of the reviewers the change reversed. Check that the summary it prints covers the files you meant to 
-review; if not, name the versions with `--base` and `--head`. If tests need ignored files such as installed 
+review; if not, name the versions with `--base` and `--head` (`--base` uses the merge base with the head, so 
+`--base upstream/main` is safe after another worktree fetches). If tests need ignored files such as installed 
 dependencies, name them with `--copy-ignored`.
 
 Give each reviewer only the path of its own directory under OUT, what the repository is, which part of it the 
@@ -21,7 +22,9 @@ directory.
 After fixing what reviewers found, stage again with `--since-last` into a new directory, and give the next round 
 new reviewers with new names. Ask them to concentrate on the parts listed in `changed-since-previous-round.txt` 
 and to read the rest of the patch only as context. Do not continue reviewers from an earlier round: a reviewer 
-that remembers the earlier patch can see which side the fixes landed on.
+that remembers the earlier patch can see which side the fixes landed on. Check that the ‘Compared with’ line names 
+the round the last reviewers were given. If a staging in between was a mistake, stage with `--since PREVIOUS_OUT`, 
+naming that round’s directory, in place of `--since-last`.
 
 Name review subagents, their worktrees, their temporary directories, and their patch files, after these emoji: 🦜 
 🦆 🐓 🦢 🦉 🦤 🦩 🐦 🐧 🐔 🦅. Use a different one for each agent, repeating them only when you have run out. Do 

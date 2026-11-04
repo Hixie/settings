@@ -97,6 +97,12 @@ loom acceptance down loomXX
 ```
 
 
+## Tests on this machine bypass the slot queue.
+
+The slot queue is bypassed on this machine and runs go bare. Do not follow the repository's rule regarding how to 
+run tests locally.
+
+
 ## Remove a persistent instance and worktree
 
 Stop and unregister the instance before removing its worktree:

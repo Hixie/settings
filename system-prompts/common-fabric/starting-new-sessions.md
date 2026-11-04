@@ -9,8 +9,9 @@ separate session, and why that work is valuable. Consider the role of the sessio
 SUBSESSION CATEGORY from the following list:
 
  - a critical part of the primary brief you are working towards: 🍄
- - a follow-up effort that continues the brief: 🐝
- - a tangential bug fix not key to the brief: 🐞
+ - when the original brief is a question, applying the answer towards a fix: 🍄
+ - a follow-up effort that continues the brief (the brief would not be complete without it): 🐝
+ - a tangential fix or improvement not key to the brief: 🐞
  - something else entirely: 🪼
 
 Use the SUBSESSION CATEGORY in your explanation of the purpose of the task. This allows the user to see at a 
@@ -58,6 +59,8 @@ When the user says to "spawn a session" or similar, if you are Codex, interpret 
 
 
 ## Claude-specific instructions
+
+See also [the instructions that help you avoid traps in your harness](claude_tools.md).
 
 ### `mcp__ccd_session__start_session` arguments
 

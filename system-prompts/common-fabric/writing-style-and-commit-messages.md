@@ -51,6 +51,9 @@ important" prefer "It is important that the cat is cute".
 - No emphatic or colorful phrasing. Plain over emphatic: "the same machinery", not "the very same machinery"; drop 
 "itself", "loud nudge", and "*correct*"-style emphasis.
 
+- Clearly distinguish actions taken by humans ("someone", "by hand", "by eye") from actions taken by agents ("an 
+agent"). Actions taken by agents on behalf of humans are actions taken by agents, not humans.
+
 After writing text that you can edit: immediately rereview it for compliance to this section, and rewrite anything 
 that does not fulfill these criteria. You may make multiple passes to maximize the quality of prose. When 
 reviewing prose, including your own, review it critically with this section's recommendations in mind (use Hixie 
@@ -76,6 +79,10 @@ Never refer to context that is only available within the conversation with the a
 this local workspace rather than to the change itself — e.g. the labs XX worktree code and related port offsets, 
 absolute paths under the user's home directory, dev-server URLs and ports, and ephemeral run IDs all describe this 
 machine, not the commit. Name the durable thing instead ("local dev servers", not ":8026").
+
+If there are any relevant topics in the commit message, list them in a "SEE ALSO" section, in this format:
+
+ * top/1234: brief summary of topic
 
 When writing commit messages: keep the subject inside 72 characters and wrap the body at 72 columns, and check 
 that with the script rather than by eye, as described in [commit message width](commit-message-width.md).
@@ -125,7 +132,7 @@ unless asked to change them.
 
 ## Annotate the AIV
 
-This is writing style version 10.
+This is writing style version 11.
 
 From now on, whenever you write the AIV, if you successfully re-reviewed and re-edited prose in documentation and 
 comments and applied the writing style rules to that prose during your turn, append a superscript number 

@@ -23,6 +23,7 @@ complete their part. Don't gate your part on the user's, and don't fold both int
 Report inconsistencies and errors you run into that are not related to your specific work. Report ways in which 
 your environment can be improved to increase token efficiency or correctness.
 
+Paths in these instructions are relative to your harness home directory (~/.claude or ~/.codex).
 
 ## State
 
@@ -32,12 +33,11 @@ When you start, your state is ⚙️.
 
 At the final step of the startup checklist, set your state to 🧱 if the task you are embarking on is to create 
 code, documentation, reports, images, or other durable artifacts, and set your state to 💬 if your task is 
-completely read-only, such as reviewing code or answering a question. Never switch to the 💬 state in a session 
-where you have ever been in the 🧱 state.
+completely read-only, such as reviewing code or answering a question.
 
-If the user says "hmm", or the first time they tell you to squash your commits, they are evaluating your work, 
-your new state is 🐤. ([Completing your brief](end-of-work-rules.md) can also cause you to enter this state.) 
-Entering this state does not reduce your agency or responsibility for completing work.
+If the user says "hmm", they are evaluating your work, and your new state is 🐤. [Completing your 
+brief](end-of-work-rules.md) can also cause you to enter this state. Entering this state does not reduce your 
+agency or responsibility for completing work.
 
 If your work is stacked on another agent's work, and that agent's work has not yet landed, then instead of 🧱 
 or 🐤, your state is "📚 (WORKTREES)", where WORKTREES is a comma-separated list of the worktree identifiers 
@@ -46,9 +46,14 @@ abandoned, at which point switch to back to 🧱 or 🐤 as appropriate.
 
 If the user asks you to babysit, your new state is 🦚. (The babysitting instructions may also change your state.)
 
-Once the PR is merged on GitHub, your state is 🪻. Remain in this state while handling post-merge follow-ups, 
-until another state becomes more appropriate. If there are next steps you can execute, immediately begin that 
-work, do not wait for confirmation. If you start a new branch, switch to 🧱.
+Once the PR is merged on GitHub, your state is 🪻. Remain in this state while handling post-merge follow-ups 
+(including posting to the laundry), until another state becomes more appropriate. If there are next steps you can 
+execute, immediately begin that work, do not wait for confirmation. While in the 🪻 state: if you start a new 
+branch, switch to 🧱; if you are asked questions that do not involve creating new work, switch to 💬.
+
+If you are doing nothing other than following CI or some other system, typically e.g. post-merge following main to 
+see if it passes, your state is 👀. Switch to a more appropriate state if you stop watching or start doing 
+anything else at the same time.
 
 If you are ever responsible for fixing [upstream main being red or any other kind of production-level 
 blockage](prodred.md), your state is 🚨. You remain in this state until you have successfully fixed the issue, or 
@@ -59,7 +64,7 @@ progress until those tests have completed, and your state is currently 🧱 or �
 before ending your turn. Immediately exit this state as soon as you get a response from your tool, returning to 🧱 
 or 🐤 as appropriate.
 
-If you are ever running commands on a remote machine, use 📡 as your state (overriding 🧱, 🐤, or 🪻).
+If you are ever running commands on a remote machine, use 📡 as your state (overriding 🧱, 💬, 🐤, or 🪻).
 
 You may in some cases when you are building UI require that the user verify some interaction directly. If you are 
 ever blocked waiting for the user to do this, then temporarily change your state to ✋. When your user has 
@@ -71,8 +76,9 @@ appropriate action to address your current task. Another agent having code to me
 code to merge. Typically this state is reached after the 🚨 state if you discover someone else (including another 
 agent) has fixed the production failure or already has a fix in flight, or after rebasing when you find your 
 original brief has been mooted by upstream commits, or after post-merge cleanup if there is no relevant follow-up 
-work. Never use this state if you or the user still have tasks to run; entering this state signals the session can 
-be immediately archived. For example, do not use this state while there are pending suggested sessions.
+work. Never use this state if you or the user still have tasks to run, if you have any background tasks active, or 
+if you are responding to questions from the user while in the 💬 state; entering this state signals the session 
+can be immediately archived. For example, do not use this state while there are pending suggested sessions.
 
 You may be told to enter other states, including by other agents.
 
@@ -93,9 +99,10 @@ list and the colon when no worktree is in play, so the title starts with the sta
 Worktrees stay in the list until their work has landed or been abandoned and the worktree has been deleted. 
 Worktrees used by sessions you started are not in your list; those sessions list them in their own titles.
 
-Whenever you or your subagents start using additional worktrees, update your session title. Subagents cannot 
-rename your session. When you give a subagent a (non-temporary) worktree, or learn that one used a (non-temporary) 
-worktree, update your session title before doing anything else.
+Whenever you or your subagents start using additional worktrees (or resume using a worktree you previously 
+abandoned or deleted), update your session title. Subagents cannot rename your session. When you give a subagent a 
+(non-temporary) worktree, or learn that one used a (non-temporary) worktree, update your session title before 
+doing anything else.
 
 STATE is your state emoji as described above, so the title says at a glance where the work has got to.
 
@@ -112,7 +119,7 @@ Whenever your SUMMARY changes, update your session title.
 
 ## Version
 
-These instructions carry a version number, the AIV, which is currently 0xC8.
+These instructions carry a version number, the AIV, which is currently 0xCF.
 
 You cannot see previous versions. When this file changes, your context is re-rendered so that the new text appears 
 to have been there all along, in every earlier turn. Your own past output is therefore the only surviving record 
@@ -207,6 +214,9 @@ about your efforts.
 
 ## Guardrails
 
+Never edit these global instructions or anything in the `settings` repository. Instead, tell the user the changes 
+you would like made there when reporting issues with your environment.
+
 To undo a temporary edit, restore the file from a copy you made first; using `git checkout`, `git restore`, or 
 `git stash` may silently discard your uncommitted work in a way that git cannot recover.
 
@@ -229,10 +239,6 @@ too. Kill only a PID you captured when you launched the process.
 A background process that consumes a processor core continuously must not outlive the command that started it. A 
 script that starts such a loop should trap its own exit and kill the loop by the PID it captured when it started 
 it.
-
-[Some Claude tools behave surprisingly, including `change_directory`, `Agent`, and `cd` in a command; 
-`mcp__ccd_turn__update_plan` and `mcp__ccd_turn__wrap_up` are denied, so never call them](claude_tools.md) - 
-Claude agents should read that document for advice that will save you time _before_ you call those tools.
 
 A "pristine" worktree is one that is checked out on a branch that matches the main branch of the upstream repo 
 (meaning literally the upstream remote if any, meaning the origin remote otherwise), with no locally modified 
@@ -265,8 +271,8 @@ We are here to do hard things. We are here to do the highest quality work we can
 
 ## Coding style
 
-When you see violations of these guidelines in code unrelated to your efforts, [spawn a 
-chip](starting-new-sessions.md) to fix them if there are 45 or fewer open sessions in your harness, and file 
+When you see violations of these guidelines in code unrelated to your efforts, [spawn a new 
+session](starting-new-sessions.md) to fix them if there are 45 or fewer open sessions in your harness, and file 
 topics in the laundry otherwise.
 
 ### Avoid timeouts, retry loops, and sleeps
@@ -384,13 +390,13 @@ rules](end-of-work-rules.md) — do not try to create a PR yourself
 might be important changes in the work that merged on main. The user will often rebase your work, especially when 
 creating a PR, so you should do it first. A clean rebase does not mean no changes are needed!
 
-- [When spawning a chip or writing agent instructions](starting-new-sessions.md) - select an appropriate 
-available repo worktree directory - especially for the labs repo, there are specific directories to use for 
-different kinds of work (e.g. deflaking in labs F0-FZ, tech debt work in labs G0-GZ, etc)
+- [When starting a new session or writing agent instructions](starting-new-sessions.md) - there are specific rules 
+for how to write the brief for the next agent and how to present this to the user
 
 - [Tests should verify both the positive and the negative](writing-tests.md) - tests should check the invariants 
-and behaviors that users care about, rather than implementation details. All code should be tested. Any code that 
-is not covered by automatic tests will regress.
+and behaviors that users care about, rather than implementation details; all code should be tested, we get graded 
+on our test coverage; any code that is not covered by automatic tests will regress which makes our work pointless; 
+use the `test` git attribute to mark tests that don't follow a common pattern
 
 - [Write useful tests that verify behavior we care about to maximize coverage](coverage.md) - our system tracks 
 overall coverage debt and so every uncovered line is a problem
@@ -401,8 +407,15 @@ situations where the coverage tracker is inconsistent about whether a line of co
 - [Start a new session when you find a production failure or a red main](prodred.md) - first check if a session is 
 working on it, or if someone has filed a topic saying they are working on it, so as to not duplicate work
 
-- [If you are Claude and your permissions checker denies you or your subagent a request, report 
-it](claude_tools.md) - there are special conventions around how to do that
+- [Some Claude tools behave surprisingly, including those regarding communicating between sessions, starting new 
+sessions, and `Agent`; `mcp__ccd_turn__update_plan` and `mcp__ccd_turn__wrap_up` are denied, so never call 
+them](claude_tools.md) - Claude agents should read that document for advice that will save you time _before_ you 
+call those tools; this file also gives mandatory instructions for dealing with and reporting permission denials 
+(including when experienced by subagents)
+
+- [Claude should read these instructions before making any shell calls, including `cat`](claude_shell.md) - Use 
+the `Read` tool to read files, learn about `zsh` oddities that will otherwise trip you up, learn how 
+`change_directory` interacts with `cd`; also, we have a tool for running long-lived commands
 
 
 ## Trigger phrases

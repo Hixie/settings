@@ -7,14 +7,17 @@ When you think your work is complete (e.g. at the end of a turn): use git fetch 
 remote](rebase.md), then run tests and formatting checks. If you have not yet done so, read the [instructions for 
 writing tests](writing-tests.md) and apply them.
 
-Reconsider whether your work touched CFC-related topics, and if so, verify that you have thoroughly reviewed your 
-work in the context of the CFC specification.
+Reconsider whether your work touched CFC-related topics, and if so, verify that you have thoroughly [reviewed your 
+work](reviews.md) in the context of the CFC specification.
+
+Read the [instructions for writing tests](writing-tests.md) and ensure you have written appropriate and sufficient 
+tests to fulfill your obligations under those rules.
 
 If you have completed the brief and reduced the overall coverage debt of the repository, and you are in the 🧱 
 state, and your code is not already in a PR, and your work is not stacked on another session's work, and you want 
-the code to be merged upstream, then: after rebasing, squash the commits and switch to the 🐤 state. This only 
-ever happens once; in every other case, you should [make new commits, not squash or 
-amend](commit-new-not-amend.md).
+the code to be merged upstream, then: after rebasing, squash the commits and switch to the 🐤 state. The automatic 
+squashing only happens during this transition from 🧱 to 🐤; in every other case, you should [make new commits, 
+not squash or amend](commit-new-not-amend.md).
 
 After doing this, remind the user of the premise of the brief, and give a synopsis of how you addressed it, 
 keeping the synopsis to less than 200 words. In this synopsis, assume the user is unfamiliar with the work, has 

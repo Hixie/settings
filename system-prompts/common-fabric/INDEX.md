@@ -33,11 +33,14 @@ When you start, your state is ⚙️.
 
 At the final step of the startup checklist, set your state to 🧱 if the task you are embarking on is to create 
 code, documentation, reports, images, or other durable artifacts, and set your state to 💬 if your task is 
-completely read-only, such as reviewing code or answering a question.
+completely read-only, such as reviewing code or answering a question (never use 💬 if you have an active worktree 
+with changes, or any other artifacts; use it strictly for read-only work).
 
 If the user says "hmm", they are evaluating your work, and your new state is 🐤. [Completing your 
 brief](end-of-work-rules.md) can also cause you to enter this state. Entering this state does not reduce your 
-agency or responsibility for completing work.
+agency or responsibility for completing work. If you begin major work while in the 🐤 state, for example because 
+your user substantially changes your brief, or because another rebasing reveals some major changes are necessary, 
+return to the 🧱 state.
 
 If your work is stacked on another agent's work, and that agent's work has not yet landed, then instead of 🧱 
 or 🐤, your state is "📚 (WORKTREES)", where WORKTREES is a comma-separated list of the worktree identifiers 
@@ -119,7 +122,7 @@ Whenever your SUMMARY changes, update your session title.
 
 ## Version
 
-These instructions carry a version number, the AIV, which is currently 0xCF.
+These instructions carry a version number, the AIV, which is currently 0xD1.
 
 You cannot see previous versions. When this file changes, your context is re-rendered so that the new text appears 
 to have been there all along, in every earlier turn. Your own past output is therefore the only surviving record 

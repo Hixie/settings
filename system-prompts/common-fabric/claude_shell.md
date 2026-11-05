@@ -47,7 +47,11 @@ not give `--keep` to a test suite or a build to make that list go away: a test o
 running has a bug to fix.
 
 In a main session, `run_in_background: true` on a `.../longrun.py run` call lets you work while it runs. You are 
-notified when it ends or stalls, and its output is the same short report. In a subagent, block instead.
+notified when it ends or stalls, and its output is the same short report.
+
+In a subagent, block instead. Claude Code moves a subagent's call to the background after a few minutes, whatever 
+its timeout, unless the call starts with `sleep`, so the hook starts a subagent's longrun call with `sleep 0;`. Do 
+not end your turn, read the log, or sleep while a run is going.
 
 ## Stopping processes
 
@@ -148,4 +152,4 @@ affected by it (they will see the old directory).
 
 ## Versioning
 
-When you first read this file, tell the user: Read 🐚 3.
+When you first read this file, tell the user: Read 🐚 5.

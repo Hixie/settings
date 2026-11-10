@@ -25,15 +25,22 @@ lines. Read the log only for what that part leaves out, by line number.
 
 If the command prints nothing for 10 minutes, the call returns with exit status 75 and a report that starts with 
 `STALLED`. The command is still running. The report says what each of its processes is doing. Decide at once what 
-to do. If a process is waiting for something that will come, such as a free slot in a queue, or is busy in a long 
-silent step, run `.../longrun.py wait RUN`. It blocks until the command ends, stalls again, or if the current 
-stall continues; each report for the same stall is for an exponentially longer wait (doubling each time). Each 
-time a stall's continuation is reported in this way, consider whether it is possible that the command has in fact 
-hung and needs terminating. If a process is waiting for something that will never happen, run `.../longrun.py stop 
-RUN`, then fix the cause.
+to do:
 
-For a command that is known to stay silent for longer, give `--quiet MINUTES`. (Subsequent exponential backoff 
-doubles the original `--quiet` time.)
+- If a process is waiting for something that will come, such as a free slot in a queue, or is busy in a long 
+  silent step, run `.../longrun.py wait RUN`. It blocks until the command ends or stalls again. If the command 
+  prints something, it stalls again after another 10 minutes of silence. If it prints nothing, the next report 
+  comes after twice as long as the last, counted from when `wait` starts: 20 minutes, then 40, then 80. Each 
+  report says how long the next `wait` will be if the command stays silent.
+
+- If a process is waiting for something that will never happen, run `.../longrun.py stop RUN`, then fix the cause.
+
+A report that follows a `wait` with no output in between means the step you expected to finish has not finished. 
+Wait again only if you can name what the command is waiting for and why it has not arrived yet. Otherwise, stop 
+it. Each report is kept as `stall-N.txt` in the run directory, so you can compare it with the earlier ones.
+
+For a command that is known to stay silent for longer, give `--quiet MINUTES`. The intervals then start at that 
+many minutes instead of 10, and double in the same way.
 
 When the command's job is to start a process that outlives it, such as `bench-weaver.sh up`, a development server 
 or a local service, give `--keep`:
@@ -53,13 +60,12 @@ not end your turn, read the log, or sleep while a run is going.
 
 ### No pipes with longrun
 
-Always give `longrun` a bare command. Do not pipe it through `tail` or `grep`, and do not redirect its output: 
-`longrun` keeps the whole output in a log in your scratchpad, and a command whose output goes to `tail` prints 
-nothing until it ends, so it looks stalled.
-
-Run every longrun call, `run` and `wait` alike, bare too: do not pipe it, redirect it, or wrap it in `$(...)`. Its 
-exit status is the result, the command's own status or 75 for a stall, and a pipeline reports `tail`'s status 
-instead. Its report is already short, and it opens with how the command ended, which is what `tail` would drop.
+Give longrun the bare command, and run each longrun call, `run` and `wait` alike, bare too. Do not pipe either 
+through `tail` or `grep`, do not redirect their output, and do not wrap a longrun call in `$(...)`. longrun keeps 
+the command's whole output in a log in your scratchpad, and a command whose output goes to `tail` prints nothing 
+until it ends, so it looks stalled. longrun's exit status is the result: the command's own status, or 75 for a 
+stall. A pipeline reports `tail`'s status instead. longrun's report is already short, and it opens with how the 
+command ended, which is the part `tail` would drop.
 
 ## Stopping processes
 
@@ -160,4 +166,4 @@ affected by it (they will see the old directory).
 
 ## Versioning
 
-When you first read this file, tell the user: Read 🐚 7.
+When you first read this file, tell the user: Read 🐚 8.

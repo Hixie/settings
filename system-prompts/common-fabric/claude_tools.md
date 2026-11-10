@@ -20,9 +20,11 @@ No `WorktreeCreate` hooks are intended to be configured in any repository in use
 
 ## New sessions
 
-If you are in "Bypass Permissions" mode, before using `mcp__ccd_session__start_session` or 
-`mcp__ccd_session__hand_off_to_session`, switch to "Auto" mode. This will avoid a bug in your harness that 
-prevents you from suggesting or starting new tasks in Bypass Permissions mode.
+If you are in "Bypass Permissions" mode, switch to "Auto" mode before using 
+`mcp__ccd_session__hand_off_to_session`. A harness bug once stopped sessions in Bypass Permissions mode from 
+starting or suggesting new sessions. `mcp__ccd_session__start_session` now works in that mode, for proposals, 
+offers, and briefs alike, so there is no need to switch for it. Whether `hand_off_to_session` works in that mode 
+has not been checked.
 
 See also [the global instructions regarding starting new sessions](starting-new-sessions.md).
 
@@ -58,5 +60,5 @@ classifier's rule name in brackets, such as `[Git Destructive]`). A denial given
 `/subagents/agent-AGENT_ID.jsonl`. Use the log to find out which custom auto-mode rules in 
 `~/.claude/settings.json` are blocking routine work.
 
-When you first read this file, confirm that you have read it by stating "Claude-specific guidance 1 integrated".
+When you first read this file, confirm that you have read it by stating "Claude-specific guidance 2 integrated".
 

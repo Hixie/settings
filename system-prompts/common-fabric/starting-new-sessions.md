@@ -117,6 +117,16 @@ Two calls carry no prompt. The gate allows an offer when every worktree its titl
 above. It allows a call that starts an `own_initiative` proposal by its `proposal_id` alone, because that 
 proposal's prompt and title were checked when it was proposed.
 
+The call that sends the brief for an accepted offer carries a prompt and a `proposal_id` but no title. By the time 
+it is made, the app has already opened the offer's session under the offer's title, so that session holds the 
+worktree through its title. The gate finds that session through the app's record of the offer. While that session 
+still has the offer's title, the gate does not count it as holding the worktree, and checks the worktree the 
+prompt names against the offer's title instead, when that title names any worktree.
+
+Waive the checks for this call only when the gate names the offer's own session as holding the worktree. That 
+happens when the session has already changed its title, for example because the user typed into it before the 
+brief arrived.
+
 #### Waiving the gate
 
 Not all work belongs in a fresh labs worktree. A session for a Codex worktree, for the directory the current 
@@ -132,6 +142,10 @@ the user as the session is spawned, so a waived session is never silent.
 
 When a user-visible session is spawned, detach it immediately. Otherwise, the desktop harness will keep waking you 
 up at the end of each turn of the subsession, wasting tokens.
+
+`detach_session` refuses a session that the user started from a card, and a session that shares your folder. 
+When it refuses, do not try again. Each turn-end note from that session will then wake you, so answer each with 
+at most one line and end your turn.
 
 
 ## Subagents

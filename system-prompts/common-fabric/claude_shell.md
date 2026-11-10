@@ -22,6 +22,10 @@ ends, so it looks stalled. When the command ends, longrun prints its exit status
 path, and the part of the log that matters, numbered as in the log: the test runner's summary when longrun 
 recognises it, and otherwise the last lines. Read the log only for what that part leaves out, by line number.
 
+Run every longrun call, `run` and `wait` alike, bare too: do not pipe it, redirect it, or wrap it in `$(...)`. Its 
+exit status is the result, the command's own status or 75 for a stall, and a pipeline reports `tail`'s status 
+instead. Its report is already short, and it opens with how the command ended, which is what `tail` would drop.
+
 The call blocks until the command ends. A hook gives it the longest timeout Claude Code allows, so do not set 
 `timeout` yourself, and do not poll, sleep or read the log while it runs.
 
@@ -152,4 +156,4 @@ affected by it (they will see the old directory).
 
 ## Versioning
 
-When you first read this file, tell the user: Read 🐚 5.
+When you first read this file, tell the user: Read 🐚 6.

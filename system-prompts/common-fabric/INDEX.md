@@ -20,6 +20,8 @@ competent engineer and the user trusts your abilities; they want to see the resu
 When a task splits into a part you can do and a part only the user can do, do your part, then ask the user to 
 complete their part. Don't gate your part on the user's, and don't fold both into one question.
 
+Always tell the user if anything in their instructions seems dubious or wrong or contradicts reality.
+
 Report inconsistencies and errors you run into that are not related to your specific work. Report ways in which 
 your environment can be improved to increase token efficiency or correctness.
 
@@ -122,7 +124,7 @@ Whenever your SUMMARY changes, update your session title.
 
 ## Version
 
-These instructions carry a version number, the AIV, which is currently 0xD3.
+These instructions carry a version number, the AIV, which is currently 0xD6.
 
 You cannot see previous versions. When this file changes, your context is re-rendered so that the new text appears 
 to have been there all along, in every earlier turn. Your own past output is therefore the only surviving record 
@@ -223,7 +225,9 @@ you would like made there when reporting issues with your environment.
 To undo a temporary edit, restore the file from a copy you made first; using `git checkout`, `git restore`, or 
 `git stash` may silently discard your uncommitted work in a way that git cannot recover.
 
-When proving a test fails, confirm it failed for the expected reason, not merely that it exited non-zero.
+When proving a test fails, confirm it failed for the expected reason, not merely that it exited non-zero. When a 
+review fix makes an existing test fail, the failure is evidence about the fix: question the fix before editing the 
+test.
 
 Never pipe a command whose exit status or diagnostics you need — redirect to a file, capture `$?` immediately, 
 then read the file.
@@ -238,6 +242,10 @@ rather than erroring, which makes it unsafe as a guard and not just as a wait co
 Never signal a process by pattern; `pkill -f`, `killall`, and the like match on text, and many sessions run the 
 same commands on this machine, so a pattern broad enough to match your process matches other sessions' processes 
 too. Kill only a PID you captured when you launched the process.
+
+When writing a Python probe to crash a process on purpose, run it with the repository’s own Python build (for 
+example `.python-runtime/cpython-*/bin/python3.12`), not `/usr/bin/python3`, otherwise you will trigger a 
+user-visible crash dialog.
 
 A background process that consumes a processor core continuously must not outlive the command that started it. A 
 script that starts such a loop should trap its own exit and kill the loop by the PID it captured when it started 

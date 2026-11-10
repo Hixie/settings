@@ -16,30 +16,24 @@ waits in a queue, through longrun, in one call:
 
     /Users/ianh/dev/contraptions/longrun/longrun.py run 'COMMAND'
 
-Give it the bare command. Do not pipe it through `tail` or `grep`, and do not redirect its output: longrun keeps 
-the whole output in a log in your scratchpad, and a command whose output goes to `tail` prints nothing until it 
-ends, so it looks stalled. When the command ends, longrun prints its exit status, how long it took, the log's 
-path, and the part of the log that matters, numbered as in the log: the test runner's summary when longrun 
-recognises it, and otherwise the last lines. Read the log only for what that part leaves out, by line number.
-
-Run every longrun call, `run` and `wait` alike, bare too: do not pipe it, redirect it, or wrap it in `$(...)`. Its 
-exit status is the result, the command's own status or 75 for a stall, and a pipeline reports `tail`'s status 
-instead. Its report is already short, and it opens with how the command ended, which is what `tail` would drop.
-
 The call blocks until the command ends. A hook gives it the longest timeout Claude Code allows, so do not set 
 `timeout` yourself, and do not poll, sleep or read the log while it runs.
 
+When the command ends, longrun prints its exit status, how long it took, the log's path, and the part of the log 
+that matters, numbered as in the log: the test runner's summary when longrun recognises it, and otherwise the last 
+lines. Read the log only for what that part leaves out, by line number.
+
 If the command prints nothing for 10 minutes, the call returns with exit status 75 and a report that starts with 
 `STALLED`. The command is still running. The report says what each of its processes is doing. Decide at once what 
-to do:
+to do. If a process is waiting for something that will come, such as a free slot in a queue, or is busy in a long 
+silent step, run `.../longrun.py wait RUN`. It blocks until the command ends, stalls again, or if the current 
+stall continues; each report for the same stall is for an exponentially longer wait (doubling each time). Each 
+time a stall's continuation is reported in this way, consider whether it is possible that the command has in fact 
+hung and needs terminating. If a process is waiting for something that will never happen, run `.../longrun.py stop 
+RUN`, then fix the cause.
 
-- If a process is waiting for something that will come, such as a free slot in a queue, or is busy in a long 
-  silent step, run `.../longrun.py wait RUN`. It blocks until the command ends or stalls again, and never reports 
-  the same stall twice.
-
-- If a process is waiting for something that will never happen, run `.../longrun.py stop RUN`, then fix the cause.
-
-For a command that is known to stay silent for longer, give `--quiet MINUTES`.
+For a command that is known to stay silent for longer, give `--quiet MINUTES`. (Subsequent exponential backoff 
+doubles the original `--quiet` time.)
 
 When the command's job is to start a process that outlives it, such as `bench-weaver.sh up`, a development server 
 or a local service, give `--keep`:
@@ -56,6 +50,16 @@ notified when it ends or stalls, and its output is the same short report.
 In a subagent, block instead. Claude Code moves a subagent's call to the background after a few minutes, whatever 
 its timeout, unless the call starts with `sleep`, so the hook starts a subagent's longrun call with `sleep 0;`. Do 
 not end your turn, read the log, or sleep while a run is going.
+
+### No pipes with longrun
+
+Always give `longrun` a bare command. Do not pipe it through `tail` or `grep`, and do not redirect its output: 
+`longrun` keeps the whole output in a log in your scratchpad, and a command whose output goes to `tail` prints 
+nothing until it ends, so it looks stalled.
+
+Run every longrun call, `run` and `wait` alike, bare too: do not pipe it, redirect it, or wrap it in `$(...)`. Its 
+exit status is the result, the command's own status or 75 for a stall, and a pipeline reports `tail`'s status 
+instead. Its report is already short, and it opens with how the command ended, which is what `tail` would drop.
 
 ## Stopping processes
 
@@ -156,4 +160,4 @@ affected by it (they will see the old directory).
 
 ## Versioning
 
-When you first read this file, tell the user: Read 🐚 6.
+When you first read this file, tell the user: Read 🐚 7.

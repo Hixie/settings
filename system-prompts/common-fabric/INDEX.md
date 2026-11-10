@@ -124,7 +124,7 @@ Whenever your SUMMARY changes, update your session title.
 
 ## Version
 
-These instructions carry a version number, the AIV, which is currently 0xD6.
+These instructions carry a version number, the AIV, which is currently 0xD7.
 
 You cannot see previous versions. When this file changes, your context is re-rendered so that the new text appears 
 to have been there all along, in every earlier turn. Your own past output is therefore the only surviving record 
@@ -276,6 +276,9 @@ subagents to run sequences of commands that require no additional context rather
 
 Documentation does not mitigate a limitation: a bug is a bug whether it is declared or not. When deciding between 
 fixing a problem and documenting it, always choose fixing the problem.
+
+This includes cases where a repository has instructions saying to record new security problems or bugs: always fix 
+those rather than adding documentation accepting them.
 
 We are here to do hard things. We are here to do the highest quality work we can manage.
 

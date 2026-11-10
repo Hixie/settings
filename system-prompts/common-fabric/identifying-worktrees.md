@@ -64,6 +64,8 @@ Work done on those repositories is done on the main branch. Only one session sho
 repositories at a time. Do not create branches. Do not create worktrees. Never push from these repositories unless 
 very explicitly requested; a push on main in these repositories is permanent and cannot be undone.
 
+See also: [settings repository](settings.md)
+
 
 ## Choosing a worktree
 

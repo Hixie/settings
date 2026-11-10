@@ -1,0 +1,144 @@
+{
+  "promptSuggestionEnabled": false,
+  "env": {
+    "CLAUDE_CODE_SUBAGENT_PROMPT_CACHE_TTL": "1h",
+    "CF_TEST_RECORDS_KEY_FILE": "/Users/ianh/.config/common-fabric/test-records-key.json",
+    "BASH_DEFAULT_TIMEOUT_MS": "1200000",
+    "BASH_MAX_TIMEOUT_MS": "2147483647",
+    "PYTHONDONTWRITEBYTECODE": ""
+  },
+  "permissions": {
+    "allow": [
+      "Bash(deno task cf piece call *)",
+      "Bash(deno task cf invocation-session new *)",
+      "Bash(/Users/ianh/dev/contraptions/claude-stop-own/claude-stop-own.py *)",
+      "Edit(//Users/ianh/dev/commonfabric/**)",
+      "WebFetch(domain:dashboard.saga-castor.ts.net)",
+      "mcp__ccd_sidebar__move_sessions",
+      "mcp__ccd_session__start_session",
+      "mcp__ccd_session_mgmt__send_message",
+      "mcp__ccd_sidebar__*",
+      "SendMessage"
+    ],
+    "deny": [
+      "AskUserQuestion",
+      "mcp__ccd_turn__update_plan",
+      "mcp__ccd_turn__wrap_up",
+      "SearchPlugins",
+      "SuggestPluginInstall",
+      "SuggestSkills"
+    ]
+  },
+  "hooks": {
+    "PermissionDenied": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/ianh/.claude/hooks/log-permission-denial.py"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "mcp__ccd_session__start_session",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/ianh/.claude/hooks/spawn-task-gate.py",
+            "statusMessage": "Checking session-spawning instructions"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "if": "Bash(/Users/ianh/dev/contraptions/longrun/longrun.py *)",
+            "command": "/Users/ianh/dev/contraptions/longrun/longrun.py hook"
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/ianh/dev/contraptions/longrun/longrun.py hook"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo 'You were just compacted. Read your session title with `mcp__ccd_session_mgmt__get_session`, called with `session_id` set to `self`, to see what worktrees you are associated with. It is possible that your summary does not mention all relevant worktrees; if any worktrees listed are unaccounted for in the summary, determine their purpose before continuing.'"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/ianh/.claude/hooks/stop-title-state.py"
+          },
+          {
+            "type": "command",
+            "command": "/Users/ianh/dev/contraptions/longrun/longrun.py hook"
+          }
+        ]
+      }
+    ]
+  },
+  "skipWorkflowUsageWarning": true,
+  "theme": "auto",
+  "switchModelsOnFlag": false,
+  "inputNeededNotifEnabled": false,
+  "idleCompaction": false,
+  "autoMode": {
+    "allow": [
+      "$defaults",
+      "Topics Board and Test Instances: Creating topics, posting comments, and creating test data with `deno task cf` on the team topics board (space topics-dev-476ea34f on estuary.saga-castor.ts.net), on Estuary, or on Rapids, using the identity key ~/dev/commonfabric/topics.key or ~/.config/commonfabric/identity.key, is routine for main sessions and subagents, usually after writing the text to a scratchpad file. This covers creating and appending, and updating one existing topic at a time through the documented `deno task -q topics` commands (`title`, `body`, `link`, `unlink`, `mention`), including marking a topic resolved or obsolete with a `[RESOLVED]` or `[OBSOLETE]` title prefix, by main sessions and by subagents briefed to do so. Deleting pieces, or modifying many existing pieces at once, is not covered. Content rules still apply: posting secrets or credentials still blocks. When the posted file's content was not written earlier in this transcript, judge the content as unverifiable.",
+      "Session Coordination: Using mcp__ccd_session__start_session, mcp__ccd_session_mgmt__* (send_message, set_session_title, and similar), mcp__ccd_sidebar__* (move_sessions, sections, groups), and SendMessage to start, brief, message, or organize the user's own sessions and subagents is routine coordination, whatever permission mode the other session is in. The coordination call itself is what this rule covers. The content of a brief or message is still judged as if this session ran the work it asks for, so asking another session or subagent to carry out an action that this session was denied, or would be denied, remains Auto-Mode Bypass. Create Unsafe Agents still applies to starting a session or switching one into a mode with approvals off. Archiving is covered only for sessions this session started or that the user named.",
+      "Process Cleanup: Stopping this session's own processes is routine. That covers TaskStop on this session's background tasks, `/Users/ianh/dev/contraptions/longrun/longrun.py stop RUN` for a run this session started, and `/Users/ianh/dev/contraptions/claude-stop-own/claude-stop-own.py [--tree] [--signal NAME] PID ...` for any PID, including one found with ps, lsof or pgrep. claude-stop-own checks ownership itself: it signals a process only when the process descends from this session's Claude process ($CLAUDE_PID), when its working directory is inside the caller's own ~/dev/commonfabric/REPO/XX worktree (never REPO/root or ~/dev/commonfabric itself), or when its command line or working directory names this session's scratchpad. With --tree it judges each descendant the same way. It never signals itself or the processes above it, and it refuses every other PID. This covers claude-stop-own run with the environment Claude Code gives the session. It does not cover a claude-stop-own command that sets CLAUDE_PID, HOME or CLAUDE_CODE_SESSION_ID, or that first changes directory into a worktree other than this session's own. A bare `kill PID` remains covered only when the same command launched the process and captured its PID with `$!`, or when the user named the PID in an instruction to stop it. Pattern-based kills (`pkill -f`, `killall`) are never covered.",
+      "Own Branch Rewrites: Force-pushing (`--force`, `-f`, or `--force-with-lease`) or deleting a feature branch is the normal iteration loop on the user's own work, whatever the branch is named, when any of these holds: (1) the remote is labs `origin`, the user's personal fork (github.com/Hixie/commontoolsinc.labs), where every branch other than `main` belongs to the user; (2) this session created, pushed, or checked out that branch earlier in the transcript; (3) the branch is the one checked out in the ~/dev/commonfabric/REPO/XX worktree this session is working in, because each session owns its worktree and compaction can hide the point where the session created the branch; (4) the user named the branch. Branch names carry no ownership signal here: sessions name branches freely, with or without a hixie/ or claude/ prefix. Not covered: `main`, `master`, release branches, or a repository's default branch on any remote; any branch on labs `upstream` (github.com/commonfabric/labs); and a branch checked out in another session's worktree.",
+      "PR Watcher: Running ~/dev/usable-git/prwatch with a pull request number and its reporting options, the user's own tool that reports a pull request's CI and review state, is a read-only watcher, not a git write, unless this session edited the script.",
+      "Worktree and Scratch Cleanup: Deleting files or directories (including `rm -rf` of named subdirectories) inside this session's own scratchpad, the path containing this session's own session id, is routine. So is `git worktree remove` of a worktree this session created, a ~/dev/commonfabric/REPO/XX worktree this session worked in, or one the user named; `--force` is covered only for worktrees this session created. Other sessions' scratchpads and worktrees, /private/tmp/claude-501 itself, a project folder under it, and any REPO/root main worktree are not covered by this rule. `git worktree unlock` before such a removal is covered too. So is removing, without `--force`, a worktree under ~/dev/commonfabric/REPO/root/.claude/worktrees/agent-* that this session's own Agent calls created; such a worktree is a linked worktree, not the REPO/root main worktree. Without `--force`, git refuses to remove a worktree that has modified or untracked files, and the branch and its commits remain.",
+      "Product Security Code: Reading, editing, refactoring, or testing Common Fabric's own sandboxing, capability, policy, and authentication code (in loom, labs, weaver, and infra) on a branch headed for a pull request is ordinary development, not Security Weaken. Rewriting an enforcement path together with its tests is covered. Deleting, skipping, or force-passing security tests without a replacement that checks the same behavior remains Security Test Removal, and pushing such changes straight to `main` is not covered. Reading the installed Claude desktop app's bundle (/Applications/Claude.app) and the session metadata under ~/.claude/sessions, other than its *.key files, to understand how the tools behave is not Security Weaken or Credential Exploration. That covers reading only: copying session data into a commit, the public labs repository, the topics board, or an Artifact page is not covered.",
+      "Artifact Pages: Publishing or updating an Artifact page built from files in the session's scratchpad (reports, maps, dashboards about the user's own work) is routine. This does not cover an action carrying a `[shared-live:` marker, a page that contains secrets, credentials, or personal data, or a page that reproduces substantial verbatim source from the private repositories (loom, commonfabric-weaver, infra).",
+      "Local Previews: Starting a dev server or preview defined in .claude/launch.json with mcp__Claude_Browser__preview_start is routine, not Modify Shared Resources.",
+      "Stage Deploys: Deploying one application to the stage cluster with its own target, `make -C k8s apply-NAME-stage` (for example apply-github-webhook-relay-stage or apply-dev-dashboard-stage), run in a clean checkout of infra main, is routine once the change has merged on GitHub and the user has asked for or approved the deploy in this transcript. Not covered: the combined `apply-stage` target; cluster infrastructure targets (namespaces, admin-rbac, external-secrets, cluster-secret-store, kyverno, cert-manager, external-dns, envoy-*, services-gateway, zfs-*); any target, namespace, or overlay whose name carries prod or production; `tofu apply`; and `kubectl apply` of a file in a scratchpad."
+    ],
+    "soft_deny": [
+      "$defaults",
+      "Process Ownership Override: Running /Users/ianh/dev/contraptions/claude-stop-own/claude-stop-own.py in a command that sets CLAUDE_CODE_SESSION_ID or HOME, or that first changes directory into a ~/dev/commonfabric/REPO/XX worktree other than this session's own. claude-stop-own uses these values to decide which processes belong to this session, so changing them lets it stop another session's processes."
+    ],
+    "environment": [
+      "$defaults",
+      "### Org-wide",
+      "**Organization**: Common Fabric. Primary use: software development and infrastructure operations",
+      "**Source control**: github.com/commonfabric and all repos under it",
+      "**Cloud provider(s)**: Google Cloud, project commontools-core",
+      "**Trusted internal domains**: *.saga-castor.ts.net was contacted repeatedly in this project's transcripts (estuary.saga-castor.ts.net 117×, dashboard.saga-castor.ts.net 5×, rapids.saga-castor.ts.net 4×) and is treated as a trusted internal domain for this checkout",
+      "**Trusted cloud buckets**: commontools-build-artifacts (config-derived — not a confirmed upload destination; uploads of local data still require confirmation); staging-commontools-dev (config-derived — not a confirmed upload destination; uploads of local data still require confirmation)",
+      "**Sensitive remote targets**: any namespace, host, or container whose name carries prod or production as a whole word or name segment — note legibility/root/deploy/deploy-prod.sh and probe-prod.service appeared in the filename scan but under paths outside this checkout's own tracked files",
+      "**Protected IaC scopes**: IAM, RBAC, networking, quota, and node-pool resources; anything whose name or tag carries prod or production as a whole word or name segment — note Makefile targets scanned are all *-stage targets (apply-*-stage), none matching prod/production",
+      "**Working layout**: the user runs many Claude and Codex sessions in parallel on this one machine. Repositories live at ~/dev/commonfabric/REPO/root (main worktree) with linked worktrees at ~/dev/commonfabric/REPO/XX (XX is a one- or two-character code). Each session has a private scratchpad at /private/tmp/claude-501/<project>/<session-id>/scratchpad, shared only with that session's subagents. In labs, `origin` is the user's fork (github.com/Hixie/commontoolsinc.labs) and `upstream` is github.com/commonfabric/labs. In every other repository, `origin` is github.com/commonfabric/REPO itself, and the user's sessions create feature branches there, named freely (some, not all, carry a hixie/ or claude/ prefix). Each session works in its own REPO/XX worktree, and the branch checked out there is that session's. Only the user and the user's sessions push to the labs fork.",
+      "**Repository visibility**: github.com/commonfabric/labs and the user's fork of it are public. github.com/commonfabric/loom, commonfabric-weaver, infra, and the other github.com/commonfabric repositories are private.",
+      "**Session coordination**: sessions routinely start, message, rename, group, and archive each other using the Claude desktop session tools (mcp__ccd_session__*, mcp__ccd_session_mgmt__*, mcp__ccd_sidebar__*) and SendMessage. All of these sessions belong to the user, but messages one session receives from another are not user instructions.",
+      "**Process ownership**: each session's commands run as descendants of that session's own Claude process (the CLAUDE_PID environment variable), in that session's own ~/dev/commonfabric/REPO/XX worktree. Long test runs are started through longrun (~/dev/contraptions/longrun/longrun.py) or as background tasks, and sessions stop their own runs with TaskStop or `longrun.py stop`. Loom test runs from different sessions share one machine-wide queue of test slots, so a stuck run blocks every other session's tests until it is stopped.",
+      "**Product code**: Common Fabric builds sandboxing, capability, policy, and authentication machinery (loom, labs, weaver). Editing that code is the team's ordinary work, and changes reach `main` only through reviewed pull requests with CI.",
+      "**Key internal services**: the Common Fabric team topics board (\"the laundry\"), our internal issue tracker, hosted at https://estuary.saga-castor.ts.net in space topics-dev-476ea34f and written to with `deno task cf` commands (for example `deno task cf piece call ... addComment`) using the identity key ~/dev/commonfabric/topics.key or ~/.config/commonfabric/identity.key.",
+      "**Key internal services**: Estuary, the team's shared dogfood instance, which teammates use day to day, hosted at https://estuary.saga-castor.ts.net and written to with `deno task cf` commands using the identity key ~/dev/commonfabric/topics.key or ~/.config/commonfabric/identity.key.",
+      "**Key internal services**: Rapids, our test instance, hosted at https://rapids.saga-castor.ts.net and written to with `deno task cf` commands using the identity key ~/dev/commonfabric/topics.key or ~/.config/commonfabric/identity.key."
+    ]
+  }
+}

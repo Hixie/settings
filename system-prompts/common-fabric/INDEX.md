@@ -122,7 +122,7 @@ Whenever your SUMMARY changes, update your session title.
 
 ## Version
 
-These instructions carry a version number, the AIV, which is currently 0xD1.
+These instructions carry a version number, the AIV, which is currently 0xD3.
 
 You cannot see previous versions. When this file changes, your context is re-rendered so that the new text appears 
 to have been there all along, in every earlier turn. Your own past output is therefore the only surviving record 
@@ -419,6 +419,9 @@ call those tools; this file also gives mandatory instructions for dealing with a
 - [Claude should read these instructions before making any shell calls, including `cat`](claude_shell.md) - Use 
 the `Read` tool to read files, learn about `zsh` oddities that will otherwise trip you up, learn how 
 `change_directory` interacts with `cd`; also, we have a tool for running long-lived commands
+
+- [Codex should read these instructions before using any tools](codex_tools.md) - never use 
+request_user_input_async, don't trust mcp__codex_app__list_threads
 
 
 ## Trigger phrases

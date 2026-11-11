@@ -51,6 +51,15 @@
         ]
       },
       {
+        "matcher": "mcp__ccd_session_mgmt__set_session_permission_mode",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/ianh/.claude/hooks/allow-auto-mode.py"
+          }
+        ]
+      },
+      {
         "matcher": "Bash",
         "hooks": [
           {

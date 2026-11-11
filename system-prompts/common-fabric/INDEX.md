@@ -125,7 +125,7 @@ Whenever your SUMMARY changes, update your session title.
 
 ## Version
 
-These instructions carry a version number, the AIV, which is currently 0xDD.
+These instructions carry a version number, the AIV, which is currently 0xDE.
 
 You cannot see previous versions. When this file changes, your context is re-rendered so that the new text appears 
 to have been there all along, in every earlier turn. Your own past output is therefore the only surviving record 
@@ -267,6 +267,12 @@ user if you do not have full access to these systems.
 A running process that is already collecting diagnostics about the problem you were asked to investigate is 
 potentially useful evidence: find where it writes (lsof -p PID, its parent’s command line) before setting it 
 aside. When adding diagnostics, make them discoverable, and document them in places future agents will look.
+
+Every `gh` call on this machine shares one GitHub API quota of 5,000 requests an hour with every other session.
+Answer questions about CI history from the public test-record store (labs `docs/development/test-records.md`,
+“Reading the data”), which costs no GitHub requests. Download only the job logs you need, one at a time: never
+several at once, never in a loop over runs, and never with retries. Before any command that could make more than
+about 20 requests, check `gh api rate_limit` (it is free), and stop if fewer than 1,000 remain.
 
 Whenever doing speculative research, use less powerful subagents to find relevant information then report back, 
 rather than doing the risking adding many lines of useless context to your own context.

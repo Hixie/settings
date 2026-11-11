@@ -67,7 +67,8 @@ the issue has been resolved in some other way.
 If you are ever in a state where you are entirely blocked waiting for local tests to run, and can make no further 
 progress until those tests have completed, and your state is currently 🧱 or 🐤, then change your state to 🚧 
 before ending your turn. Immediately exit this state as soon as you get a response from your tool, returning to 🧱 
-or 🐤 as appropriate.
+or 🐤 as appropriate. If you are ever in 🚧 state for more than one hour, investigate why things are not 
+progressing faster, and report to the user.
 
 If you are ever running commands on a remote machine, use 📡 as your state (overriding 🧱, 💬, 🐤, or 🪻).
 
@@ -124,7 +125,7 @@ Whenever your SUMMARY changes, update your session title.
 
 ## Version
 
-These instructions carry a version number, the AIV, which is currently 0xD7.
+These instructions carry a version number, the AIV, which is currently 0xDA.
 
 You cannot see previous versions. When this file changes, your context is re-rendered so that the new text appears 
 to have been there all along, in every earlier turn. Your own past output is therefore the only surviving record 
@@ -178,15 +179,17 @@ Before searching for the right files:
 
 1. Run the "start of turn" instructions above.
 
-2. [Identify the worktrees or repositories being used](identifying-worktrees.md), if any. Work only in these 
+2. Detach yourself from your parent session, if any.
+
+3. [Identify the worktrees or repositories being used](identifying-worktrees.md), if any. Work only in these 
 worktrees and repositories, and any new worktrees that you may identify as necessary during your work. An explicit 
 "Use REPO XX" (where REPO is a repository's name or short name and XX is a worktree code) or "Use XYZ" (where XYZ 
 is a worktree identifier) indicates a worktree the user wants you to use. Never make changes to the worktrees of 
 another session.
 
-3. Set your session title following the instructions above.
+4. Set your session title following the instructions above.
 
-4. In each worktree, git fetch and branch from the default branch (typically main) to have a pristine worktree. 
+5. In each worktree, git fetch and branch from the default branch (typically main) to have a pristine worktree. 
 Exceptions: if you have been explicitly told to continue or adopt an existing commit or set of commits on an 
 existing branch, then use that (rebasing as necessary); if you have been told to review an existing branch, 
 consider it read-only and do not update it unless told to do so; if you are working in a repository that your 
@@ -196,15 +199,15 @@ Failure to do this will miss new information and risks making redundant work. Th
 and other agents are attempting to solve the same or related problems. Your task may already have been completed, 
 or may rely on very recent changes that will only become apparent after rebasing.
 
-5. Check the worktrees for AGENTS.md, CLAUDE.md, README.md, and CONTRIBUTING.md files, as well as docs/ 
+6. Check the worktrees for AGENTS.md, CLAUDE.md, README.md, and CONTRIBUTING.md files, as well as docs/ 
 directories. You are responsible for finding relevant instructions for working in these repositories.
 
-6. Participate in the team discussion on the laundry, as described in the section below.
+7. Participate in the team discussion on the laundry, as described in the section below.
 
-7. Read [the writing style instructions](writing-style-and-commit-messages.md), which apply to all prose you 
+8. Read [the writing style instructions](writing-style-and-commit-messages.md), which apply to all prose you 
 write.
 
-8. Start work. Your state is probably now 🧱 or 💬, possibly 🚨. Update your session title.
+9. Start work. Your state is probably now 🧱 or 💬, possibly 🚨. Update your session title.
 
 
 ## Participate in the team discussion
@@ -381,6 +384,9 @@ run, verify that the top-level Chrome for Testing command contains `--headless=n
 (CFS) worktrees.
 
 - [Weaver worktrees](weaver.md) - avoid showing visible windows when running tests or experiments.
+
+- [Settings repository](settings.md) - do not edit files in ~/.claude/ or ~/.codex/; those files come from the 
+settings repository, which you should never edit without explicit approval
 
 - [Commit each change unprompted](commit-new-not-amend.md) — commit as you finish each change (including review 
 fixes) without waiting to be asked, branching off the default branch first

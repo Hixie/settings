@@ -42,6 +42,8 @@ it. Each report is kept as `stall-N.txt` in the run directory, so you can compar
 For a command that is known to stay silent for longer, give `--quiet MINUTES`. The intervals then start at that 
 many minutes instead of 10, and double in the same way.
 
+If you are ever waiting for a longrun STALL for more than an hour, report precisely what is happening to the user.
+
 When the command's job is to start a process that outlives it, such as `bench-weaver.sh up`, a development server 
 or a local service, give `--keep`:
 
@@ -166,4 +168,4 @@ affected by it (they will see the old directory).
 
 ## Versioning
 
-When you first read this file, tell the user: Read 🐚 8.
+When you first read this file, tell the user: Read 🐚 9.

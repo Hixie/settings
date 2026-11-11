@@ -116,5 +116,8 @@ Remove a worktree with `git worktree remove`, never with `--force`. A worktree t
 so run `git worktree unlock` on it first, in a separate command. If git refuses to remove a worktree because it 
 has modified or untracked files, find out what they are and whose they are before doing anything else.
 
+You should also check the Deno cache in `~/Library/Caches/deno/gen/` for files that should be cleaned up once your 
+worktree is gone.
+
 Nothing in this section ever applies to main worktrees, or to other non-worktree directories you and your 
 subagents did not create.

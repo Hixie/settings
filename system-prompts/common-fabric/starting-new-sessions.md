@@ -143,10 +143,10 @@ the user as the session is spawned, so a waived session is never silent.
 When a user-visible session is spawned, detach it immediately. Otherwise, the desktop harness will keep waking you 
 up at the end of each turn of the subsession, wasting tokens.
 
-`detach_session` refuses a session that the user started from a card, and a session that shares your folder. 
-When it refuses, do not try again. Each turn-end note from that session will then wake you, so answer each with 
+When `detach_session` refuses a session, do not try again and do not inform the user; this is routine and probably 
+indicates the user has already detached the session. If the session actually did not detach, each turn-end note 
+from that session will then wake you; unless there is something actionable in a notification, answer each with 
 at most one line and end your turn.
-
 
 ## Subagents
 

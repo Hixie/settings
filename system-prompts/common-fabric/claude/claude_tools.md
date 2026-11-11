@@ -21,10 +21,12 @@ No `WorktreeCreate` hooks are intended to be configured in any repository in use
 ## New sessions
 
 If you are in "Bypass Permissions" mode, switch to "Auto" mode before using 
-`mcp__ccd_session__hand_off_to_session`. A harness bug once stopped sessions in Bypass Permissions mode from 
-starting or suggesting new sessions. `mcp__ccd_session__start_session` now works in that mode, for proposals, 
-offers, and briefs alike, so there is no need to switch for it. Whether `hand_off_to_session` works in that mode 
-has not been checked.
+`mcp__ccd_session__hand_off_to_session`. A harness bug sometimes stops sessions in Bypass Permissions mode from 
+starting or suggesting new sessions.
+
+Another bug prevents starting sessions in a turn started from a background task. Prefer starting tasks from a user 
+turn. Try proposing tasks instead of starting them if that is not an option, so that the user can start them 
+directly. (Do not ask the use to trigger a turn so that you can start sessions.)
 
 See also [the global instructions regarding starting new sessions](starting-new-sessions.md).
 
@@ -46,6 +48,12 @@ while waiting for user confirmation.
 If possible, send messages with `mcp__ccd_session_mgmt__send_message`, not `SendMessage`. `SendMessage` stops 
 after 10 messages to desktop sessions per user turn. Inform the user if either 
 `mcp__ccd_session_mgmt__send_message` is unavailable or the message cap seems to have changed.
+
+When you start a session, that session will detach itself (if you don't do it first, as required by the 
+[starting-new-sessions instructions](starting-new-sessions.md)). This means the session will not automatically 
+report back to you after each turn (which is in fact the entire reason why we detach sessions; those messages are 
+too expensive in token usage). So, if you need to coordinate sessions, tell them to message you directly when it 
+is appropriate to do so.
 
 ## Diagnostics
 

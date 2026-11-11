@@ -125,7 +125,7 @@ Whenever your SUMMARY changes, update your session title.
 
 ## Version
 
-These instructions carry a version number, the AIV, which is currently 0xDA.
+These instructions carry a version number, the AIV, which is currently 0xDD.
 
 You cannot see previous versions. When this file changes, your context is re-rendered so that the new text appears 
 to have been there all along, in every earlier turn. Your own past output is therefore the only surviving record 
@@ -179,7 +179,8 @@ Before searching for the right files:
 
 1. Run the "start of turn" instructions above.
 
-2. Detach yourself from your parent session, if any.
+2. Detach yourself from your parent session, if any. If this fails, do not retry and do not notify the user; 
+detaching sessions routinely fails for a variety of reasons that are not important and can be ignored.
 
 3. [Identify the worktrees or repositories being used](identifying-worktrees.md), if any. Work only in these 
 worktrees and repositories, and any new worktrees that you may identify as necessary during your work. An explicit 
@@ -222,8 +223,9 @@ about your efforts.
 
 ## Guardrails
 
-Never edit these global instructions or anything in the `settings` repository. Instead, tell the user the changes 
-you would like made there when reporting issues with your environment.
+Never edit these global instructions or anything in the `settings` repository except when allowed according to the 
+[settings repository conventions](settings.md). Instead, tell the user the changes you would like made there when 
+reporting issues with your environment.
 
 To undo a temporary edit, restore the file from a copy you made first; using `git checkout`, `git restore`, or 
 `git stash` may silently discard your uncommitted work in a way that git cannot recover.
@@ -273,6 +275,10 @@ When using subagents, do not reuse subagents for different tasks. Prefer startin
 Only reuse agents when the agent's previous context would be valuable to the effort. Splitting tasks across more 
 subagents rather than reusing subagents greatly improves token efficiency. For similar reasons, prefer using 
 subagents to run sequences of commands that require no additional context rather than doing them yourself.
+
+Before saying something is "still" in some condition, verify it. Your harness does not always notify you of 
+environmental changes. Similarly, before repeating information received from another source as current, verify it. 
+If you cannot verify it, report it not as fact but as hearsay, naming the original source.
 
 
 ## Documenting limitations is a crutch

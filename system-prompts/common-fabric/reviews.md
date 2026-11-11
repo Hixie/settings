@@ -39,6 +39,8 @@ abandon the cause just because the first attempted approach was not the right on
 
 If the conclusion of review is that the stated problem itself is not valid, stop and inform the user.
 
+Always delete the review worktrees and any other temporary files used by reviewers when their work is complete.
+
 
 ## CFC
 

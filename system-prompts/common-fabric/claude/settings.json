@@ -4,8 +4,7 @@
     "CLAUDE_CODE_SUBAGENT_PROMPT_CACHE_TTL": "1h",
     "CF_TEST_RECORDS_KEY_FILE": "/Users/ianh/.config/common-fabric/test-records-key.json",
     "BASH_DEFAULT_TIMEOUT_MS": "1200000",
-    "BASH_MAX_TIMEOUT_MS": "2147483647",
-    "PYTHONDONTWRITEBYTECODE": ""
+    "BASH_MAX_TIMEOUT_MS": "2147483647"
   },
   "permissions": {
     "allow": [

@@ -1,0 +1,6 @@
+{
+  "name": "worktree-buttons",
+  "version": "0.1.0",
+  "description": "Shows buttons above the prompt for each worktree named in the session title, to review its commits in iTerm2, open its pull request, or ask the agent to squash",
+  "types": "./types/index.d.ts"
+}

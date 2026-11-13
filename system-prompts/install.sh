@@ -13,6 +13,10 @@
 # __pycache__ directories, are left out. Anything else there that is not a
 # regular file, such as a symbolic link, is reported and left out.
 #
+# The claude/mods directory is left out too. It holds Claude Code plugins,
+# which Claude Code loads from the checkout through the CLAUDE_CODE_PLUGIN_DIRS
+# setting in claude/settings.json.
+#
 # A destination that already holds different contents is reported and left
 # alone, and the script exits with a non-zero status.
 
@@ -57,12 +61,16 @@ for tool in claude codex; do
     -prune -o ! -type d -print)
   while IFS= read -r source; do
     [ -n "$source" ] || continue
+    relative=${source#"$directory/$tool/"}
+    case $tool/$relative in
+      claude/mods/*) continue ;;
+    esac
     if [ -L "$source" ] || [ ! -f "$source" ]; then
       echo "$source is not a regular file; leaving it alone" >&2
       status=1
       continue
     fi
-    link "$source" "$HOME/.$tool/${source#"$directory/$tool/"}"
+    link "$source" "$HOME/.$tool/$relative"
   done <<EOF
 $files
 EOF

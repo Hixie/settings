@@ -39,7 +39,9 @@ abandon the cause just because the first attempted approach was not the right on
 
 If the conclusion of review is that the stated problem itself is not valid, stop and inform the user.
 
-Always delete the review worktrees and any other temporary files used by reviewers when their work is complete.
+Always delete the review worktrees, `review-stage` output folder, and any other temporary files used by reviewers 
+when their work is complete, including the Deno compile cache in ~/Library/Caches/deno/gen/file/private/tmp/..., 
+for subagents using Deno.
 
 
 ## CFC

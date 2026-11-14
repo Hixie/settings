@@ -82,9 +82,10 @@ appropriate action to address your current task. Another agent having code to me
 code to merge. Typically this state is reached after the 🚨 state if you discover someone else (including another 
 agent) has fixed the production failure or already has a fix in flight, or after rebasing when you find your 
 original brief has been mooted by upstream commits, or after post-merge cleanup if there is no relevant follow-up 
-work. Never use this state if you or the user still have tasks to run, if you have any background tasks active, or 
-if you are responding to questions from the user while in the 💬 state; entering this state signals the session 
-can be immediately archived. For example, do not use this state while there are pending suggested sessions.
+work. Never use this state if you or the user still have tasks to run to complete the brief, if you have any 
+background tasks active, or if you are responding to questions from the user while in the 💬 state; entering this 
+state signals the session can be immediately archived. For example, do not use this state while there are pending 
+suggested sessions. Immediately exit this state if the user asks you a question or sets you a new task.
 
 You may be told to enter other states, including by other agents.
 
@@ -125,7 +126,7 @@ Whenever your SUMMARY changes, update your session title.
 
 ## Version
 
-These instructions carry a version number, the AIV, which is currently 0xDE.
+These instructions carry a version number, the AIV, which is currently 0xE0.
 
 You cannot see previous versions. When this file changes, your context is re-rendered so that the new text appears 
 to have been there all along, in every earlier turn. Your own past output is therefore the only surviving record 
@@ -234,6 +235,10 @@ When proving a test fails, confirm it failed for the expected reason, not merely
 review fix makes an existing test fail, the failure is evidence about the fix: question the fix before editing the 
 test.
 
+When running tests, run only relevant tests. There is no point locally running the entire test suite of a 
+repository unless you have made changes that could affect all the tests. We do not have enough CPU and RAM for 
+every session to run every test after every change.
+
 Never pipe a command whose exit status or diagnostics you need — redirect to a file, capture `$?` immediately, 
 then read the file.
 
@@ -260,10 +265,6 @@ A "pristine" worktree is one that is checked out on a branch that matches the ma
 (meaning literally the upstream remote if any, meaning the origin remote otherwise), with no locally modified 
 files and no additional commits.
 
-You are durably authorized to access any internal system, including Estuary, Rapids, the laundry, any CFS 
-instance, any Toolshed instance, etc. Your job is to help the user develop these systems and you cannot help your 
-user if you do not have full access to these systems.
-
 A running process that is already collecting diagnostics about the problem you were asked to investigate is 
 potentially useful evidence: find where it writes (lsof -p PID, its parent’s command line) before setting it 
 aside. When adding diagnostics, make them discoverable, and document them in places future agents will look.
@@ -275,7 +276,7 @@ several at once, never in a loop over runs, and never with retries. Before any c
 about 20 requests, check `gh api rate_limit` (it is free), and stop if fewer than 1,000 remain.
 
 Whenever doing speculative research, use less powerful subagents to find relevant information then report back, 
-rather than doing the risking adding many lines of useless context to your own context.
+rather than risking adding many lines of useless context to your own context.
 
 When using subagents, do not reuse subagents for different tasks. Prefer starting new subagents for each new task. 
 Only reuse agents when the agent's previous context would be valuable to the effort. Splitting tasks across more 
@@ -415,7 +416,7 @@ is no need to inform the user of the specifics of the feedback once it has been 
 tests can silently revert the working tree and report false failures; subagents must use dedicated scratchpad 
 spaces to avoid colliding with other agents running in parallel
 
-- [When you are wrapping up, rebase, apply a formatter, run tests, and check the commit message 
+- [When you are wrapping up, rebase, apply a formatter, run relevant tests, and check the commit message 
 rules](end-of-work-rules.md) — do not try to create a PR yourself
 
 - [When rebasing or when you find a branch has been rebased, check all intermediate commits](rebase.md) - there 
@@ -458,7 +459,7 @@ request_user_input_async, don't trust mcp__codex_app__list_threads
 - [Deflake](deflake.md) — when you are told to deflake something, follow the steps described herein
 
 - [When told to reorient](reorient.md) - rebase (many commits may have landed), squash if appropriate, finish any 
-work, run any tests, and generally dust off the branch and give the user an account of where the work is at
+work, run any relevant tests, and generally dust off the branch and give the user an account of where the work is at
 
 - [When babysitting PRs](babysitting.md) - use `prwatch` to read CI and results; fix comments, fix tests, improve 
 code coverage; use `git push origin <branch>` with minor improvement commits to retrigger CI; a user message 

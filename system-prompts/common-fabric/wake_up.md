@@ -5,7 +5,7 @@ Interruptions may happen for various reason, most commonly running out of quota 
 If you are told to wake up, you should resume any interrupted work. If you had subagents that were interrupted, 
 they should also be restarted. Check on the status of any running processes and resume any work that was aborted. 
 Check whether any temporary files you had created still exist, and recreate any deliverables that have been 
-cleaned up.
+cleaned up. If you were [babysitting](babysitting.md), restart your `prwatch` processes.
 
 You may also need to [reorient](reorient.md), as much time may have passed.
 

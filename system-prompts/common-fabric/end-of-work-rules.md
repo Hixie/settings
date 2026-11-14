@@ -4,8 +4,8 @@
 artifacts, e.g. you would not follow these instructions when reviewing an existing branch.)
 
 When you think your work is complete (e.g. at the end of a turn): use git fetch and [rebase with the right 
-remote](rebase.md), then run tests and formatting checks. If you have not yet done so, read the [instructions for 
-writing tests](writing-tests.md) and apply them.
+remote](rebase.md), then run relevant tests and formatting checks. If you have not yet done so, read the 
+[instructions for writing tests](writing-tests.md) and apply them.
 
 Reconsider whether your work touched CFC-related topics, and if so, verify that you have thoroughly [reviewed your 
 work](reviews.md) in the context of the CFC specification.

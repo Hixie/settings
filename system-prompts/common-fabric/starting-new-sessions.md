@@ -17,6 +17,8 @@ SUBSESSION CATEGORY from the following list:
 Use the SUBSESSION CATEGORY in your explanation of the purpose of the task. This allows the user to see at a 
 glance what the immediate impact of ignoring a suggested task will be.
 
+A pending task marked 🐞 does not preclude entering the 🫖 state, but pending tasks of the other kinds do.
+
 If the user dismisses a task that applies to one of the commonfabric repositories, make sure it is documented as a 
 possible workstream in the [laundry](topics.md).
 

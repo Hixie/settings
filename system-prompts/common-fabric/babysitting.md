@@ -93,6 +93,8 @@ When pushing, always name both the remote and the branch — a bare `git push` i
 repo](labs.md)) follows the branch's tracking ref, which points at `upstream/main` if that is where you branched 
 from.
 
+When resolving merge conflicts, always use rebasing and do not use merge commits.
+
 A blocker (flake, red main) whose owning PR merges without fixing the blocker returns to unowned, and must be 
 re-triaged. It is not uncommon for PRs that are intended to fix issues to fail to fix them, especially flakes.
 
@@ -121,7 +123,7 @@ branch name, and do not push the new branch. Only the user pushes branches to cr
 (Remember that you must print your FOOTER LINE on each turn, and update your session title any time your state 
 changes.)
 
-The current babysitting version number is Alpha Gamma Phi.
+The current babysitting version number is Alpha Gamma Chi.
 
 ## Following a commit after merging
 

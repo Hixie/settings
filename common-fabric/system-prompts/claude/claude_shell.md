@@ -143,9 +143,9 @@ A `cd` inside a command changes the session's primary working directory for the 
 target lies inside the directory tree the session is already allowed to work in; this change is not carried past 
 the turn boundary. Using `run_in_background: true` will avoid changing the directory in your session.
 
-The directory changing back happens silently at a turn boundary. One symptom is that `deno` will say "no version 
-configured here" or similar in subsequent turns. Generally, an unexplained working-directory change in the 
-environment block (reported after the next command) is caused by the turn-boundary revert, not something you did.
+The directory changing back happens silently at a turn boundary. Generally, an unexplained working-directory 
+change in the environment block (reported after the next command) is caused by the turn-boundary revert, not 
+something you did.
 
 A `cd` to a directory outside the tree the session is allowed to work in will report "Shell cwd was reset to" with 
 no environment update at all (though the command itself still runs in the target directory).
@@ -168,4 +168,4 @@ affected by it (they will see the old directory).
 
 ## Versioning
 
-When you first read this file, tell the user: Read 🐚 10.
+When you first read this file, tell the user: Read 🐚 11.

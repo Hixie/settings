@@ -24,9 +24,12 @@ If you are in "Bypass Permissions" mode, switch to "Auto" mode before using
 `mcp__ccd_session__hand_off_to_session`. A harness bug sometimes stops sessions in Bypass Permissions mode from 
 starting or suggesting new sessions.
 
-Another bug prevents starting sessions in a turn started from a background task. Prefer starting tasks from a user 
-turn. Try proposing tasks instead of starting them if that is not an option, so that the user can start them 
-directly. (Do not ask the use to trigger a turn so that you can start sessions.)
+An overzealous security feature prevents starting sessions in a turn started from a background task. Prefer 
+starting tasks from a user turn; if you know you will start a session in a turn where you need to run tasks, use 
+foreground tasks not background tasks. Try proposing tasks instead of starting them if that is not an option, so 
+that the user can start them directly. (Do not ask the use to trigger a turn so that you can start sessions.)
+
+There is a limit of 20 cards, proposing a 21st session will silently drop the 1st.
 
 See also [the global instructions regarding starting new sessions](starting-new-sessions.md).
 
@@ -68,5 +71,4 @@ classifier's rule name in brackets, such as `[Git Destructive]`). A denial given
 `/subagents/agent-AGENT_ID.jsonl`. Use the log to find out which custom auto-mode rules in 
 `~/.claude/settings.json` are blocking routine work.
 
-When you first read this file, confirm that you have read it by stating "Claude-specific guidance 2 integrated".
-
+When you first read this file, confirm that you have read it by stating "Claude-specific guidance 3 integrated".

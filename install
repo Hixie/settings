@@ -1,0 +1,101 @@
+#!/bin/sh
+# Installs the settings in the named directories of this repository, by
+# putting a hard link in the home directory to each file they hold.
+#
+# usage: install DIRECTORY...
+#
+# A directory that holds a file named install-targets is a package. Each
+# line of install-targets names a directory relative to the home directory,
+# "." being the home directory itself, and each file in the package is
+# linked at the same path relative to each of those directories. A file
+# belongs to the package in the nearest directory that contains it, so a
+# package inside another is installed by its own install-targets, and an
+# empty install-targets keeps its directory's files out of the home
+# directory. Only files that git tracks are linked; files outside every
+# package are not. A tracked symbolic link is installed as a hard link to
+# the file it leads to. A file whose name git has to quote, because it
+# holds a double quote, a backslash or a control character, stops the
+# script.
+#
+# A destination that is already a hard link to its file is kept. Git
+# replaces a file when it changes it, which leaves the installed link
+# holding the old contents, so a destination that is a regular file whose
+# contents git has stored, or that match the file, is replaced by a new
+# link, as is a missing destination or a symbolic link into this
+# repository, which an earlier version of this script made. Any other
+# destination is reported and left alone, and the script exits with a
+# non-zero status.
+
+set -eu
+
+repo=$(CDPATH= cd -- "$(dirname "$0")" && pwd)
+status=0
+
+if [ $# -eq 0 ]; then
+  echo "usage: $0 DIRECTORY..." >&2
+  exit 2
+fi
+
+replaceable() { # replaceable DESTINATION SOURCE
+  if [ -L "$1" ]; then
+    case $(readlink "$1") in
+      "$repo"/*) ;;
+      *) false ;;
+    esac
+  elif [ -e "$1" ]; then
+    [ -f "$1" ] && {
+      cmp -s "$2" "$1" ||
+        git -C "$repo" cat-file -e "$(git -C "$repo" hash-object -- "$1")"
+    } 2>/dev/null
+  fi
+}
+
+link() { # link SOURCE DESTINATION
+  if [ ! -L "$2" ] && [ "$1" -ef "$2" ]; then
+    return
+  fi
+  if ! replaceable "$2" "$1"; then
+    echo "$2 differs from $1; leaving it alone" >&2
+    status=1
+    return
+  fi
+  mkdir -p "$(dirname "$2")"
+  ln -fL "$1" "$2"
+}
+
+for directory in "$@"; do
+  # git ls-files runs in an assignment, so that set -e stops the script if
+  # it fails. The loop reads a here-document rather than a pipe, so that it
+  # runs in this shell and a status that link sets survives it.
+  files=$(git -C "$repo" -c core.quotePath=false ls-files -- "${directory%/}")
+  if [ -z "$files" ]; then
+    echo "$0: git tracks no files in $repo/$directory" >&2
+    exit 2
+  fi
+  while IFS= read -r file; do
+    case $file in
+      \"*)
+        echo "$0: cannot install $file, whose name git quotes" >&2
+        exit 2
+        ;;
+    esac
+    package=$(dirname "$file")
+    until [ -f "$repo/$package/install-targets" ]; do
+      [ "$package" != . ] || continue 2
+      package=$(dirname "$package")
+    done
+    [ "$file" != "$package/install-targets" ] || continue
+    path=${file#"$package"/}
+    while IFS= read -r target <&3 || [ -n "$target" ]; do
+      case $target in
+        '') ;;
+        .) link "$repo/$file" "$HOME/$path" ;;
+        *) link "$repo/$file" "$HOME/${target%/}/$path" ;;
+      esac
+    done 3< "$repo/$package/install-targets"
+  done <<EOF
+$files
+EOF
+done
+
+exit $status

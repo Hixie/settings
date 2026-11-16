@@ -43,8 +43,9 @@
 # against the origin repository follow, labelled with its name. When the file
 # does not exist, no pull requests are listed.
 #
-# The install.sh beside the bin directory links this file to ~/bin/l and
-# pr-worktree to ~/bin/pr-worktree. The zshrc there defines this wrapper:
+# The settings repository's install script links this file to ~/bin/l and
+# pr-worktree to ~/bin/pr-worktree. The .zshrc beside bin defines this
+# wrapper:
 #
 # l() {
 #   builtin source "$HOME/bin/l" "$@"

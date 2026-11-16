@@ -1,0 +1,253 @@
+#!/bin/zsh
+
+# Change to a checkout and describe it. The checkout comes from the argument,
+# which is either a worktree identifier or the URL of a GitHub pull request, in
+# which case the checkout is the one that has the pull request's branch.
+#
+# A worktree identifier names a worktree by its code, one or two base 36 digits
+# written XX below, together with a marker for its repository:
+#
+#   XX              ~/dev/commonfabric/labs/XX
+#   𝛌XX or lXX      ~/dev/commonfabric/loom/XX
+#   ωXX or wXX      ~/dev/commonfabric/commonfabric-weaver/XX
+#   INFRAXX         ~/dev/commonfabric/infra/XX
+#   REPO-XX         ~/dev/commonfabric/REPO/XX
+#   denoXX          ~/dev/denoland/XX
+#   cliffyXX        ~/dev/cliffy/XX
+#   REPO            ~/dev/commonfabric/REPO/root
+#   contraptions    ~/dev/contraptions, and likewise settings and usable-git
+#
+# An argument of the form top/NNNN, such as top/2884, instead opens the team's
+# Topics board in the terminal with that Topic showing, by running the topics
+# task of the labs main worktree. The current directory does not change.
+#
+# REPO may be a short name: cfs for loom, weaver for commonfabric-weaver, and
+# web for web-weaver. A marker with no code names the main worktree, as in
+# "deno" for ~/dev/denoland/root. Letters in a code may be given in either case,
+# but the l and w markers must be lowercase, so that a labs code such as L3 or
+# W0 is written in uppercase; "web" names web-weaver, not weaver worktree EB.
+#
+# With no argument, the current directory is described. The description is
+# the output of logs, followed by one line for each open pull request whose
+# source branch is the branch checked out there, newest first. They are read
+# from ~/.cache/github-prs.tsv, which ~/dev/contraptions/github-hookbar keeps,
+# so describing a checkout makes no network requests. That file lists only the
+# pull requests whose authors and repository owners github-hookbar tracks, and
+# it misses changes made while github-hookbar was not connected until its next
+# refresh. It holds neither titles nor draft states, so each line printed
+# gives only the pull request's number, as a link to it. A line of that file
+# names a pull request when its branch is the branch checked out here and its
+# repository, which is the one the pull request was filed against, is one of
+# those named by the upstream and origin remotes. A fork's pull requests are
+# usually filed against the upstream repository, so those come first; any filed
+# against the origin repository follow, labelled with its name. When the file
+# does not exist, no pull requests are listed.
+#
+# The install.sh beside the bin directory links this file to ~/bin/l and
+# pr-worktree to ~/bin/pr-worktree. The zshrc there defines this wrapper:
+#
+# l() {
+#   builtin source "$HOME/bin/l" "$@"
+# }
+#
+# The wrapper sources the script so its directory changes persist in the
+# interactive shell. A child process cannot change its parent shell's directory.
+
+() {
+  emulate -L zsh
+  setopt no_unset pipe_fail
+
+  local invocation_context=$1
+  shift
+
+  local program=l
+  local commonfabric_root=$HOME/dev/commonfabric
+  local target=
+  local repository worktree_root worktree_code
+  local url remote_name
+  local head_branch slug listing_repository listing_name listing_label
+  local listing_path listing_output listing_line listed_repository
+  local listed_branch listed_number listed_rest listed_url
+  local bold_on bold_off link_on link_off
+  local -a listed_numbers
+  local -aU listing_repositories
+
+  if (( $# > 0 )) && [[ $1 == top/<-> ]]; then
+    # A task runs in the directory of the configuration file that defines it.
+    command deno task --quiet \
+      --config "$commonfabric_root/labs/root/deno.jsonc" topics browse "$1"
+    return
+  elif (( $# > 0 )) && [[ $1 == https://github.com/* ]]; then
+    target=$("$HOME/bin/pr-worktree" "$1") || return 1
+  elif (( $# > 0 )); then
+    # An identifier names the directory holding a repository's worktrees and
+    # the code of a worktree within it.
+    case $1 in
+      '')
+        print -u2 -- "$program: invalid worktree identifier: $1"
+        return 1
+        ;;
+      contraptions|settings|usable-git)
+        target=$HOME/dev/$1
+        ;;
+      web)
+        worktree_root=$commonfabric_root/web-weaver
+        ;;
+      𝛌*|l|l?|l??)
+        worktree_root=$commonfabric_root/loom
+        worktree_code=${1#(𝛌|l)}
+        ;;
+      ω*|w|w?|w??)
+        worktree_root=$commonfabric_root/commonfabric-weaver
+        worktree_code=${1#(ω|w)}
+        ;;
+      INFRA*)
+        worktree_root=$commonfabric_root/infra
+        worktree_code=${1#INFRA}
+        ;;
+      deno*)
+        worktree_root=$HOME/dev/denoland
+        worktree_code=${1#deno}
+        ;;
+      cliffy*)
+        worktree_root=$HOME/dev/cliffy
+        worktree_code=${1#cliffy}
+        ;;
+      *)
+        # Repository names such as web-weaver contain hyphens, so only an
+        # identifier that is not itself a repository name is split at its
+        # last hyphen into a repository name and a code. An identifier that
+        # names no repository at all is a labs worktree code.
+        repository=$1
+        worktree_code=
+        if [[ $1 == *-* && ! -d "$commonfabric_root/$1" ]]; then
+          repository=${1%-*}
+          worktree_code=${1##*-}
+        fi
+        case $repository in
+          cfs) repository=loom ;;
+          weaver) repository=commonfabric-weaver ;;
+          web) repository=web-weaver ;;
+        esac
+        if [[ -z $worktree_code && ! -d "$commonfabric_root/$repository" ]]
+        then
+          repository=labs
+          worktree_code=$1
+        fi
+        worktree_root=$commonfabric_root/$repository
+        ;;
+    esac
+
+    if [[ -n $worktree_root ]]; then
+      case ${(U)worktree_code} in
+        '')
+          target=$worktree_root/root
+          ;;
+        [0-9A-Z]|[0-9A-Z][0-9A-Z])
+          target=$worktree_root/${(U)worktree_code}
+          ;;
+        *)
+          print -u2 -- "$program: invalid worktree identifier: $1"
+          return 1
+          ;;
+      esac
+    fi
+  fi
+
+  if [[ -n $target ]]; then
+    builtin cd -- "$target" || return 1
+  fi
+
+  if ! command git rev-parse --git-dir >/dev/null 2>&1; then
+    if [[ $invocation_context == *:file* ]]; then
+      command ll
+      return
+    fi
+    exec ll
+  fi
+
+  command logs || return
+
+  # List the open pull requests whose source branch is the branch checked out
+  # here. They live in the repositories named by the upstream and origin
+  # remotes. GitHub treats the owner and name of a repository without regard
+  # to case, so the names are kept in lowercase.
+  head_branch=$(command git --no-optional-locks symbolic-ref --quiet --short \
+    HEAD 2>/dev/null) || head_branch=
+  listing_path=$HOME/.cache/github-prs.tsv
+  if [[ -z $head_branch || ! -e $listing_path ]]; then
+    return
+  fi
+
+  for remote_name in upstream origin; do
+    url=$(command git --no-optional-locks remote get-url "$remote_name" \
+      2>/dev/null) || continue
+    url=${url%/}
+    url=${url%.git}
+    case $url in
+      github.com[:/]?*/?*|*[@/]github.com[:/]?*/?*)
+        slug=${url##*github.com[:/]}
+        ;;
+      *)
+        continue
+        ;;
+    esac
+    [[ ${slug#*/} == */* ]] && continue
+    listing_repositories+=(${(L)slug})
+  done
+  (( $#listing_repositories )) || return
+
+  # github-hookbar rewrites the file in place while it holds a flock(2) lock
+  # on it, so lockf holds that lock while cat reads the file, and a rewrite in
+  # progress is never seen half done. Without -k, lockf would delete the file
+  # afterwards; -n makes it fail rather than create a missing file.
+  listing_output=$(command lockf -kn "$listing_path" cat "$listing_path") || {
+    print -u2 -- "$program: could not read $listing_path"
+    return 1
+  }
+
+  bold_on=
+  bold_off=
+  if [[ -t 1 && ${TERM:-} != dumb && -z ${NO_COLOR+set} ]]; then
+    bold_on=$'\033[1;37m'
+    bold_off=$'\033[0m'
+  fi
+
+  # The pull requests of the upstream repository come first. Those of the
+  # origin repository, when it is a different one, are labelled with its name.
+  # The file spells repositories as GitHub does, so the labels and links use
+  # its spelling.
+  for listing_repository in $listing_repositories; do
+    listing_name=
+    listed_numbers=()
+    for listing_line in ${(f)listing_output}; do
+      IFS=$'\t' read -r listed_repository listed_branch listed_number \
+        listed_rest <<< "$listing_line"
+      if [[ ${(L)listed_repository} == $listing_repository &&
+            $listed_branch == $head_branch &&
+            $listed_number == <1-> && -z $listed_rest ]]; then
+        listing_name=$listed_repository
+        listed_numbers+=($(( 10#$listed_number )))
+      fi
+    done
+
+    listing_label=
+    if [[ $listing_repository != $listing_repositories[1] ]]; then
+      listing_label=" in $listing_name"
+    fi
+
+    for listed_number in ${(Onu)listed_numbers}; do
+      # A terminal that understands OSC 8 turns the pull request number into
+      # a link to the pull request. iTerm2 opens such a link on command-click.
+      link_on=
+      link_off=
+      if [[ -t 1 && ${TERM:-} != dumb ]]; then
+        listed_url=https://github.com/$listing_name/pull/$listed_number
+        link_on=$'\033]8;;'"$listed_url"$'\033\\'
+        link_off=$'\033]8;;\033\\'
+      fi
+      print -r -- "${bold_on}Open pull request $link_on#$listed_number$link_off"\
+"$listing_label$bold_off"
+    done
+  done
+} "$ZSH_EVAL_CONTEXT" "$@"

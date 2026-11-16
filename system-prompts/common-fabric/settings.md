@@ -12,6 +12,12 @@ the user for guidance.
 
 Never edit files in ~/.claude/ or ~/.codex/ directly; do it via this repository instead.
 
+The zsh startup files and personal commands also come from this repository, from its `shell` directory. 
+~/.zshenv, ~/.zprofile, ~/.zshrc, and the commands in ~/bin other than profile-icon are symbolic links into it, so 
+editing one of them edits this repository, and the rules above apply. After adding a file to `shell`, run 
+`shell/install.sh` to link it into place. Never put a secret in these files: `shell/zshenv` reads the GitHub token 
+from the login keychain.
+
 After editing this repository's files, run the "install.sh" script to re-update the hardlinks.
 
 Claude Code mods (plugins that change the interface or behavior of Claude Code) for this machine go in 

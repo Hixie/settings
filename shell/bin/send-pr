@@ -1,0 +1,226 @@
+#!/bin/zsh -f
+
+# Send "babysit URL", where URL is the URL of a GitHub pull request, as the
+# next prompt of the Claude or Codex session that is working on the pull
+# request.
+#
+# The session is found through the checkout that has the pull request's
+# branch, as found by pr-worktree. That checkout has a worktree identifier,
+# such as L8 for ~/dev/commonfabric/labs/L8 or 𝛌L8 for
+# ~/dev/commonfabric/loom/L8. A session title begins with the identifiers of
+# the worktrees the session is using, separated by commas, followed by a
+# colon, as in "L8, 𝛌L8: 🧱 Fix the build" or "labs,𝛌L8: 🧱 Fix the build".
+#
+# The candidates are the running Claude sessions whose titles list the
+# identifier, and the most recently used unarchived Codex thread whose title
+# lists it. The message is sent only when there is exactly one candidate.
+#
+# The Claude app stops the processes of idle sessions when it needs room
+# under its limit on running sessions and when memory is short, and stops
+# every session's process when it restarts or switches accounts. It starts
+# a session's process again when the session is sent a message in the app,
+# and sometimes when the session is opened, but no other program can make
+# it do so. When no candidate is running, the stopped sessions whose titles
+# list the identifier are named, so that one of them can be sent the
+# message from the app.
+#
+# A Claude session receives the message through its messaging socket, in
+# the same way that one Claude session sends a message to another, so it
+# sees a message from another session rather than one typed in its prompt
+# box. A session holds a message for its user's approval when the message
+# states a permission mode other than the session's own, and a session in
+# bypass mode also holds a message that states none. The message therefore
+# states the mode in the Claude app's record of the session, or, for a
+# session the app did not start, the mode its transcript last recorded,
+# which is out of date if the mode changed after the session's last turn.
+# The socket does not acknowledge messages, so a message that the session
+# holds or rejects is still reported as sent. A Codex thread receives the
+# message through `codex queue`, which the Codex app runs as the thread's
+# next turn.
+#
+# With -n, the session is described but nothing is sent.
+
+emulate zsh
+setopt no_unset pipe_fail extended_glob
+zmodload zsh/net/socket || exit
+
+program=${0:t}
+commonfabric_root=$HOME/dev/commonfabric
+claude_home=${CLAUDE_CONFIG_DIR:-$HOME/.claude}
+codex_home=${CODEX_HOME:-$HOME/.codex}
+codex_tool=/Applications/ChatGPT.app/Contents/Resources/codex-cli/CodexCLI.app/Contents/MacOS/codex
+typeset -i dry_run=0
+typeset url request checkout identifier repository code listing matches
+typeset candidate key title kind pid session socket record mode=
+typeset -a databases candidates key_files transcripts records session_records
+
+# The Claude app keeps a record of each session in a folder for each account
+# and organization. Folders with dots in their names hold records the app has
+# set aside, for example when switching accounts.
+records=("$HOME/Library/Application Support/Claude/claude-code-sessions"/[^.]##/[^.]##/local_*.json(N))
+
+# Prints the records that contain the given text, one per line. There are
+# thousands of records, too many to name on one command line. Each record is
+# one line of JSON, so a damaged record spoils only its own line.
+records_containing() {
+  (( ${#records} )) || return 1
+  print -rN -- $records | command xargs -0 grep -h -F -- "$1"
+}
+
+if [[ ${1:-} == -n ]]; then
+  dry_run=1
+  shift
+fi
+if (( $# != 1 )); then
+  print -u2 -- "usage: $program [-n] PULL-REQUEST-URL"
+  exit 2
+fi
+url=$1
+request="babysit $url"
+
+checkout=$("$HOME/bin/pr-worktree" "$url") || exit
+checkout=${checkout:A}
+
+# The worktree identifier of a checkout, as described by identifying-worktrees
+# in the agent instructions, and understood by l.
+case $checkout in
+  $HOME/dev/(contraptions|settings|usable-git))
+    identifier=${checkout:t}
+    ;;
+  $HOME/dev/denoland/root) identifier=deno ;;
+  $HOME/dev/denoland/[0-9A-Z](|[0-9A-Z])) identifier=deno${checkout:t} ;;
+  $HOME/dev/cliffy/root) identifier=cliffy ;;
+  $HOME/dev/cliffy/[0-9A-Z](|[0-9A-Z])) identifier=cliffy${checkout:t} ;;
+  $commonfabric_root/[^/]##/root)
+    identifier=${checkout:h:t}
+    ;;
+  $commonfabric_root/[^/]##/[0-9A-Z](|[0-9A-Z]))
+    repository=${checkout:h:t}
+    code=${checkout:t}
+    case $repository in
+      labs) identifier=$code ;;
+      loom) identifier=𝛌$code ;;
+      commonfabric-weaver) identifier=ω$code ;;
+      infra) identifier=INFRA$code ;;
+      web-weaver) identifier=web-$code ;;
+      *) identifier=$repository-$code ;;
+    esac
+    ;;
+  *)
+    print -u2 -- "$program: $checkout is not a worktree with an identifier"
+    exit 1
+    ;;
+esac
+
+# A jq filter that selects the sessions whose titles list the identifier, and
+# prints each as its key, a tab, and its title. The list is the text before
+# the first colon, split at commas, with the spaces around each identifier
+# removed; an identifier has no spaces in it.
+select_sessions='
+  select((.name // "") | split(":") | length > 1 and
+    (.[0] | split(",") | map(gsub("^\\s+|\\s+$"; ""))
+      | all(test("^\\S+$")) and any(. == $id)))
+  | "\(.key)\t\(.name | gsub("[\\t\\n]"; " "))"'
+
+# Each running Claude session keeps a record, named after its process ID, that
+# has its current title. These records are read directly because `claude
+# agents --json` takes several seconds to list the same sessions. A record
+# whose process is no longer running is skipped.
+for record in $claude_home/sessions/<->.json(N); do
+  kill -0 ${record:t:r} 2>/dev/null && session_records+=($record)
+done
+if (( ${#session_records} )); then
+  matches=$(command jq -r --arg id "$identifier" \
+    ".key = \"claude:\(.pid):\(.sessionId)\" | $select_sessions" \
+    $session_records) || exit
+  candidates+=(${(f)matches})
+fi
+
+databases=($codex_home/state_<->.sqlite(Nn))
+if (( ${#databases} )); then
+  listing=$(command sqlite3 -json "${databases[-1]}" "
+    select 'codex:' || id as key, name from threads
+    where archived = 0 and coalesce(name, '') != ''
+    order by recency_at_ms desc") || {
+    print -u2 -- "$program: could not list the Codex threads"
+    exit 1
+  }
+  matches=$(print -r -- "$listing" | command jq -r --arg id "$identifier" \
+    "first(.[] | $select_sessions)") || exit
+  candidates+=(${(f)matches})
+fi
+
+if (( ${#candidates} == 0 )); then
+  matches=$(records_containing "$identifier" |
+    command jq -R -r --arg id "$identifier" "fromjson? // empty
+      | select(.isArchived != true) | .key = .sessionId | .name = .title
+      | $select_sessions")
+  if [[ -n $matches ]]; then
+    print -u2 -- "$program: the Claude app has stopped the sessions that" \
+      "list $identifier in their titles; sending one a message from the" \
+      "app starts it again:"
+    for candidate in ${(f)matches}; do
+      print -u2 -- "  ${candidate%%$'\t'*}  ${candidate#*$'\t'}"
+    done
+    exit 1
+  fi
+  print -u2 -- "$program: no session lists $identifier in its title"
+  exit 1
+fi
+if (( ${#candidates} > 1 )); then
+  print -u2 -- "$program: several sessions list $identifier in their titles:"
+  for candidate in $candidates; do
+    print -u2 -- "  ${candidate%%$'\t'*}  ${candidate#*$'\t'}"
+  done
+  exit 1
+fi
+
+key=${candidates[1]%%$'\t'*}
+title=${candidates[1]#*$'\t'}
+kind=${key%%:*}
+print -r -- "${(C)kind} session: $title"
+(( dry_run )) && exit 0
+
+case $kind in
+  claude)
+    # The session's record names its socket, and a key file next to the
+    # record holds the token that the socket requires before any message.
+    pid=${${key#claude:}%%:*}
+    session=${key##*:}
+    socket=$(command jq -r --arg session "$session" \
+      'select(.sessionId == $session) | .messagingSocketPath // empty' \
+      "$claude_home/sessions/$pid.json") || exit
+    key_files=($claude_home/sessions/$pid.[0-9a-f](#c64).key(N))
+    if [[ -z $socket ]] || (( ${#key_files} != 1 )); then
+      print -u2 -- "$program: the Claude session cannot receive messages"
+      exit 1
+    fi
+    # The Claude app's record of the session has its permission mode, and
+    # so does every user turn in the transcript, so the transcript serves
+    # for a session the app did not start. The message states the mode as
+    # "bypass" or "prompting".
+    mode=$(records_containing "\"cliSessionId\":\"$session\"" |
+      command jq -n -R -r --arg session "$session" '[inputs | fromjson? //
+        empty | select(.cliSessionId == $session and .permissionMode)]
+        | max_by(.lastActivityAt // 0) // empty
+        | "\"permissionMode\":\"\(.permissionMode)\""')
+    transcripts=($claude_home/projects/*/$session.jsonl(N))
+    if [[ -z $mode ]] && (( ${#transcripts} == 1 )); then
+      mode=$(command grep -a -o '"permissionMode":"[A-Za-z]*"' \
+        "${transcripts[1]}" | command tail -n 1)
+    fi
+    [[ $mode == *'"bypassPermissions"' ]] && mode=bypass || mode=prompting
+    zsocket "$socket" || exit
+    command jq -c --arg request "$request" --arg mode "$mode" '
+      if (.peerToken | type) != "string" then error("no messaging token")
+      else {type: "auth", token: .peerToken},
+        {type: "user", priority: "next", message: {content:
+          "<cross-session-message from-name=\"send-pr\" from-mode=\"\($mode)\">\n\($request)\n</cross-session-message>"}}
+      end' "${key_files[1]}" >&$REPLY || exit
+    ;;
+  codex)
+    command $codex_tool queue --thread "${key#codex:}" --message "$request" \
+      >/dev/null || exit
+    ;;
+esac
+print -r -- "Sent: $request"

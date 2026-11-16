@@ -1,0 +1,175 @@
+#!/bin/zsh -f
+
+# Print the path of the checkout that has the source branch of the GitHub pull
+# request whose URL is the argument.
+#
+# The checkouts of a Common Fabric repository all live in one directory,
+# ~/dev/commonfabric/REPO, so only those are searched. Any other repository is
+# looked for among all the checkouts in ~/dev, where a checkout matches when
+# its directory or one of its remotes has the repository's name.
+
+emulate zsh
+setopt no_unset
+
+program=${0:t}
+commonfabric_root=$HOME/dev/commonfabric
+typeset target= branch=
+typeset candidate REPLY listing_path listing line
+typeset -a fields
+typeset remainder pr_path pr_owner pr_repository pr_number
+typeset expected_name directory_name remote url remote_name
+
+# Set REPLY to the branch checked out in the checkout named by the argument. A
+# checkout in the middle of a rebase has a detached HEAD, and its branch is
+# the one the rebase will update when it finishes.
+#
+# The files in the checkout's git directory are read directly, because
+# starting git once for each of the hundred or more checkouts of a repository
+# takes several seconds. A linked worktree's .git is a file that names its git
+# directory.
+checkout_branch() {
+  local git_dir=$1/.git head_name state_file
+  if [[ -f $git_dir ]]; then
+    git_dir=$(<"$git_dir")
+    [[ $git_dir == 'gitdir: '?* ]] || return 1
+    git_dir=${git_dir#gitdir: }
+    [[ $git_dir == /* ]] || git_dir=$1/$git_dir
+  fi
+  [[ -r $git_dir/HEAD ]] || return 1
+  head_name=$(<"$git_dir/HEAD")
+  if [[ $head_name != 'ref: '* ]]; then
+    for state_file in $git_dir/rebase-{merge,apply}/head-name; do
+      [[ -r $state_file ]] || continue
+      head_name=$(<"$state_file")
+      break
+    done
+  fi
+  head_name=${head_name#ref: }
+  [[ $head_name == refs/heads/?* ]] || return 1
+  REPLY=${head_name#refs/heads/}
+}
+
+if (( $# != 1 )); then
+  print -u2 -- "usage: $program PULL-REQUEST-URL"
+  exit 2
+fi
+
+remainder=${1#https://github.com/}
+if [[ $remainder == "$1" || $remainder != */* ]]; then
+  print -u2 -- "$program: invalid GitHub pull request URL: $1"
+  exit 1
+fi
+
+pr_owner=${remainder%%/*}
+remainder=${remainder#*/}
+if [[ -z $pr_owner || $remainder != */* ]]; then
+  print -u2 -- "$program: invalid GitHub pull request URL: $1"
+  exit 1
+fi
+
+pr_repository=${remainder%%/*}
+pr_path=${remainder#*/}
+if [[ -z $pr_repository || $pr_path != pull/* ]]; then
+  print -u2 -- "$program: invalid GitHub pull request URL: $1"
+  exit 1
+fi
+
+pr_path=${pr_path#pull/}
+pr_number=${pr_path%%[/?#]*}
+if [[ -z $pr_number || $pr_number == *[^0-9]* ||
+  ( ${pr_path#$pr_number} != '' &&
+    ${pr_path#$pr_number} != [/?#]* ) ]]; then
+  print -u2 -- "$program: invalid GitHub pull request URL: $1"
+  exit 1
+fi
+
+# github-hookbar (in ~/dev/contraptions) keeps a list of open pull requests in
+# ~/.cache/github-prs.tsv, one per line: the repository's full name, a tab,
+# the branch, a tab, and the number. A pull request's branch never changes, so
+# a line found there is correct even if the list is otherwise out of date, and
+# GitHub is asked only about a pull request the list does not have.
+# github-hookbar rewrites the file in place while it holds a flock(2) lock on
+# it, so lockf holds that lock while cat reads the file. Without -k, lockf
+# would delete the file afterwards; -n makes it fail rather than create a
+# missing file.
+listing_path=$HOME/.cache/github-prs.tsv
+if [[ -e $listing_path ]] &&
+  listing=$(command lockf -kn "$listing_path" cat "$listing_path" \
+    2>/dev/null); then
+  for line in ${(f)listing}; do
+    fields=("${(@ps:\t:)line}")
+    if (( ${#fields} == 3 )) && [[ -n $fields[2] && $fields[3] == <1-> &&
+        ${(L)fields[1]} == ${(L)pr_owner}/${(L)pr_repository} ]] &&
+        (( 10#$fields[3] == 10#$pr_number )); then
+      branch=$fields[2]
+      break
+    fi
+  done
+fi
+
+if [[ -z $branch ]]; then
+  if ! command -v gh >/dev/null 2>&1; then
+    print -u2 -- "$program: gh is required to inspect a pull request"
+    exit 1
+  fi
+  branch=$(command gh pr view "$1" --json headRefName \
+    --jq '.headRefName') || {
+    print -u2 -- "$program: could not read pull request: $1"
+    exit 1
+  }
+fi
+if [[ -z $branch ]]; then
+  print -u2 -- "$program: pull request has no source branch: $1"
+  exit 1
+fi
+
+expected_name=${(L)pr_repository}
+if [[ -d "$commonfabric_root/$expected_name" ]]; then
+  for candidate in "$commonfabric_root/$expected_name"/*(N-/); do
+    [[ -e "$candidate/.git" ]] || continue
+    checkout_branch "$candidate" || continue
+    if [[ $REPLY == "$branch" ]]; then
+      target=$candidate
+      break
+    fi
+  done
+else
+  if [[ ! -d "$HOME/dev" ]]; then
+    print -u2 -- "$program: $HOME/dev does not exist"
+    exit 1
+  fi
+
+  while IFS= read -r -d '' candidate; do
+    checkout_branch "$candidate" || continue
+    [[ $REPLY == "$branch" ]] || continue
+
+    directory_name=${candidate:t}
+    if [[ ${(L)directory_name} == $expected_name ]]; then
+      target=$candidate
+      break
+    fi
+
+    for remote in ${(f)"$(command git --no-optional-locks -C "$candidate" \
+      remote 2>/dev/null)"}; do
+      for url in ${(f)"$(command git --no-optional-locks -C "$candidate" \
+        remote get-url --all "$remote" 2>/dev/null)"}; do
+        url=${url%/}
+        url=${url%.git}
+        remote_name=${url:t}
+        if [[ ${(L)remote_name} == $expected_name ]]; then
+          target=$candidate
+          break 3
+        fi
+      done
+    done
+  done < <(command find "$HOME/dev" -type d \
+    -exec test -e '{}/.git' ';' -print0 -prune)
+fi
+
+if [[ -z $target ]]; then
+  print -u2 -- \
+    "$program: no $pr_repository checkout is currently on branch $branch"
+  exit 1
+fi
+
+print -r -- "$target"

@@ -1,0 +1,10 @@
+#!/bin/sh
+
+# Page standard input through cf view. A labs checkout views with its own
+# copy, so a worktree changing cf view shows its own work; anywhere else,
+# including a repository that vendors labs, views with the labs main worktree.
+
+top=$(git rev-parse --show-toplevel 2>/dev/null)
+root=$HOME/dev/commonfabric/labs/root
+[ -n "$top" ] && [ -f "$top/runtime/cli/launcher.ts" ] && root=$top
+CF_LABS_ROOT=$root exec "$HOME/dev/commonfabric/labs/root/bin/cf" view "$@"

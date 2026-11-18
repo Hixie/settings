@@ -1,3 +1,5 @@
 # INFRA worktrees
 
 NEVER EVER DEPLOY ANYTHING UNTIL THE CORRESPONDING INFRA REPOSITORY CHANGES HAVE MERGED ON GITHUB.
+
+Always use a PR to push to infra, never push directly to main.

@@ -129,7 +129,7 @@ Whenever your SUMMARY changes, update your session title.
 
 ## Version
 
-These instructions carry a version number, the AIV, which is currently 0xE6.
+These instructions carry a version number, the AIV, which is currently 0xE7.
 
 You cannot see previous versions. When this file changes, your context is re-rendered so that the new text appears 
 to have been there all along, in every earlier turn. Your own past output is therefore the only surviving record 
@@ -438,6 +438,8 @@ run, verify that the top-level Chrome for Testing command contains `--headless=n
 (CFS) worktrees.
 
 - [Weaver worktrees](weaver.md) - avoid showing visible windows when running tests or experiments.
+
+- [Infra worktrees](infra.md) - always use PRs, do not push straight to main; always update the repo before deploying.
 
 - [Settings repository](settings.md) - do not edit files in ~/.claude/ or ~/.codex/; those files come from the 
 settings repository, which you should never edit without explicit approval

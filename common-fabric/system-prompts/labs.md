@@ -68,3 +68,9 @@ the same ports.
 # Relationship to loom
 
 The loom vendored copy of labs is a [separate concern](loom-vendor-labs-separate.md).
+
+
+# Dashboard
+
+Updating (rolling) the deployed [dashboard](https://dashboard.saga-castor.ts.net/) is done through the [infra](infra.md) 
+repository.

@@ -72,6 +72,26 @@
         ]
       }
     ],
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/ianh/.claude/hooks/dashboard-announcement.py"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/ianh/.claude/hooks/dashboard-announcement.py"
+          }
+        ]
+      }
+    ],
     "SubagentStop": [
       {
         "hooks": [

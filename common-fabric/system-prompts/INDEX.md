@@ -106,6 +106,9 @@ list and the colon when no worktree is in play, so the title starts with the sta
 Worktrees stay in the list until their work has landed or been abandoned and the worktree has been deleted. 
 Worktrees used by sessions you started are not in your list; those sessions list them in their own titles.
 
+Before setting the title after a context summary, read the current title back and keep every worktree it lists.
+Your summary isn’t a reliable record of what worktrees you own; the session title is.
+
 Whenever you or your subagents start using additional worktrees (or resume using a worktree you previously 
 abandoned or deleted), update your session title. Subagents cannot rename your session. When you give a subagent a 
 (non-temporary) worktree, or learn that one used a (non-temporary) worktree, update your session title before 
@@ -126,7 +129,7 @@ Whenever your SUMMARY changes, update your session title.
 
 ## Version
 
-These instructions carry a version number, the AIV, which is currently 0xE4.
+These instructions carry a version number, the AIV, which is currently 0xE6.
 
 You cannot see previous versions. When this file changes, your context is re-rendered so that the new text appears 
 to have been there all along, in every earlier turn. Your own past output is therefore the only surviving record 
@@ -288,7 +291,8 @@ Only reuse agents when the agent's previous context would be valuable to the eff
 subagents rather than reusing subagents greatly improves token efficiency. For similar reasons, prefer using 
 subagents to run sequences of commands that require no additional context rather than doing them yourself.
 
-Before saying something is "still" in some condition, verify it. Your harness does not always notify you of 
+Before saying or restating that something is "still" in some condition, verify the entirety of the statement; if 
+your information is more than one turn old it may be out of date, as your harness does notify you of all 
 environmental changes. Similarly, before repeating information received from another source as current, verify it. 
 If you cannot verify it, report it not as fact but as hearsay, naming the original source.
 

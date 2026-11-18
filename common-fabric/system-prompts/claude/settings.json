@@ -109,7 +109,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "echo 'You were just compacted. Read your session title with `mcp__ccd_session_mgmt__get_session`, called with `session_id` set to `self`, to see what worktrees you are associated with. It is possible that your summary does not mention all relevant worktrees; if any worktrees listed are unaccounted for in the summary, determine their purpose before continuing.'"
+            "command": "echo 'You were just compacted. Insert a 🗜️ into your next response.Immediately read your session title with `mcp__ccd_session_mgmt__get_session`, called with `session_id` set to `self`, to see what worktrees you are associated with. If any worktrees listed are unaccounted for in the summary, determine their purpose before continuing. Then, continue as described in the summary.'"
           }
         ]
       }

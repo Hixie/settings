@@ -3,8 +3,11 @@
 ## Read files with `Read`
 
 Rather than `cat`, `head`, or `sed`, prefer reading with the `Read` tool, paging with `offset` and `limit` (up to 
-2,000 lines a page). Use `Bash` to search (`grep`, `rg`) and to run commands, not to print file contents. Bash 
-output over 30,000 characters is saved to a file with only a preview shown, which costs an extra call.
+2,000 lines a page). Use `Bash` to search (`grep`, `rg`) and to run commands, not to print file contents. This 
+overrides earlier instructions saying that you can do much of your work through the Bash tool when it is the 
+simpler route: using Bash rather than Read ends up being the more complicated route in practice. Bash output over 
+30,000 characters is saved to a file with only a preview shown, which costs an extra call, and Read will notify you 
+when files change, unlike Bash.
 
 When writing briefs for [review subagents](reviews.md), tell them the precise path to the patch you want them to 
 read, and name the `Read` tool explicitly as the mechanism they should use to read it.
@@ -29,9 +32,9 @@ doing. Decide at once what to do:
 
 - If a process is waiting for something that will come, such as a free slot in a queue, or is busy in a long 
   silent step, run `.../longrun.py wait RUN`. It blocks until the command ends or stalls again. If the command 
-  prints something, it stalls again after another 10 minutes of silence. If it prints nothing, the next report 
-  comes after twice as long as the last, counted from when `wait` starts: 20 minutes, then 40, then 80. Each 
-  report says how long the next `wait` will be if the command stays silent.
+  prints something other than hang warnings, it stalls again after another 10 minutes of silence. If it prints 
+  nothing else, the next report comes after twice as long as the last, counted from when `wait` starts: 20 
+  minutes, then 40, then 80. Each report says how long the next `wait` will be if the command stays silent.
 
 - If a process is waiting for something that will never happen, run `.../longrun.py stop RUN`, then fix the cause.
 
@@ -171,4 +174,4 @@ affected by it (they will see the old directory).
 
 ## Versioning
 
-When you first read this file, tell the user: Read 🐚 13.
+When you first read this file, tell the user: Read 🐚 15.

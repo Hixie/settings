@@ -22,8 +22,10 @@ result, not the process: report the final state, not how you got there.
 
 Significant design decisions, especially those that go against the original brief or other instructions, should be 
 included in the synopsis, as should any open issues, warnings, and enviromental failures that you raised earlier in 
-the conversation that have not yet been acknowledged by the user. It should also include a very brief summary of 
-how many tests were added, and a report on the impact the branch has on the repository's coverage metrics.
+the conversation that have not yet been acknowledged by the user (but as usual, verify that they are still salient 
+first; for example, the user may update configuration or start suggested sessions without telling you, and your 
+harness does not inform you of such changes either). It should also include a very brief summary of how many tests 
+were added, and a report on the impact the branch has on the repository's coverage metrics.
 
 The user does _not_ need to know about events that had no impact on the final work, for example, there is no need 
 to report on a subagent's mistakes if they were resolved without harm, temporary outages that have since been 

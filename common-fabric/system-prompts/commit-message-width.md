@@ -25,8 +25,8 @@ Counting characters by eye does not work. Run the check instead.
 containing backticks.
 
 2. Run `python3 ~/.claude/check-commit-message.py --fix $SCRATCHPAD/commit-msg.txt`. It rewraps ordinary 
-paragraphs and list items to 72 columns, and it leaves indented blocks, fenced code, quotes, and the trailer block 
-at the end untouched.
+paragraphs and list items to 72 columns. It keeps a section label such as PROBLEM on a line of its own, and it 
+leaves indented blocks, fenced code, quotes, and the trailer block at the end untouched.
 
 3. If it reports a problem, fix it and run it again. The subject is the one thing it cannot fix for you, because 
 shortening a subject means rewording it.

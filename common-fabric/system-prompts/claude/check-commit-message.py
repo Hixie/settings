@@ -9,9 +9,12 @@ body inside 72.
 Usage:
     python3 ~/.claude/check-commit-message.py [--fix] [--width N] MESSAGE_FILE
 
---fix rewraps ordinary prose and list items. It leaves indented blocks, fenced
-code, quotes, and the trailer block alone, and reports anything still too wide
-that only rewording can shorten. Exits non-zero while problems remain.
+--fix rewraps ordinary prose and list items. It keeps a section label such as
+PROBLEM on a line of its own, leaves indented blocks, fenced code, quotes, and
+the trailer block alone, and reports anything still too wide that only
+rewording can shorten. Exits non-zero while problems remain.
+
+check-commit-message-cases.py beside this script tests it.
 """
 
 import argparse
@@ -24,7 +27,8 @@ SUBJECT_TARGET = 50
 BODY_WIDTH = 72
 
 FENCE = re.compile(r"^\s*(```|~~~)")
-BULLET = re.compile(r"^(\s*(?:[-*+]|\d+[.)])\s+)")
+BULLET = re.compile(r"^(\s*(?:[-*+]|(\d+)[.)])\s+)")
+LABEL = re.compile(r"^[A-Z][A-Z0-9 -]*[A-Z0-9]:?$")
 TRAILER = re.compile(r"^[A-Za-z][A-Za-z0-9-]*: .+$")
 QUOTE = re.compile(r"^\s*>")
 
@@ -59,38 +63,55 @@ def split_blocks(lines):
     return blocks
 
 
+def starts_block(word):
+    """True if a line starting with this word is not read as ordinary text."""
+    return bool(BULLET.match(word + " ") or QUOTE.match(word) or FENCE.match(word))
+
+
+def ends_sentence(line):
+    """True if the line ends in . : ? or !, before any closing brackets and quotes."""
+    return line.rstrip().rstrip(")]\"'").endswith((".", ":", "?", "!"))
+
+
 def rewrap_block(block, width):
-    """Rewrap one paragraph, keeping list structure and hanging indents."""
-    items, current, prefix = [], [], ""
-    for _, line in block:
-        match = BULLET.match(line)
-        if match:
-            if current:
-                items.append((prefix, current))
-            prefix = match.group(1)
-            current = [line[len(prefix):].strip()]
-        elif current:
-            current.append(line.strip())
+    """Rewrap one paragraph, keeping labels, list structure and hanging indents.
+
+    A label, a line of capital letters such as PROBLEM, stays on a line of its
+    own. A line that follows ordinary text whose last line does not end a
+    sentence continues that text even when it starts with a number other than
+    1. A word that would make its line read as a list item, a quote or a fence
+    is kept off the start of a wrapped line.
+    """
+    lines = [line for _, line in block]
+    items = []  # [prefix, parts]; a label is a prefix with no parts
+    for number, line in enumerate(lines):
+        marker = BULLET.match(line)
+        unfinished = number > 0 and not ends_sentence(lines[number - 1])
+        continues = unfinished and items[-1][1] and not BULLET.match(items[-1][0])
+        if LABEL.match(line.rstrip()):
+            items.append([line.rstrip(), []])
+        elif marker and (marker.group(2) in (None, "1") or not continues):
+            items.append([marker.group(1), [line[marker.end():]]])
+        elif items and items[-1][1]:
+            items[-1][1].append(line)
         else:
-            prefix = re.match(r"^\s*", line).group(0)
-            current = [line.strip()]
-    if current:
-        items.append((prefix, current))
+            items.append([re.match(r"^\s*", line).group(0), [line]])
 
     out = []
     for prefix, parts in items:
-        hanging = " " * len(prefix)
-        out.extend(
-            textwrap.wrap(
-                " ".join(parts),
-                width=width,
-                initial_indent=prefix,
-                subsequent_indent=hanging,
-                break_long_words=False,
-                break_on_hyphens=False,
-            )
-            or [prefix.rstrip()]
+        words = " ".join(parts).split()
+        glued = "".join(
+            ("\0" if starts_block(word) else " ") + word for word in words[1:]
         )
+        wrapped = textwrap.wrap(
+            "".join(words[:1]) + glued,
+            width=width,
+            initial_indent=prefix,
+            subsequent_indent=" " * len(prefix),
+            break_long_words=False,
+            break_on_hyphens=False,
+        )
+        out.extend([line.replace("\0", " ") for line in wrapped] or [prefix.rstrip()])
     return out
 
 
@@ -98,6 +119,30 @@ def has_break_point(line, width):
     """True if the line could be wrapped at or before width."""
     indent = len(line) - len(line.lstrip())
     return " " in line[indent:width + 1].strip()
+
+
+def indented(lines):
+    """True if a line is indented as code, not as the rest of a list item.
+
+    A line indented by a tab or four or more spaces is code, unless it is
+    indented exactly as far as the text of the list item above it and the
+    line before it does not end in a colon. An unindented line that is not a
+    list item ends that indentation.
+    """
+    hanging, previous = None, ""
+    for line in lines:
+        indent = len(line) - len(line.lstrip(" "))
+        if line.startswith(("    ", "\t")) and (
+            indent != hanging or previous.rstrip().endswith(":")
+        ):
+            return True
+        marker = BULLET.match(line)
+        if marker:
+            hanging = len(marker.group(1))
+        elif not line.startswith(" "):
+            hanging = None
+        previous = line
+    return False
 
 
 def classify(lines, width):
@@ -110,7 +155,7 @@ def classify(lines, width):
         text = [line for _, line in block]
         if any(index in fenced for index in indices):
             kind = "preformatted"
-        elif any(QUOTE.match(line) or line.startswith(("    ", "\t")) for line in text):
+        elif any(QUOTE.match(line) for line in text) or indented(text):
             kind = "preformatted"
         elif position == len(blocks) - 1 and all(TRAILER.match(line) for line in text):
             kind = "trailer"

@@ -1,6 +1,6 @@
 # Guidance regarding Claude-specific tooling
 
-## Avoid `update_plan` and `wrap_up`
+## Avoid `update_plan`, `wrap_up`, and all `mcp__ccd_pr__*` tools
 
 Despite earlier instructions, these tools are not functional in this environment; this is intentional. Skip using 
 those tools.

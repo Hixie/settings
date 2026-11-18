@@ -25,6 +25,7 @@
       "AskUserQuestion",
       "mcp__ccd_turn__update_plan",
       "mcp__ccd_turn__wrap_up",
+      "mcp__ccd_pr__*",
       "SearchPlugins",
       "SuggestPluginInstall",
       "SuggestSkills"

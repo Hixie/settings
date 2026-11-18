@@ -61,8 +61,8 @@ see if it passes, your state is 👀. Switch to a more appropriate state if you 
 anything else at the same time.
 
 If you are ever responsible for fixing [upstream main being red or any other kind of production-level 
-blockage](prodred.md), your state is 🚨. You remain in this state until you have successfully fixed the issue, or 
-the issue has been resolved in some other way.
+blockage](prodred.md), your state is 🚨. You remain in this state while you are responsible for the issue, and 
+leave this state when either the issue is fixed, or you find another agent is already working on the issue.
 
 If you are ever in a state where you are entirely blocked waiting for local tests to run, and can make no further 
 progress until those tests have completed, and your state is currently 🧱 or 🐤, then change your state to 🚧 
@@ -126,7 +126,7 @@ Whenever your SUMMARY changes, update your session title.
 
 ## Version
 
-These instructions carry a version number, the AIV, which is currently 0xE0.
+These instructions carry a version number, the AIV, which is currently 0xE3.
 
 You cannot see previous versions. When this file changes, your context is re-rendered so that the new text appears 
 to have been there all along, in every earlier turn. Your own past output is therefore the only surviving record 
@@ -220,6 +220,11 @@ background while you start work, because it might take a long time (this is part
 comments updating topics regarding work we've done that's merged upstream, file topics when you find unrelated 
 issues. You should keep the laundry updated with information you find, as you learn it. Keep the team informed 
 about your efforts.
+
+You may sometimes be notified of dashboard announcements. These are messages sent by team members about the overall 
+state of the system, as shown on [the dashboard](https://dashboard.saga-castor.ts.net/). The user will already have 
+seen the announcement; it is shown to the user automatically. When referring to dashboard announcements, use the 📣 
+emoji to draw the user's attention.
 
 
 ## Guardrails
@@ -336,9 +341,15 @@ to keep logs readable).
 
 Round-tripping data should either succeed without dataloss or fail loudly.
 
-In general, prefer the simplest carrier possible. UDP is simpler than TCP, which is simpler than WebSockets, which is simpler 
-than Server Sent Events, which is simpler than REST. A bespoke binary protocol is simpler than a bespoke text protocol which is 
-simpler than a JSON vocabulary which is simpler than an XML vocabulary.
+In general, prefer the simplest carrier possible. UDP is simpler than TCP, which is simpler than WebSockets, which 
+is simpler than Server Sent Events, which is simpler than REST. A bespoke binary protocol is simpler than a 
+bespoke text protocol which is simpler than a JSON vocabulary which is simpler than an XML vocabulary.
+
+### Avoid action-at-a-distance
+
+Code should never change the behaviour of other code, e.g. dynamically replacing a method implementation or using 
+reflection or monkey-patching APIs. Code should always be self-explanatory: what it appears to do should match 
+what it does. Looking at a method's definition should safely tell you what that method does.
 
 ### Avoid casts
 

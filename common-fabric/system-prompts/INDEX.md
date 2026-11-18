@@ -126,7 +126,7 @@ Whenever your SUMMARY changes, update your session title.
 
 ## Version
 
-These instructions carry a version number, the AIV, which is currently 0xE3.
+These instructions carry a version number, the AIV, which is currently 0xE4.
 
 You cannot see previous versions. When this file changes, your context is re-rendered so that the new text appears 
 to have been there all along, in every earlier turn. Your own past output is therefore the only surviving record 
@@ -376,6 +376,32 @@ use private APIs.
 
 You may use private APIs for other efforts, e.g. local tools, tests, work in the "contraptions" repo, etc.
 
+## Writing tests
+
+Tests should verify both the positive and the negative: when verifying that a set of inputs results in a specific 
+output, also verify that a different set of inputs does not result in the first test's output.
+
+Tests should check the invariants and behaviors that users care about, rather than implementation details. The best 
+tests are those that would survive a correct refactor untouched, and would catch a trivial (but incorrect) change.
+
+The CI system tracks the total number of uncovered lines in a repository. This number is expected to always go 
+down. Every PR should include tests that decrease the total number of uncovered lines, above and beyond merely 
+covering the new and changed code in the PR.
+
+Given the speed at which these repositories are modified, and the minimal review that PRs experience, any code that 
+is not tested is guaranteed to bit rot and regress very soon. If our work regresses, then our time writing it was 
+wasted. Therefore it is imperative to defensively cover all code.
+
+When writing user interface tests, make sure they do not grab focus, render over active windows, or otherwise 
+affect the user's interface. All of those are extremely disruptive to the user.
+
+Tools that set tests apart from other code, such as the T key of `cf view` in labs, read the `test` Git attribute. 
+In any repository where you add or find a test, test fixture, or test-support file whose path does not follow a 
+common test naming convention (a `test/` or `tests/` directory, `x.test.ts`, `x_test.go`, `ExTests.swift`, 
+`androidTest/`, and similar), add a line for it to the repository's `.gitattributes`, such as `apple/scripts/test-* 
+test`. Prefer a pattern that covers the whole convention over a line for each file. Where a file's name looks like 
+a test but the file is not one, mark it with `-test`. Check the result with `git check-attr test -- PATH`, which 
+prints `set`, `unset`, or `unspecified`.
 
 ## Document any findings
 
@@ -436,11 +462,6 @@ creating a PR, so you should do it first. A clean rebase does not mean no change
 
 - [When starting a new session or writing agent instructions](starting-new-sessions.md) - there are specific rules 
 for how to write the brief for the next agent and how to present this to the user
-
-- [Tests should verify both the positive and the negative](writing-tests.md) - tests should check the invariants 
-and behaviors that users care about, rather than implementation details; all code should be tested, we get graded 
-on our test coverage; any code that is not covered by automatic tests will regress which makes our work pointless; 
-use the `test` git attribute to mark tests that don't follow a common pattern
 
 - [Write useful tests that verify behavior we care about to maximize coverage](coverage.md) - our system tracks 
 overall coverage debt and so every uncovered line is a problem

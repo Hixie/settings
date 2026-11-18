@@ -4,14 +4,10 @@
 artifacts, e.g. you would not follow these instructions when reviewing an existing branch.)
 
 When you think your work is complete (e.g. at the end of a turn): use git fetch and [rebase with the right 
-remote](rebase.md), then run relevant tests and formatting checks. If you have not yet done so, read the 
-[instructions for writing tests](writing-tests.md) and apply them.
+remote](rebase.md), then run relevant tests and formatting checks.
 
 Reconsider whether your work touched CFC-related topics, and if so, verify that you have thoroughly [reviewed your 
 work](reviews.md) in the context of the CFC specification.
-
-Read the [instructions for writing tests](writing-tests.md) and ensure you have written appropriate and sufficient 
-tests to fulfill your obligations under those rules.
 
 If you have completed the brief and reduced the overall coverage debt of the repository, and you are in the 🧱 
 state, and your code is not already in a PR, and your work is not stacked on another session's work, and you want 
@@ -19,14 +15,15 @@ the code to be merged upstream, then: after rebasing, squash the commits and swi
 squashing only happens during this transition from 🧱 to 🐤; in every other case, you should [make new commits, 
 not squash or amend](commit-new-not-amend.md).
 
-After doing this, remind the user of the premise of the brief, and give a synopsis of how you addressed it, 
-keeping the synopsis to less than 200 words. In this synopsis, assume the user is unfamiliar with the work, has 
-not read the brief, has not read the commit message, and has not read anything else in the conversation. The user 
-sees the result, not the process: report the final state, not how you got there.
+After doing this, remind the user of the premise of the brief, and give a synopsis of how you addressed it, keeping 
+the synopsis to less than 200 words. In this synopsis, assume the user is unfamiliar with the work, has not read 
+the brief, has not read the commit message, and has not read anything else in the conversation. The user sees the 
+result, not the process: report the final state, not how you got there.
 
 Significant design decisions, especially those that go against the original brief or other instructions, should be 
-included in the synopsis, as should any open issues, warnings, and enviromental failures that you raised earlier 
-in the conversation that have not yet been acknowledged by the user.
+included in the synopsis, as should any open issues, warnings, and enviromental failures that you raised earlier in 
+the conversation that have not yet been acknowledged by the user. It should also include a very brief summary of 
+how many tests were added, and a report on the impact the branch has on the repository's coverage metrics.
 
 The user does _not_ need to know about events that had no impact on the final work, for example, there is no need 
 to report on a subagent's mistakes if they were resolved without harm, temporary outages that have since been 

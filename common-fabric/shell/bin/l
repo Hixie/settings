@@ -16,6 +16,7 @@
 #   cliffyXX        ~/dev/cliffy/XX
 #   REPO            ~/dev/commonfabric/REPO/root
 #   contraptions    ~/dev/contraptions, and likewise settings and usable-git
+#   dogfood         ~/dev/commonfabric/dogfood, and likewise fishfood
 #
 # An argument of the form top/NNNN, such as top/2884, instead opens the team's
 # Topics board in the terminal with that Topic showing, by running the topics
@@ -90,6 +91,9 @@
         ;;
       contraptions|settings|usable-git)
         target=$HOME/dev/$1
+        ;;
+      dogfood|fishfood)
+        target=$commonfabric_root/$1
         ;;
       web)
         worktree_root=$commonfabric_root/web-weaver

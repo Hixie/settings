@@ -29,6 +29,15 @@ commit, a dim `SQUASH` button beside REVIEW sends the session the message
 "squash", as if typed at the prompt. A worktree with no commits of its own
 offers OPEN WORKTREE whatever pull request is listed for its branch.
 
+When merging the N commits into the main branch would conflict, every row of
+the table above except OPEN WORKTREE also has a dim `REBASE` button, after any
+other dim button, which sends the session the message "rebase". The mod finds
+out with `git merge-tree --write-tree --quiet`, which merges the branch into the
+main branch without touching the worktree. It exits with status 1 and prints
+nothing when the merge conflicts. Any other failure, including status 1 with a
+message, is shown as an error in place of the worktree's buttons, as described
+below.
+
 The pull request comes from `~/.cache/github-prs.tsv`, which
 `~/dev/contraptions/github-hookbar` keeps up to date. The mod reads it with
 `lockf -kn`, which holds a `flock(2)` lock on the file while `cat` reads it,
@@ -43,8 +52,15 @@ number wins.
 A title whose text after the first `: ` starts with a letter or a digit, such
 as `PR: fix flake`, has no worktree list. An identifier that `~/bin/l` would
 reject is skipped, and so is a second identifier for a folder already listed.
-A worktree that cannot be inspected, for example because its main branch was
-never fetched, is shown with the error instead of a button.
+A worktree whose folder does not exist, such as one deleted before the title
+was updated, is shown as dim `D0: FOLDER MISSING` text instead of a button. A
+worktree that cannot be inspected for another reason, for example because its
+main branch was never fetched, is shown with the error instead of a button.
+The mod runs its commands in `/` or in the worktree's folder, never in the
+session's working directory, so a session whose own worktree has been deleted
+still shows the other worktrees' buttons. A folder that exists but is not a
+git checkout, such as `~/dev/commonfabric/dogfood` (the identifier `dogfood`),
+which holds two clones, has no commits of its own, so it offers OPEN WORKTREE.
 
 The title comes from the desktop app's record of the session, in
 `~/Library/Application Support/Claude/claude-code-sessions/`. The buttons are
@@ -52,6 +68,24 @@ worked out again when the session starts, even with no window attached, when a
 desktop window attaches to it, when a turn ends, when the session title is set
 by a tool call, and after a button is pressed. A press does what the button
 showed when it was drawn.
+
+While the buttons are being worked out, which runs git in each worktree and
+reads the pull request table, the band shows a spinner labeled `Checking
+worktrees` in place of everything else, including the dim text of a press that
+has not finished. That happens each time the buttons are worked out again, so
+the buttons are gone until git and the table have answered. The mod draws the
+spinner with the `Progress` element, which the test kit draws on the terminal
+and the desktop as the label followed by a dim `Running…`. A title without
+worktrees never shows the spinner, because the mod decides there is nothing to
+show before it does any of that work. When refreshes overlap, only the newest
+one changes the band.
+
+Until a press finishes, the band shows dim text in place of the button, so the
+button cannot be pressed again. The text is the button's label followed by
+`(running)` for a command. For a message such as SQUASH or REBASE, it is
+followed by `(sending)`, or by `(sent when this turn ends)` while the session
+is working, because a message from the mod reaches the session only once it is
+idle.
 
 iterm-run runs a command only when that shell is idle at an empty prompt, and
 only in shells that load its listener from `~/.zshrc`; otherwise nothing runs
@@ -67,6 +101,11 @@ From this folder:
 
 `claude plugin test` runs `tests/register.test.tsx`, which stands in for the
 session title, the pull request table, git, and the commands a press runs.
+Run both with the Claude Code that the desktop app runs, which is at
+`~/Library/Application Support/Claude/claude-code/VERSION/*/claude.app/Contents/MacOS/claude`
+for the newest VERSION there. The mod draws the spinner with the `Progress`
+element, and the tests expect the band to be a list of one row per mod, both
+of which an older `claude` on the `PATH` may lack.
 To type-check, run `tsc -p .`. The `tsconfig.json` here extends
 `.claude-plugin/types/tsconfig.json`, which a session that watches this folder
 (`CLAUDE_CODE_PLUGIN_DIR_WATCH=1`) writes, with the API's declarations, each

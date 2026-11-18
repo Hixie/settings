@@ -12,12 +12,19 @@ export type WorktreeButton = {
   label: string
   /** What a press does, or null when the worktree offers nothing to do. */
   action: WorktreeAction | null
-  /** A second button drawn beside the first. */
-  alternate?: { label: string; action: WorktreeAction }
+  /** Dim buttons drawn beside the first, in order. */
+  alternates?: readonly WorktreeAlternate[]
 }
+
+export type WorktreeAlternate = { label: string; action: WorktreeAction }
 
 declare module 'claude-code' {
   interface PluginState {
-    'worktree-buttons': { entries: readonly WorktreeButton[] }
+    'worktree-buttons': {
+      /** The buttons, or null while they are being worked out. */
+      entries: readonly WorktreeButton[] | null
+      /** The keys of the buttons whose presses have not finished. */
+      pending: readonly string[]
+    }
   }
 }

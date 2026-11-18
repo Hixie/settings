@@ -23,9 +23,9 @@ When the command ends, longrun prints its exit status, how long it took, the log
 that matters, numbered as in the log: the test runner's summary when longrun recognises it, and otherwise the last 
 lines. Read the log only for what that part leaves out, by line number.
 
-If the command prints nothing for 10 minutes, the call returns with exit status 75 and a report that starts with 
-`STALLED`. The command is still running. The report says what each of its processes is doing. Decide at once what 
-to do:
+If the command prints nothing but hang warnings for 10 minutes, the call returns with exit status 75 and a
+report that starts with `STALLED`. The command is still running. The report says what each of its processes is
+doing. Decide at once what to do:
 
 - If a process is waiting for something that will come, such as a free slot in a queue, or is busy in a long 
   silent step, run `.../longrun.py wait RUN`. It blocks until the command ends or stalls again. If the command 
@@ -39,8 +39,10 @@ A report that follows a `wait` with no output in between means the step you expe
 Wait again only if you can name what the command is waiting for and why it has not arrived yet. Otherwise, stop 
 it. Each report is kept as `stall-N.txt` in the run directory, so you can compare it with the earlier ones.
 
-For a command that is known to stay silent for longer, give `--quiet MINUTES`. The intervals then start at that 
-many minutes instead of 10, and double in the same way.
+A script you write for yourself should print a line as each step starts or finishes, even when its results go to 
+files. Print only real progress, never on a timer. Give `--quiet MINUTES` only for a command that cannot print 
+progress and is known to stay silent for more than 10 minutes, set to about how long it stays silent. The 
+intervals then start at that many minutes instead of 10, and double in the same way.
 
 If you are ever waiting for a longrun STALL for more than an hour, report precisely what is happening to the user.
 
@@ -169,4 +171,4 @@ affected by it (they will see the old directory).
 
 ## Versioning
 
-When you first read this file, tell the user: Read 🐚 12.
+When you first read this file, tell the user: Read 🐚 13.

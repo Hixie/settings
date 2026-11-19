@@ -126,6 +126,10 @@
         "hooks": [
           {
             "type": "command",
+            "command": "/Users/ianh/.claude/hooks/dashboard-announcement.py"
+          },
+          {
+            "type": "command",
             "command": "/Users/ianh/.claude/hooks/battery-notice.py"
           }
         ]

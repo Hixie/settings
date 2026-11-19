@@ -11,6 +11,7 @@ The exit status is 0 when every case passed and 1 otherwise.
 import fcntl
 import json
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -42,7 +43,20 @@ STEPS = [
     ("message file removed", None, "PostToolUse", False, CLEARED),
     ("still cleared", "", "PostToolUse", False, None),
     ("message reappears", "Main is red.", "PostToolUse", False, NEW + "Main is red."),
+    ("compacted with the same message", "Main is red.", "SessionStart", False,
+     NEW + "Main is red."),
+    ("tool call after compacting", "Main is red.", "PostToolUse", False, None),
+    ("message changes before compacting", "Main is green.", "SessionStart", False,
+     NEW + "Main is green."),
+    ("message cleared before compacting", None, "SessionStart", False, None),
+    ("tool call after compacting with no message", "", "PostToolUse", False, None),
+    ("compacted with no message", "", "SessionStart", False, None),
+    ("message appears after compacting", "Main is red.", "PostToolUse", False,
+     NEW + "Main is red."),
 ]
+
+# The sources of SessionStart that Claude Code matches against a matcher.
+SESSION_SOURCES = ("startup", "resume", "clear", "compact")
 
 
 def start_hook(home, event="PostToolUse", subagent=False):
@@ -116,6 +130,19 @@ def parallel_hooks(count):
         return sum(1 for hook in hooks if finish_hook(hook))
 
 
+def session_start_sources():
+    """Returns the sources of SessionStart for which settings.json runs the
+    hook."""
+    with open(os.path.join(os.path.dirname(os.path.dirname(HOOK)),
+                           "settings.json"), encoding="utf-8") as f:
+        entries = json.load(f)["hooks"]["SessionStart"]
+    return [source for source in SESSION_SOURCES
+            if any(re.fullmatch(entry.get("matcher", ".*"), source)
+                   and any(os.path.basename(hook["command"]) == os.path.basename(HOOK)
+                           for hook in entry["hooks"])
+                   for entry in entries)]
+
+
 def check(description, expected, actual):
     print("%s %s" % ("PASS" if expected == actual else "FAIL", description))
     if expected != actual:
@@ -134,6 +161,8 @@ def main():
                     (True, NEW + "Half and whole"), waits_for_writer())
     passed &= check("parallel tool calls report a change once", 1,
                     parallel_hooks(16))
+    passed &= check("runs at SessionStart after compacting or clearing only",
+                    ["clear", "compact"], session_start_sources())
     sys.exit(0 if passed else 1)
 
 

@@ -79,6 +79,10 @@
           {
             "type": "command",
             "command": "/Users/ianh/.claude/hooks/dashboard-announcement.py"
+          },
+          {
+            "type": "command",
+            "command": "/Users/ianh/.claude/hooks/battery-notice.py"
           }
         ]
       }
@@ -89,6 +93,10 @@
           {
             "type": "command",
             "command": "/Users/ianh/.claude/hooks/dashboard-announcement.py"
+          },
+          {
+            "type": "command",
+            "command": "/Users/ianh/.claude/hooks/battery-notice.py"
           }
         ]
       }
@@ -112,6 +120,15 @@
             "command": "echo 'You were just compacted. Insert a 🗜️ into your next response.Immediately read your session title with `mcp__ccd_session_mgmt__get_session`, called with `session_id` set to `self`, to see what worktrees you are associated with. If any worktrees listed are unaccounted for in the summary, determine their purpose before continuing. Then, continue as described in the summary.'"
           }
         ]
+      },
+      {
+        "matcher": "compact|clear",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/ianh/.claude/hooks/battery-notice.py"
+          }
+        ]
       }
     ],
     "Stop": [
@@ -124,6 +141,10 @@
           {
             "type": "command",
             "command": "/Users/ianh/dev/contraptions/longrun/longrun.py hook"
+          },
+          {
+            "type": "command",
+            "command": "/Users/ianh/.claude/hooks/battery-notice.py"
           }
         ]
       }

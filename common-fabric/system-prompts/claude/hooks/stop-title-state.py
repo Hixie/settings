@@ -65,19 +65,25 @@ def title_has_state(title, state):
     return (rest + " ").startswith(normalized(state) + " ")
 
 
-def session_record(session_id):
-    """The newest record the harness keeps for a session, or None."""
-    records = []
-    for path in glob.glob(os.path.join(CLAUDE_DIR, "sessions", "*.json")):
+def session_records(claude_dir=CLAUDE_DIR):
+    """The records the harness keeps for sessions, each with the name of its
+    file without ".json", which is the session's process ID. A record that
+    cannot be read is skipped."""
+    for path in glob.glob(os.path.join(claude_dir, "sessions", "*.json")):
         try:
             with open(path, encoding="utf-8") as handle:
                 record = json.load(handle)
         except (OSError, ValueError):
             continue
-        if isinstance(record, dict) and record.get("sessionId") == session_id:
-            records.append(record)
-    return max(records, key=lambda record: record.get("updatedAt") or 0,
-               default=None)
+        if isinstance(record, dict):
+            yield os.path.basename(path)[:-len(".json")], record
+
+
+def session_record(session_id):
+    """The newest record the harness keeps for a session, or None."""
+    return max((record for _, record in session_records()
+                if record.get("sessionId") == session_id),
+               key=lambda record: record.get("updatedAt") or 0, default=None)
 
 
 def main():

@@ -24,17 +24,8 @@
 # list the identifier are named, so that one of them can be sent the
 # message from the app.
 #
-# A Claude session receives the message through its messaging socket, in
-# the same way that one Claude session sends a message to another, so it
-# sees a message from another session rather than one typed in its prompt
-# box. A session holds a message for its user's approval when the message
-# states a permission mode other than the session's own, and a session in
-# bypass mode also holds a message that states none. The message therefore
-# states the mode in the Claude app's record of the session, or, for a
-# session the app did not start, the mode its transcript last recorded,
-# which is out of date if the mode changed after the session's last turn.
-# The socket does not acknowledge messages, so a message that the session
-# holds or rejects is still reported as sent. A Codex thread receives the
+# A Claude session receives the message through send-claude-session, as a
+# message from another session named send-pr. A Codex thread receives the
 # message through `codex queue`, which the Codex app runs as the thread's
 # next turn.
 #
@@ -42,7 +33,6 @@
 
 emulate zsh
 setopt no_unset pipe_fail extended_glob
-zmodload zsh/net/socket || exit
 
 program=${0:t}
 commonfabric_root=$HOME/dev/commonfabric
@@ -51,8 +41,8 @@ codex_home=${CODEX_HOME:-$HOME/.codex}
 codex_tool=/Applications/ChatGPT.app/Contents/Resources/codex-cli/CodexCLI.app/Contents/MacOS/codex
 typeset -i dry_run=0
 typeset url request checkout identifier repository code listing matches
-typeset candidate key title kind pid session socket record mode=
-typeset -a databases candidates key_files transcripts records session_records
+typeset candidate key title kind record
+typeset -a databases candidates records session_records
 
 # The Claude app keeps a record of each session in a folder for each account
 # and organization. Folders with dots in their names hold records the app has
@@ -131,7 +121,7 @@ for record in $claude_home/sessions/<->.json(N); do
 done
 if (( ${#session_records} )); then
   matches=$(command jq -r --arg id "$identifier" \
-    ".key = \"claude:\(.pid):\(.sessionId)\" | $select_sessions" \
+    ".key = \"claude:\(.sessionId)\" | $select_sessions" \
     $session_records) || exit
   candidates+=(${(f)matches})
 fi
@@ -183,40 +173,7 @@ print -r -- "${(C)kind} session: $title"
 
 case $kind in
   claude)
-    # The session's record names its socket, and a key file next to the
-    # record holds the token that the socket requires before any message.
-    pid=${${key#claude:}%%:*}
-    session=${key##*:}
-    socket=$(command jq -r --arg session "$session" \
-      'select(.sessionId == $session) | .messagingSocketPath // empty' \
-      "$claude_home/sessions/$pid.json") || exit
-    key_files=($claude_home/sessions/$pid.[0-9a-f](#c64).key(N))
-    if [[ -z $socket ]] || (( ${#key_files} != 1 )); then
-      print -u2 -- "$program: the Claude session cannot receive messages"
-      exit 1
-    fi
-    # The Claude app's record of the session has its permission mode, and
-    # so does every user turn in the transcript, so the transcript serves
-    # for a session the app did not start. The message states the mode as
-    # "bypass" or "prompting".
-    mode=$(records_containing "\"cliSessionId\":\"$session\"" |
-      command jq -n -R -r --arg session "$session" '[inputs | fromjson? //
-        empty | select(.cliSessionId == $session and .permissionMode)]
-        | max_by(.lastActivityAt // 0) // empty
-        | "\"permissionMode\":\"\(.permissionMode)\""')
-    transcripts=($claude_home/projects/*/$session.jsonl(N))
-    if [[ -z $mode ]] && (( ${#transcripts} == 1 )); then
-      mode=$(command grep -a -o '"permissionMode":"[A-Za-z]*"' \
-        "${transcripts[1]}" | command tail -n 1)
-    fi
-    [[ $mode == *'"bypassPermissions"' ]] && mode=bypass || mode=prompting
-    zsocket "$socket" || exit
-    command jq -c --arg request "$request" --arg mode "$mode" '
-      if (.peerToken | type) != "string" then error("no messaging token")
-      else {type: "auth", token: .peerToken},
-        {type: "user", priority: "next", message: {content:
-          "<cross-session-message from-name=\"send-pr\" from-mode=\"\($mode)\">\n\($request)\n</cross-session-message>"}}
-      end' "${key_files[1]}" >&$REPLY || exit
+    "$HOME/bin/send-claude-session" send-pr "${key#claude:}" "$request" || exit
     ;;
   codex)
     command $codex_tool queue --thread "${key#codex:}" --message "$request" \

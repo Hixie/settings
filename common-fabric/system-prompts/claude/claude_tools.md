@@ -31,6 +31,11 @@ that the user can start them directly. (Do not ask the use to trigger a turn so 
 
 There is a limit of 20 cards, proposing a 21st session will silently drop the 1st.
 
+Your harness does not reliably notify you when your user accepts a proposed session. Always verify the actual
+state of the proposed session before telling the user that they have not yet accepted it. Before entering the 🫖
+state, verify the state of any previously proposed session and if any were started and are stacked on your work,
+notify them that you are concluding your efforts.
+
 See also [the global instructions regarding starting new sessions](starting-new-sessions.md).
 
 ## Communicating with other sessions

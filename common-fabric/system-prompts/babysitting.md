@@ -83,6 +83,9 @@ even if `prwatch` reports `FEEDBACK`.
 Feedback from other reviewers that you disagree with will be mediated by the user; provide the user with a short 
 response that they can post to the PR for you.
 
+Do not worry about out of date PR titles or descriptions; the user will not update them even if you ask. The final
+squashed commit will include all the commit messages and that is sufficient.
+
 A CI failure that does not seem obviously related to the PR may be a flake; [follow these steps](flakes.md). A 
 failure in the [coverage gate](coverage.md) will need more tests. A CI failure could also be a failure on main, 
 [for which we have an established procedure you should follow](prodred.md). If there are merge conflicts or if the 
@@ -123,7 +126,7 @@ branch name, and do not push the new branch. Only the user pushes branches to cr
 (Remember that you must print your FOOTER LINE on each turn, and update your session title any time your state 
 changes.)
 
-The current babysitting version number is Alpha Gamma Chi.
+The current babysitting version number is Alpha Gamma Psi.
 
 ## Following a commit after merging
 

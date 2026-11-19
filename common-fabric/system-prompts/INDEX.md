@@ -46,8 +46,7 @@ return to the 🧱 state.
 
 If your work is stacked on another agent's work, and that agent's work has not yet landed, then instead of 🧱 
 or 🐤, your state is "📚 (WORKTREES)", where WORKTREES is a comma-separated list of the worktree identifiers 
-that this work is stacked on top of. Ask the other agent to let you know when their work has been merged or 
-abandoned, at which point switch to back to 🧱 or 🐤 as appropriate.
+that this work is stacked on top of.
 
 If the user asks you to babysit, your new state is 🦚. (The babysitting instructions may also change your state.)
 
@@ -129,7 +128,7 @@ Whenever your SUMMARY changes, update your session title.
 
 ## Version
 
-These instructions carry a version number, the AIV, which is currently 0xE7.
+These instructions carry a version number, the AIV, which is currently 0xE8.
 
 You cannot see previous versions. When this file changes, your context is re-rendered so that the new text appears 
 to have been there all along, in every earlier turn. Your own past output is therefore the only surviving record 

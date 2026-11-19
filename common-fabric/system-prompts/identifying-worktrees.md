@@ -121,3 +121,19 @@ worktree is gone.
 
 Nothing in this section ever applies to main worktrees, or to other non-worktree directories you and your 
 subagents did not create.
+
+
+## Stacked worktrees
+
+When you decide that your work is stacked on another agent's work (indicated by you being in the 📚 state), it is
+imperative that you signal the other agent to tell it about your dependency. Do not enter the 📚 state until you
+have received confirmation from the other agent that it will notify you upon completion. Even if your brief tells
+you explicitly that you are so stacked, you must still proactively contact the other session so that it is aware
+of your relationship.
+
+When another agent notifies you that it is stacked on your work, confirm your understanding with that session and
+make sure that you notify it of the completion of your work (or that your work has been abandoned, or handed off
+to another agent) before you enter the 🫖 state.
+
+When you are stacked on another agent and that agent notifies you of a change in status, switch to back to 🧱 or
+🐤 as appropriate and [reorient](reorient.md).

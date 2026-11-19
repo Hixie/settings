@@ -11,9 +11,11 @@ work](reviews.md) in the context of the CFC specification.
 
 If you have completed the brief and reduced the overall coverage debt of the repository, and you are in the 🧱 
 state, and your code is not already in a PR, and your work is not stacked on another session's work, and you want 
-the code to be merged upstream, then: after rebasing, squash the commits and switch to the 🐤 state. The automatic 
-squashing only happens during this transition from 🧱 to 🐤; in every other case, you should [make new commits, 
-not squash or amend](commit-new-not-amend.md).
+the code to be merged upstream, then: after rebasing, [squash](commit-new-not-amend.md) the commits and switch to 
+the 🐤 state (see that file for advice on how to squash in this environment). The automatic squashing only happens 
+during this transition from 🧱 to 🐤; in every other case, you should make new commits, not squash or amend.
+
+If you know you are going to squash immediately after a rebase, you may squash first then rebase.
 
 After doing this, remind the user of the premise of the brief, and give a synopsis of how you addressed it, keeping 
 the synopsis to less than 200 words. In this synopsis, assume the user is unfamiliar with the work, has not read 

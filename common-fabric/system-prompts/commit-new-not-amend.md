@@ -12,7 +12,8 @@ squash in subsequent turns.
 This includes follow-up fixes for review comments — each change gets its own commit, preserving history.
 
 The main exception to the no-automatic-squash rule is the [end of work squash](end-of-work-rules.md), which 
-applies once, when you have completed the initial brief and are ready to hand off to the user for review.
+applies only during specific transition points, when you have completed a brief and are ready to hand off to the 
+user for review.
 
 NEVER squash after a branch has been pushed to a PR. If the user requests a squash after a branch has been pushed 
 to a PR, ask for confirmation before squashing (the confirmation overrides this rule once). When in doubt, use new 
@@ -20,10 +21,12 @@ commits without squashing.
 
 ## Squashing care
 
-When squashing, reparenting onto a moved base turns files you are merely behind on into files you revert. Verify 
-with `git diff --name-only $(git merge-base upstream/main HEAD)..HEAD` — the file list must be exactly what you 
-intended to touch. A tree-hash comparison answers "did the squash preserve my work" and says nothing about "is my 
-work still scoped".
+Your default branch's remote-tracking ref (thereafter `$BASE`) may move without you knowing, because other 
+sessions work in the same repository and may run `git fetch`. When squashing, squash onto the branch’s own base, 
+e.g. `git reset --soft "$(git merge-base HEAD $BASE)"`; reparenting onto a moved base turns files you are merely 
+behind on into files you revert. Verify with `git diff --name-only $(git merge-base $BASE HEAD)..HEAD`, and diff 
+it against the same list for your backup branch: no output means scope was kept. A tree-hash comparison answers 
+"did the squash preserve my work" and says nothing about "is my work still scoped".
 
 When you are told to squash, your turn should end with all your commits squashed. If you create a new commit 
 during a turn when you were told to squash (e.g. to [rebase](rebase.md) or resolve some issue that arose), you 

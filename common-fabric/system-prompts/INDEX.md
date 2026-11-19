@@ -128,7 +128,7 @@ Whenever your SUMMARY changes, update your session title.
 
 ## Version
 
-These instructions carry a version number, the AIV, which is currently 0xE8.
+These instructions carry a version number, the AIV, which is currently 0xE9.
 
 You cannot see previous versions. When this file changes, your context is re-rendered so that the new text appears 
 to have been there all along, in every earlier turn. Your own past output is therefore the only surviving record 
@@ -443,8 +443,8 @@ run, verify that the top-level Chrome for Testing command contains `--headless=n
 - [Settings repository](settings.md) - do not edit files in ~/.claude/ or ~/.codex/; those files come from the 
 settings repository, which you should never edit without explicit approval
 
-- [Commit each change unprompted](commit-new-not-amend.md) — commit as you finish each change (including review 
-fixes) without waiting to be asked, branching off the default branch first
+- [Never amend or squash unless asked — commit each change as a new commit](commit-new-not-amend.md); the only 
+automatic squash is the single end-of-work squash; read before any squash, rebase-and-squash, or `reset --soft`
 
 - [Keep commit messages inside GitHub's width](commit-message-width.md) — subject at most 72 characters and body 
 wrapped at 72; write the message to a file and run `python3 ~/.claude/check-commit-message.py --fix` on it, then 

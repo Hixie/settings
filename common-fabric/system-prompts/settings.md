@@ -18,8 +18,8 @@ Never edit files in ~/.claude/ or ~/.codex/ directly; do it via this repository 
 installed files in place therefore edits this repository, and the rules above apply. Git replaces a file when it 
 changes it, which leaves the installed copy behind, so run `./install common-fabric` again after git changes, adds 
 or renames a file there; the comment at the top of `install` explains how the `install-targets` files say where 
-each file goes. Never put a secret in these files: `common-fabric/shell/.zshenv` reads the GitHub token from the 
-login keychain.
+each file goes. (Claude's Edit tool similarly breaks the hard links.) Never put a secret in these files; for 
+example, `common-fabric/shell/.zshenv` reads the GitHub token from the login keychain.
 
 Claude Code mods (plugins that change the interface or behavior of Claude Code) for this machine go in 
 `common-fabric/system-prompts/claude/mods/<mod-name>/`. The empty `install-targets` file in `mods` keeps `install` 

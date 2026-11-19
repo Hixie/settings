@@ -46,3 +46,18 @@ the effort, so that your user can contact the other user to verify the work is o
 3. Address the issue. Whenever you make significant progress (e.g. when you are ready for the user to send a PR, 
 when the user merges your PR), keep any sessions that contact you about the issue updated, and keep your topic 
 updated regarding your status.
+
+
+## Specific failures we ignore
+
+When an upstream service fails us (e.g. a package repository returning a 502), our CI goes red. We generally 
+consider this an acceptable failure, and would not attempt to address it unless we can find a more general 
+approach that would fully remove the issue (e.g. maintaining a local cache of all packages used to which we fall 
+back when the upstream provider is unavailable, or using a local cache that we update on a rolling basis, thus 
+removing the hard dependency from the general CI flow).
+
+
+## Avoid unjustified complexity
+
+Solutions to production and CI failures should be based on evidence. Avoid low-confidence fixes. Avoid fixes that 
+add lots of new code that is not supported by research showing it is definitely a solution to the specific issue.

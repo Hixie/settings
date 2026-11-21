@@ -49,6 +49,15 @@ intervals then start at that many minutes instead of 10, and double in the same 
 
 If you are ever waiting for a longrun STALL for more than an hour, report precisely what is happening to the user.
 
+If the computer switches to battery power while a run is going, the call returns with exit status 75 and a report 
+that starts with `ON BATTERY`. The command is still running. Decide at once whether the run is worth the battery. 
+If it is not, set your state to 🪫 and run `.../longrun.py wait --freeze-on-battery RUN`: it freezes the command's 
+processes until the computer is back on wall power, then lets them continue, and blocks until the command ends or 
+stalls. Otherwise run `.../longrun.py wait RUN` to let it run on battery, or `.../longrun.py stop RUN` to end it. A 
+freeze can make a test whose timeout counts real time fail once it continues; if the run fails that way, run it 
+again rather than treating it as a real failure. To have a long command frozen whenever the computer is on battery 
+from the start, give `--freeze-on-battery` to `.../longrun.py run`. When a frozen run's call returns, leave 🪫.
+
 When the command's job is to start a process that outlives it, such as `bench-weaver.sh up`, a development server 
 or a local service, give `--keep`:
 
@@ -72,8 +81,8 @@ Give longrun the bare command, and run each longrun call, `run` and `wait` alike
 through `tail` or `grep`, do not redirect their output, and do not wrap a longrun call in `$(...)`. longrun keeps 
 the command's whole output in a log in your scratchpad, and a command whose output goes to `tail` prints nothing 
 until it ends, so it looks stalled. longrun's exit status is the result: the command's own status, or 75 for a 
-stall. A pipeline reports `tail`'s status instead. longrun's report is already short, and it opens with how the 
-command ended, which is the part `tail` would drop.
+stall or a switch to battery. A pipeline reports `tail`'s status instead. longrun's report is already short, and 
+it opens with how the command ended, which is the part `tail` would drop.
 
 ## Stopping processes
 
@@ -174,4 +183,4 @@ affected by it (they will see the old directory).
 
 ## Versioning
 
-When you first read this file, tell the user: Read 🐚 15.
+When you first read this file, tell the user: Read 🐚 16.

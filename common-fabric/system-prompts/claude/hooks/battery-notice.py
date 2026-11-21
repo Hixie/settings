@@ -53,6 +53,9 @@ import sys
 
 BATTERY = ("This computer is running on battery power. Avoid running "
            "extensive test runs or other CPU-intensive long-running tasks. "
+           "A long command that has to run anyway can be run with "
+           "`longrun.py run --freeze-on-battery`, which freezes it until "
+           "wall power returns. "
            "If you are blocked from progressing because of this, your state "
            "is 🪫.")
 WALL = "We are now back on wall power. You may resume normal operations."

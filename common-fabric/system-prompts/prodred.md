@@ -43,7 +43,11 @@ issue, tell the user all the sessions you checked, prefixed by "👀🧵".
 failure. If so, update the laundry appropriately and stop these steps, clearly naming the PR and user working on 
 the effort, so that your user can contact the other user to verify the work is ongoing.
 
-3. Address the issue. Whenever you make significant progress (e.g. when you are ready for the user to send a PR, 
+3. Diagnose the issue. You must use empirical evidence and testing to determine the cause of the failure. 
+Hypotheses are not sufficient. Unverified reasoning is insufficient for progressing to the fixing stage. While 
+researching, update the topic regularly with progress reports.
+
+4. Address the issue. Whenever you make significant progress (e.g. when you are ready for the user to send a PR, 
 when the user merges your PR), keep any sessions that contact you about the issue updated, and keep your topic 
 updated regarding your status.
 

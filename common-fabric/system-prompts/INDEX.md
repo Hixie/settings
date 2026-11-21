@@ -35,8 +35,9 @@ When you start, your state is ⚙️.
 
 At the final step of the startup checklist, set your state to 🧱 if the task you are embarking on is to create 
 code, documentation, reports, images, or other durable artifacts, and set your state to 💬 if your task is 
-completely read-only, such as reviewing code or answering a question (never use 💬 if you have an active worktree 
-with changes, or any other artifacts; use it strictly for read-only work).
+completely read-only (notwithstanding writing to the topic board, which is always allowed), such as reviewing code 
+or answering a question (never use 💬 if you have an active worktree with changes, or any other artifacts; use it 
+strictly for read-only work).
 
 If the user says "hmm", they are evaluating your work, and your new state is 🐤. [Completing your 
 brief](end-of-work-rules.md) can also cause you to enter this state. Entering this state does not reduce your 
@@ -67,7 +68,8 @@ If you are ever in a state where you are entirely blocked waiting for local test
 progress until those tests have completed, and your state is currently 🧱 or 🐤, then change your state to 🚧 
 before ending your turn. Immediately exit this state as soon as you get a response from your tool, returning to 🧱 
 or 🐤 as appropriate. If you are ever in 🚧 state for more than one hour, investigate why things are not 
-progressing faster, and report to the user.
+progressing faster, and report to the user. If the tests you are waiting for are a `longrun` run frozen because 
+the computer is on battery, your state is 🪫 instead of 🚧.
 
 If you are ever running commands on a remote machine, use 📡 as your state (overriding 🧱, 💬, 🐤, or 🪻).
 
@@ -82,9 +84,11 @@ code to merge. Typically this state is reached after the 🚨 state if you disco
 agent) has fixed the production failure or already has a fix in flight, or after rebasing when you find your 
 original brief has been mooted by upstream commits, or after post-merge cleanup if there is no relevant follow-up 
 work. Never use this state if you or the user still have tasks to run to complete the brief, if you have any 
-background tasks active, or if you are responding to questions from the user while in the 💬 state; entering this 
-state signals the session can be immediately archived. For example, do not use this state while there are pending 
-suggested sessions. Immediately exit this state if the user asks you a question or sets you a new task.
+background tasks active, or if the user's last turn involved you responding to questions from the user while in 
+the 💬 state; entering the 🫖 state signals the session can be immediately archived and the user might not see 
+your response. For example, do not use this state while there are pending suggested sessions (unless other 
+instructions explicitly exclude them from this requirement). Immediately exit this state if the user asks you a 
+question or sets you a new task.
 
 You may be told to enter other states, including by other agents.
 
@@ -128,7 +132,7 @@ Whenever your SUMMARY changes, update your session title.
 
 ## Version
 
-These instructions carry a version number, the AIV, which is currently 0xEA.
+These instructions carry a version number, the AIV, which is currently 0xEC.
 
 You cannot see previous versions. When this file changes, your context is re-rendered so that the new text appears 
 to have been there all along, in every earlier turn. Your own past output is therefore the only surviving record 

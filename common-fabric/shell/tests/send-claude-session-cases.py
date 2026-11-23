@@ -32,16 +32,45 @@ def message(mode, text="hello"):
              "</cross-session-message>" % (mode, text)}}]
 
 
-def send(arguments, app_mode=None, transcript_modes=(), running=True):
+def app_record(mode, last_activity=1, session="s1"):
+    """A Claude app record of SESSION in permission mode MODE, written as the
+    app writes it: one line of JSON with no newline at its end."""
+    return compact({"cliSessionId": session, "permissionMode": mode,
+                    "lastActivityAt": last_activity})
+
+
+def send(arguments, app_mode=None, transcript_modes=(), running=True,
+         host="local_1", app_records=(), has_socket=True, neighbour=None,
+         with_error=False):
     """Runs send-claude-session with ARGUMENTS for a made-up session "s1" whose
-    Claude app record has the permission mode APP_MODE, if any, whose
-    transcript records TRANSCRIPT_MODES in turn, and whose process is
-    RUNNING. Returns the exit status and the lines that arrived on the
-    session's socket, each read as JSON."""
+    record names its socket if HAS_SOCKET and the Claude app's ID for it,
+    HOST, if any, whose app record has the permission mode APP_MODE, if any,
+    whose transcript records TRANSCRIPT_MODES in turn, and whose process is
+    RUNNING. APP_RECORDS adds further app records, each a folder under the
+    app's folder of records, a file name, and the file's text, or None for a
+    file that cannot be read. With NEIGHBOUR, another running process has a
+    record that comes first in the list of records and mentions "s1": one
+    that cannot be read if NEIGHBOUR is "unreadable", or that of a session
+    that "s1" was once part of if NEIGHBOUR is "former".
+    Returns the exit status and the lines that arrived on the session's
+    socket, each read as JSON, and, WITH_ERROR, what it printed to standard
+    error."""
     with tempfile.TemporaryDirectory() as home:
         sessions = os.path.join(home, ".claude", "sessions")
         os.makedirs(sessions)
-        process = subprocess.Popen(["cat"], stdin=subprocess.PIPE)
+        processes = sorted((subprocess.Popen(["cat"], stdin=subprocess.PIPE)
+                            for _ in range(2 if neighbour else 1)),
+                           key=lambda process: str(process.pid))
+        process = processes[-1]
+        if neighbour:
+            record = os.path.join(sessions, "%d.json" % processes[0].pid)
+            with open(record, "w") as f:
+                json.dump({"sessionId": "s1"} if neighbour == "unreadable" else
+                          {"sessionId": "s10", "hostSessionId": "local_1",
+                           "messagingSocketPath": os.path.join(home, "other"),
+                           "formerNames": [{"sessionId": "s1"}]}, f)
+            if neighbour == "unreadable":
+                os.chmod(record, 0)
         if not running:
             process.stdin.close()
             process.wait()
@@ -50,7 +79,9 @@ def send(arguments, app_mode=None, transcript_modes=(), running=True):
         listener.bind(path)
         listener.listen()
         with open(os.path.join(sessions, "%d.json" % process.pid), "w") as f:
-            json.dump({"sessionId": "s1", "messagingSocketPath": path}, f)
+            json.dump({"sessionId": "s1",
+                       **({"messagingSocketPath": path} if has_socket else {}),
+                       **({"hostSessionId": host} if host else {})}, f)
         with open(os.path.join(sessions, "%d.%s.key" % (process.pid, "a" * 64)),
                   "w") as f:
             json.dump({"peerToken": "secret"}, f)
@@ -60,30 +91,37 @@ def send(arguments, app_mode=None, transcript_modes=(), running=True):
             for mode in transcript_modes:
                 f.write(compact({"type": "user", "permissionMode": mode}) + "\n")
         if app_mode:
+            app_records = [("account/org", "local_1.json", app_record(app_mode))
+                           ] + list(app_records)
+        for folder, name, text in app_records:
             records = os.path.join(home, "Library", "Application Support", "Claude",
-                                   "claude-code-sessions", "account", "org")
-            os.makedirs(records)
-            with open(os.path.join(records, "local_x.json"), "w") as f:
-                f.write(compact({"cliSessionId": "s1", "permissionMode": app_mode,
-                                 "lastActivityAt": 1}) + "\n")
+                                   "claude-code-sessions", folder)
+            os.makedirs(records, exist_ok=True)
+            with open(os.path.join(records, name), "w") as f:
+                f.write(text or "")
+            if text is None:
+                os.chmod(os.path.join(records, name), 0)
         environment = {key: value for key, value in os.environ.items()
                        if key != "CLAUDE_CONFIG_DIR"}
         try:
             run = subprocess.run([SEND_SESSION] + arguments, capture_output=True,
                                  env={**environment, "HOME": home})
         finally:
-            if process.poll() is None:
-                process.stdin.close()
-                process.wait()
+            for each in processes:
+                if each.poll() is None:
+                    each.stdin.close()
+                    each.wait()
         listener.setblocking(False)
         try:
             connection, _ = listener.accept()
         except BlockingIOError:
-            return run.returncode, []
-        connection.setblocking(True)
-        with connection:
-            received = b"".join(iter(lambda: connection.recv(4096), b""))
-        return run.returncode, [json.loads(line) for line in received.splitlines()]
+            received = b""
+        else:
+            connection.setblocking(True)
+            with connection:
+                received = b"".join(iter(lambda: connection.recv(4096), b""))
+        result = (run.returncode, [json.loads(line) for line in received.splitlines()])
+        return result + (run.stderr.decode(),) if with_error else result
 
 
 def check(description, expected, actual):
@@ -106,10 +144,57 @@ def main():
                     (0, message("bypass")),
                     send(arguments, None, ["default", "bypassPermissions"]))
     passed &= check("no mode anywhere", (0, message("prompting")), send(arguments))
+    passed &= check("the app's record of a session the app did not start is unused",
+                    (0, message("prompting")),
+                    send(arguments, "bypassPermissions", ["default"], host=None))
+    passed &= check("an app record that the session's record does not name is unused",
+                    (0, message("prompting")),
+                    send(arguments, None, ["default"], app_records=[
+                        ("account/org", "local_2.json", app_record("bypassPermissions"))]))
+    passed &= check("an app record named for the session but of another session is unused",
+                    (0, message("prompting")),
+                    send(arguments, None, ["default"], app_records=[
+                        ("account/org", "local_1.json",
+                         app_record("bypassPermissions", session="s2"))]))
+    passed &= check("the newer of two copies of the app's record, in bypass mode",
+                    (0, message("bypass")),
+                    send(arguments, None, [], app_records=[
+                        ("a1/o1", "local_1.json", app_record("default", 1)),
+                        ("a2/o2", "local_1.json", app_record("bypassPermissions", 2))]))
+    passed &= check("the newer of two copies of the app's record, in another mode",
+                    (0, message("prompting")),
+                    send(arguments, None, [], app_records=[
+                        ("a1/o1", "local_1.json", app_record("default", 2)),
+                        ("a2/o2", "local_1.json", app_record("bypassPermissions", 1))]))
+    passed &= check("a damaged copy of the app's record spoils only itself",
+                    (0, message("bypass")),
+                    send(arguments, None, ["default"], app_records=[
+                        ("a1/o1", "local_1.json", app_record("default", 2)[:-5]),
+                        ("a2/o2", "local_1.json", app_record("bypassPermissions", 1))]))
+    passed &= check("an unreadable copy of the app's record spoils only itself",
+                    (0, message("bypass")),
+                    send(arguments, None, ["default"], app_records=[
+                        ("a1/o1", "local_1.json", None),
+                        ("a2/o2", "local_1.json", app_record("bypassPermissions"))]))
+    passed &= check("a copy of the app's record that the app set aside is unused",
+                    (0, message("prompting")),
+                    send(arguments, None, ["default"], app_records=[
+                        ("a1.old/o1", "local_1.json", app_record("bypassPermissions"))]))
     passed &= check("a message with quotes and lines",
                     (0, message("prompting", 'say "hi"\nthen go')),
                     send(["tester", "s1", 'say "hi"\nthen go']))
     passed &= check("an unknown session", (1, []), send(["tester", "s2", "hello"]))
+    passed &= check("a session whose record names no socket",
+                    (1, [], "send-claude-session: no running Claude session s1 "
+                     "can receive messages\n"),
+                    send(arguments, "bypassPermissions", has_socket=False,
+                         with_error=True))
+    passed &= check("an unreadable record of another session is skipped",
+                    (0, message("bypass")),
+                    send(arguments, "bypassPermissions", neighbour="unreadable"))
+    passed &= check("another session's record that mentions the session is skipped",
+                    (0, message("bypass")),
+                    send(arguments, "bypassPermissions", neighbour="former"))
     passed &= check("a session whose process has stopped", (1, []),
                     send(arguments, running=False))
     passed &= check("too few arguments", (2, []), send(["tester", "s1"]))

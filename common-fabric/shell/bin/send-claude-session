@@ -25,11 +25,11 @@
 
 emulate zsh
 setopt no_unset pipe_fail extended_glob
-zmodload zsh/net/socket || exit
+zmodload zsh/net/socket zsh/mapfile || exit
 
 program=${0:t}
 claude_home=${CLAUDE_CONFIG_DIR:-$HOME/.claude}
-typeset from session message record pid= socket= mode=
+typeset from session message record pid= socket= host= mode=
 typeset -a records key_files transcripts
 
 if (( $# != 3 )); then
@@ -38,11 +38,15 @@ if (( $# != 3 )); then
 fi
 from=$1 session=$2 message=$3
 
+# A session's record gives its socket and, for a session the Claude app
+# started, the app's ID for the session. jq reads only the records that
+# contain the session's ID.
 for record in $claude_home/sessions/<->.json(N); do
   kill -0 ${record:t:r} 2>/dev/null || continue
-  socket=$(command jq -r --arg session "$session" \
-    'select(.sessionId == $session) | .messagingSocketPath // empty' \
-    $record) || continue
+  [[ ${mapfile[$record]-} == *"\"$session\""* ]] || continue
+  { IFS= read -r socket; IFS= read -r host } < <(command jq -r --arg session "$session" '
+    select(.sessionId == $session)
+    | .messagingSocketPath // "", .hostSessionId // ""' $record)
   if [[ -n $socket ]]; then
     pid=${record:t:r}
     break
@@ -54,18 +58,19 @@ if [[ -z $socket ]] || (( ${#key_files} != 1 )); then
   exit 1
 fi
 
-# The Claude app keeps a record of each session in a folder for each account
-# and organization. Folders with dots in their names hold records the app has
-# set aside, for example when switching accounts. There are thousands of
-# records, too many to name on one command line. Each record is one line of
-# JSON, so a damaged record spoils only its own line. Every user turn in the
-# transcript also has the permission mode, so the transcript serves for a
-# session the app did not start. The message states the mode as "bypass" or
-# "prompting".
-records=("$HOME/Library/Application Support/Claude/claude-code-sessions"/[^.]##/[^.]##/local_*.json(N))
+# The Claude app keeps its record of each session in a file named after the
+# app's ID for the session. It keeps a folder of records for each account and
+# organization, so the same record can be in more than one. Folders with dots
+# in their names hold records the app has set aside, for example when
+# switching accounts. Each record is one line of JSON with no newline at its
+# end, so each is printed with a newline of its own, and a damaged record
+# spoils only its own line. Every user turn in the transcript also has the
+# permission mode, so the transcript serves for a session the app did not
+# start. The message states the mode as "bypass" or "prompting".
+[[ -n $host ]] &&
+  records=("$HOME/Library/Application Support/Claude/claude-code-sessions"/[^.]##/[^.]##/$host.json(N))
 if (( ${#records} )); then
-  mode=$(print -rN -- $records |
-    command xargs -0 grep -h -F -- "\"cliSessionId\":\"$session\"" |
+  mode=$(for record in $records; do print -r -- ${mapfile[$record]-}; done |
     command jq -n -R -r --arg session "$session" '[inputs | fromjson? //
       empty | select(.cliSessionId == $session and .permissionMode)]
       | max_by(.lastActivityAt // 0) // empty

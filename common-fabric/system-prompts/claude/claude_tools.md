@@ -7,14 +7,10 @@ those tools.
 
 ## `Agent` tool and worktrees
 
-The `Agent` tool's `isolation: "worktree"` feature requires that the session's working directory be inside a git 
-repository. Beware: `isolation: "worktree"` creates a worktree from the main worktree and checks out origin/main 
-from there, which for repositories that are forks, rather than direct clones, may be hundreds of commits behind. 
-It does not derive its state from the calling session's branch. This may silently invalidate confident-seeming 
-reports from review subagents.
-
-To avoid this issue, either give the agent precise commands to check out the commit under review inside its own 
-worktree, or skip the worktree and hand it staged copies of the before and after files.
+The `Agent` tool's `isolation: "worktree"` option and the `EnterWorktree` tool are denied in settings. They 
+create worktrees under `REPO/root/.claude/worktrees/`, based on root's `origin/main` rather than the calling 
+session's branch, and Claude Code never removes one that holds commits. To give a subagent its own worktree, 
+follow [review-subagent-isolation.md](review-subagent-isolation.md).
 
 No `WorktreeCreate` hooks are intended to be configured in any repository in use in this environment.
 

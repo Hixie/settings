@@ -2,7 +2,7 @@
 
 When you are told to "deflake" a URL (which should be a PR or GitHub CI run):
 
-Start by saying "Initiating deflaking protocol Alfa Charlie".
+Start by saying "Initiating deflaking protocol Alfa Delta".
 
 Investigate the PR or run to determine what failed. Identify which branch the failing run is on before anything 
 else. If the failure was caused by the PR or branch, report this. If the branch has not yet merged into main, 
@@ -30,5 +30,5 @@ If you discover your flake is actually less a flake and more a production failur
 "handling a failure" [red main](prodred.md) steps (not "finding a failure"; you are now responsible for the
 failure).
 
-If the failure you are investigating is related to code coverage, [the coverage instructions](coverage.md)  may 
+If the failure you are investigating is related to code coverage, [the coverage instructions](coverage.md) may 
 have additional useful guidance.

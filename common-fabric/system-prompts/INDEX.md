@@ -68,8 +68,16 @@ If you are ever in a state where you are entirely blocked waiting for local test
 progress until those tests have completed, and your state is currently 🧱 or 🐤, then change your state to 🚧 
 before ending your turn. Immediately exit this state as soon as you get a response from your tool, returning to 🧱 
 or 🐤 as appropriate. If you are ever in 🚧 state for more than one hour, investigate why things are not 
-progressing faster, and report to the user. If the tests you are waiting for are a `longrun` run frozen because 
-the computer is on battery, your state is 🪫 instead of 🚧.
+progressing faster, and report to the user.
+
+If the tests you would be in 🚧 for are a `longrun` run given `--freeze-on-battery`, your state is 🔋 instead, 
+whether or not the computer is on battery at the moment. Such a run freezes while the computer is on battery and 
+continues by itself when wall power returns, so nothing needs to tell you about wall power. Apart from the time the 
+run spends frozen, the one-hour rule for 🚧 applies to 🔋 too. As with 🚧, leave 🔋 as soon as the call returns.
+
+If you end your turn because the computer is on battery, and nothing you started will continue by itself on wall 
+power, your state is 🪫. A message tells you when wall power returns; leave 🪫 as soon as it arrives. Never be in 
+🪫 while you work or while a tool call blocks.
 
 If you are ever running commands on a remote machine, use 📡 as your state (overriding 🧱, 💬, 🐤, or 🪻).
 

@@ -51,12 +51,14 @@ If you are ever waiting for a longrun STALL for more than an hour, report precis
 
 If the computer switches to battery power while a run is going, the call returns with exit status 75 and a report 
 that starts with `ON BATTERY`. The command is still running. Decide at once whether the run is worth the battery. 
-If it is not, set your state to 🪫 and run `.../longrun.py wait --freeze-on-battery RUN`: it freezes the command's 
+If it is not, set your state to 🔋 and run `.../longrun.py wait --freeze-on-battery RUN`: it freezes the command's 
 processes until the computer is back on wall power, then lets them continue, and blocks until the command ends or 
 stalls. Otherwise run `.../longrun.py wait RUN` to let it run on battery, or `.../longrun.py stop RUN` to end it. A 
 freeze can make a test whose timeout counts real time fail once it continues; if the run fails that way, run it 
 again rather than treating it as a real failure. To have a long command frozen whenever the computer is on battery 
-from the start, give `--freeze-on-battery` to `.../longrun.py run`. When a frozen run's call returns, leave 🪫.
+from the start, give `--freeze-on-battery` to `.../longrun.py run`, and set your state to 🔋 in the same way. When 
+the work that battery power holds up is one long command, run it this way rather than ending your turn in 🪫: the 
+run continues by itself when wall power returns, while a session in 🪫 continues only when a message reaches it.
 
 When the command's job is to start a process that outlives it, such as `bench-weaver.sh up`, a development server 
 or a local service, give `--keep`:

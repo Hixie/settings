@@ -29,16 +29,22 @@ conversation is compacted or cleared, when the agent's context no longer
 holds earlier notices, so the hook tells an agent on battery again and
 tells an agent on wall power nothing.
 
-An agent blocked until wall power returns says so with the state 🪫 in its
-session title and footer line, and makes no prompt or tool call while it
-waits. When the computer switches to wall power, "battery-notice.py wall"
-finds each running Claude session that is idle with 🪫 in its title, and,
-if the session was told about the battery, sends it the wall power notice
-with send-claude-session. A session still working when wall power returns
-is not idle then, so at Stop, when the agent's footer line says 🪫, the
-computer draws wall power, and the agent was told about the battery, the
-hook keeps the agent going with the wall power notice. Other sessions hear
-about wall power at their next prompt or tool call.
+An agent that ends its turn to wait for wall power says so with the state 🪫
+in its session title and footer line, and makes no prompt or tool call
+while it waits. An agent waiting for a longrun run given
+--freeze-on-battery says so with the state 🔋 instead: the run freezes while
+the computer is on battery and continues by itself on wall power, so
+nothing wakes the agent. When the computer switches to wall power,
+"battery-notice.py wall" finds each running Claude session that is idle
+with 🪫 in its title, and, if the session was told about the battery, sends
+it the wall power notice with send-claude-session. A session still working
+when wall power returns is not idle then, so at Stop, when the agent's
+footer line says 🪫, the computer draws wall power, and the agent was told
+about the battery, the hook keeps the agent going with the wall power
+notice. Other sessions hear about wall power at their next prompt or tool
+call. At Stop, the hook also keeps an agent going when its footer line says
+🔋 while no longrun run of the session that freezes on battery is going,
+since nothing would then continue its work.
 """
 
 import ctypes
@@ -55,16 +61,23 @@ BATTERY = ("This computer is running on battery power. Avoid running "
            "extensive test runs or other CPU-intensive long-running tasks. "
            "A long command that has to run anyway can be run with "
            "`longrun.py run --freeze-on-battery`, which freezes it until "
-           "wall power returns. "
-           "If you are blocked from progressing because of this, your state "
-           "is 🪫.")
+           "wall power returns; while you wait for such a run, your state "
+           "is 🔋. If you end your turn to wait for wall power instead, "
+           "your state is 🪫, and a message will tell you when wall power "
+           "returns.")
 WALL = "We are now back on wall power. You may resume normal operations."
+NOT_FREEZING = ("Your state is 🔋, but no longrun run of yours that freezes "
+                "on battery is going, so nothing will continue your work by "
+                "itself. Use the state that fits your work: 🪫 only if the "
+                "computer is on battery and you are stopping until wall "
+                "power returns.")
 
 TIME_REMAINING_UNLIMITED = -2.0
 
 CLAUDE_DIR = os.environ.get("CLAUDE_CONFIG_DIR",
                             os.path.expanduser("~/.claude"))
 SEND_SESSION = os.path.expanduser("~/bin/send-claude-session")
+LONGRUN = os.path.expanduser("~/dev/contraptions/longrun/longrun.py")
 
 
 def on_battery():
@@ -98,14 +111,30 @@ def notice(transcript_path, battery, agent=None, forget=False):
 
 
 @functools.cache
-def titles():
-    """stop-title-state.py, the hook beside this one that reads session
-    titles, footer lines, and session records."""
-    spec = importlib.util.spec_from_file_location("stop_title_state", os.path.join(
-        os.path.dirname(os.path.realpath(__file__)), "stop-title-state.py"))
+def load(path):
+    """The Python file at PATH, run as a module."""
+    name = os.path.splitext(os.path.basename(path))[0].replace("-", "_")
+    spec = importlib.util.spec_from_file_location(name, path)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+def titles():
+    """stop-title-state.py, the hook beside this one that reads session
+    titles, footer lines, and session records."""
+    return load(os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                             "stop-title-state.py"))
+
+
+def freezing(payload):
+    """Whether a longrun run of the session that sent the hook payload
+    PAYLOAD is going and freezes on battery."""
+    longrun = load(LONGRUN)
+    base = longrun.base_dir(payload.get("scratchpad_dir"), create=False)
+    return any(live and spec.get("session") == payload["session_id"]
+               and os.path.exists(os.path.join(rundir, longrun.FREEZE))
+               for rundir, spec, _, live in longrun.runs(base))
 
 
 def wake_blocked_sessions(claude_dir=CLAUDE_DIR, send_session=SEND_SESSION):
@@ -142,9 +171,15 @@ def main():
         sys.exit("usage: battery-notice.py [battery | wall]")
     payload = json.load(sys.stdin)
     if payload["hook_event_name"] == "Stop":
-        if (titles().footer_state(payload.get("last_assistant_message")) == "🪫"
-                and not on_battery() and notice(payload["transcript_path"], False)):
-            json.dump({"decision": "block", "reason": WALL}, sys.stdout,
+        state = titles().footer_state(payload.get("last_assistant_message"))
+        reason = None
+        if (state == "🪫" and not on_battery()
+                and notice(payload["transcript_path"], False)):
+            reason = WALL
+        elif state == "🔋" and not freezing(payload):
+            reason = NOT_FREEZING
+        if reason:
+            json.dump({"decision": "block", "reason": reason}, sys.stdout,
                       ensure_ascii=False)
         return
     context = notice(payload["transcript_path"], on_battery(),

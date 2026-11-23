@@ -5,13 +5,14 @@ when the computer runs on battery power and when it is back on wall power.
 Run it with no arguments. Most cases load the hook as a module and give its
 notice function a transcript and a power source for each step, checking
 what it says to tell the agent. The rest run the hook as a program: as
-Claude Code does, on the power source that "pmset -g ps" reports, and as
-github-hookbar does when the power source changes, with made-up session
-records and a stand-in for send-claude-session that records what it is
-asked to send. It reports one line per case. The exit status is 0 when
-every case passed and 1 otherwise.
+Claude Code does, on the power source that "pmset -g ps" reports, with
+made-up longrun runs at Stop, and as github-hookbar does when the power
+source changes, with made-up session records and a stand-in for
+send-claude-session that records what it is asked to send. It reports one
+line per case. The exit status is 0 when every case passed and 1 otherwise.
 """
 
+import fcntl
 import importlib.util
 import json
 import multiprocessing
@@ -27,6 +28,7 @@ hook = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(hook)
 
 BATTERY, WALL = hook.BATTERY, hook.WALL
+NOT_FREEZING = hook.NOT_FREEZING
 
 PROMPT, TOOL, START = "UserPromptSubmit", "PostToolUse", "SessionStart"
 
@@ -111,8 +113,10 @@ def run_program(data, told=None):
     recording that the agent was told TOLD, and returns the exit status,
     standard output and standard error, and what is recorded afterwards."""
     record(data["transcript_path"], told)
+    env = {key: value for key, value in os.environ.items()
+           if key != "LONGRUN_DIR"}
     run = subprocess.run([sys.executable, HOOK], input=json.dumps(data),
-                         capture_output=True, text=True)
+                         capture_output=True, text=True, env=env)
     return run.returncode, run.stdout, run.stderr, recorded(data["transcript_path"])
 
 
@@ -267,28 +271,90 @@ def hookbar_cases(battery):
     return passed
 
 
+def make_run(scratchpad, name, session, freezes, going):
+    """Makes, in the scratchpad SCRATCHPAD, what longrun keeps for a run
+    named NAME of the session SESSION, given --freeze-on-battery if FREEZES,
+    and holds the run's lock as its supervisor does if GOING. Returns the
+    lock file, which the caller closes."""
+    rundir = os.path.join(scratchpad, "longrun", name)
+    os.makedirs(rundir)
+    with open(os.path.join(rundir, "spec.json"), "w", encoding="utf-8") as f:
+        json.dump({"session": session}, f)
+    if freezes:
+        open(os.path.join(rundir, hook.load(hook.LONGRUN).FREEZE), "w").close()
+    lock = open(os.path.join(rundir, "lock"), "w")
+    if going:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+    return lock
+
+
+def block(reason):
+    return json.dumps({"decision": "block", "reason": reason},
+                      ensure_ascii=False)
+
+
+# (description, last assistant message, whether a Stop hook already kept
+# the agent going, what the agent was told, its session's longrun runs as
+# (whether the run is the session's own, whether it freezes on battery,
+# whether it is going), what the hook prints and leaves recorded on
+# battery, and the same on wall power)
+STOPS = [
+    ("blocked and told", "Blocked.\n\n🪫 0xE8", False, "battery", [],
+     ("", "battery"), (block(WALL), "")),
+    ("blocked and never told", "Blocked.\n🪫 0xE8", False, "", [], ("", ""),
+     ("", "")),
+    ("in another state and told", "Done.\n🐤 0xE8", False, "battery", [],
+     ("", "battery"), ("", "battery")),
+    ("with 🪫 above the last line", "Was 🪫.\n🐤 0xE8", False, "battery", [],
+     ("", "battery"), ("", "battery")),
+    ("blocked and told, kept going before", "Blocked.\n🪫 0xEC", True,
+     "battery", [], ("", "battery"), (block(WALL), "")),
+    ("blocked and told, with a run that freezes", "Blocked.\n🪫 0xEC", False,
+     "battery", [(True, True, True)], ("", "battery"), (block(WALL), "")),
+    ("in 🔋 with a run that freezes", "Waiting.\n🔋 0xEC", False, "battery",
+     [(True, False, True), (True, True, True)], ("", "battery"),
+     ("", "battery")),
+    ("in 🔋 with no run", "Waiting.\n🔋 0xEC", False, "battery", [],
+     (block(NOT_FREEZING), "battery"), (block(NOT_FREEZING), "battery")),
+    ("in 🔋 with no run, kept going before", "Waiting.\n🔋 0xEC", True, "",
+     [], (block(NOT_FREEZING), ""), (block(NOT_FREEZING), "")),
+    ("in 🔋 with a run that does not freeze", "Waiting.\n🔋 0xEC", False, "",
+     [(True, False, True)], (block(NOT_FREEZING), ""),
+     (block(NOT_FREEZING), "")),
+    ("in 🔋 with another session's run that freezes", "Waiting.\n🔋 0xEC",
+     False, "", [(False, True, True)], (block(NOT_FREEZING), ""),
+     (block(NOT_FREEZING), "")),
+    ("in 🔋 with a run that froze and ended", "Waiting.\n🔋 0xEC", False, "",
+     [(True, True, False)], (block(NOT_FREEZING), ""),
+     (block(NOT_FREEZING), "")),
+]
+
+
 def stop_cases(battery):
     """Checks the hook run as Claude Code runs it at Stop, on the current
     power source, BATTERY."""
     passed = True
-    block = json.dumps({"decision": "block", "reason": WALL}, ensure_ascii=False)
     with tempfile.TemporaryDirectory() as directory:
-        for description, footer, told, wall_result in [
-                ("blocked and told", "Blocked.\n\n🪫 0xE8", "battery", (0, block, "", "")),
-                ("blocked and never told", "Blocked.\n🪫 0xE8", "", (0, "", "", "")),
-                ("in another state and told", "Done.\n🐤 0xE8", "battery",
-                 (0, "", "", "battery")),
-                ("with 🪫 above the last line", "Was 🪫.\n🐤 0xE8", "battery",
-                 (0, "", "", "battery")),
-        ]:
+        for number, (description, message, active, told, runs, on_battery,
+                     on_wall) in enumerate(STOPS):
+            scratchpad = os.path.join(directory, "scratchpad-%d" % number)
+            locks = [make_run(scratchpad, "run-%d" % index,
+                              description if own else "another session",
+                              freezes, going)
+                     for index, (own, freezes, going) in enumerate(runs)]
             data = {"session_id": description, "hook_event_name": "Stop",
                     "transcript_path": transcript(directory, description),
-                    "last_assistant_message": footer}
-            passed &= check(
-                "program at a stop %s, on %s power"
-                % (description, "battery" if battery else "wall"),
-                (0, "", "", told) if battery else wall_result,
-                run_program(data, told))
+                    "scratchpad_dir": scratchpad, "stop_hook_active": active,
+                    "last_assistant_message": message}
+            try:
+                output, after = on_battery if battery else on_wall
+                passed &= check(
+                    "program at a stop %s, on %s power"
+                    % (description, "battery" if battery else "wall"),
+                    (0, output, "", after), run_program(data, told))
+            finally:
+                for lock in locks:
+                    lock.close()
     return passed
 
 

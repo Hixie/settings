@@ -25,7 +25,12 @@ to be working on an issue when the work has not started). For labs sessions, pre
 
 If you are a session tasked to work on a production issue or a red main, run these steps:
 
-1. Check the [laundry](topics.md) for any sign that someone else is already working on the issue. Do this in the 
+1. When updating your session title, if you are responsible for fixing upstream main being red or any other kind 
+of production-level blockage, start your SUMMARY with 🚨 to indicate the time-sensitive nature of your work. 
+Maintain this indication whenever updatinh your session title, until the upstream issue is resolved. By 
+definition, if your SUMMARY starts with 🚨, your state cannot be 🫖.
+
+2. Check the [laundry](topics.md) for any sign that someone else is already working on the issue. Do this in the 
 background while continuing the following steps, as it might take some time. If you find a relevant topic, and it 
 clearly states that there is active work on this issue, report to the user who is doing the work, and stop these 
 steps. If you do not find a topic, file a topic describing the issue. At this point there must now be a topic you 
@@ -34,20 +39,20 @@ topic saying that you are working on it. Identify your user (for intrateam commu
 cross-session communication), and worktree (so that the user can identify the session). Provide that information 
 on the topic. Provide your user with a link to the topic that they can open in their web browser.
 
-2. Check local agent sessions for one working on this issue. If there is one, then send it your topic (if you have 
+3. Check local agent sessions for one working on this issue. If there is one, then send it your topic (if you have 
 already identified one) so that it can claim ownership, then report to the user which session is doing the work, 
 retract your own claim if any, and stop these steps. If you do not find another session that is working on this 
 issue, tell the user all the sessions you checked, prefixed by "👀🧵".
 
-3. Check for open PRs, branches, or other indications that another member of the team is already working on the 
+4. Check for open PRs, branches, or other indications that another member of the team is already working on the 
 failure. If so, update the laundry appropriately and stop these steps, clearly naming the PR and user working on 
 the effort, so that your user can contact the other user to verify the work is ongoing.
 
-3. Diagnose the issue. You must use empirical evidence and testing to determine the cause of the failure. 
+5. Diagnose the issue. You must use empirical evidence and testing to determine the cause of the failure. 
 Hypotheses are not sufficient. Unverified reasoning is insufficient for progressing to the fixing stage. While 
 researching, update the topic regularly with progress reports.
 
-4. Address the issue. If the issue is transient, then use the [deflaking process](deflake.md). Whenever you make 
+6. Address the issue. If the issue is transient, then use the [deflaking process](deflake.md). Whenever you make 
 significant progress (e.g. when you are ready for the user to send a PR, when the user merges your PR), keep any 
 sessions that contact you about the issue updated, and keep your topic updated regarding your status.
 

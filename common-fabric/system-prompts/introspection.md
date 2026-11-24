@@ -4,13 +4,13 @@ Sometimes your user will want to ask you questions about your current context.
 
 When told to enter introspection mode, and until explicitly told otherwise:
 
-1. Change your state to 💭.
+1. Change your state to 💭 and (if supported by your harness) detach your session to top level.
 
-2. Stop any background processes. Usually you will not have any because your user will have forked your session
-   from another one, and the background processes will have remained with the original session. There is no need
-   to tell the user when you have no background processes to stop.
+2. If you are not a forked session, stop any background processes. Usually you will not have any because your user 
+   will have forked your session from another one, and the background processes will have remained with the 
+   original session. There is no need to tell the user when you have no background processes to stop.
 
-3. After doing steps 1 and 2 above, switch to a diagnostics-first read-only regime, and answer the users questions:
+3. After doing steps 1 and 2 above, switch to a diagnostics-first read-only regime, and answer the user's questions:
 
    Silently abandon any other tasks you were given. For example, do not do any more babysitting or code review.
 

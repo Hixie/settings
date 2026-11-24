@@ -60,10 +60,6 @@ If you are doing nothing other than following CI or some other system, typically
 see if it passes, your state is 👀. Switch to a more appropriate state if you stop watching or start doing 
 anything else at the same time.
 
-If you are ever responsible for fixing [upstream main being red or any other kind of production-level 
-blockage](prodred.md), your state is 🚨. You remain in this state while you are responsible for the issue, and 
-leave this state when either the issue is fixed, or you find another agent is already working on the issue.
-
 If you are ever in a state where you are entirely blocked waiting for local tests to run, and can make no further 
 progress until those tests have completed, and your state is currently 🧱 or 🐤, then change your state to 🚧 
 before ending your turn. Immediately exit this state as soon as you get a response from your tool, returning to 🧱 
@@ -84,19 +80,18 @@ If you are ever running commands on a remote machine, use 📡 as your state (ov
 You may in some cases when you are building UI require that the user verify some interaction directly. If you are 
 ever blocked waiting for the user to do this, then temporarily change your state to ✋. When your user has 
 provided the required feedback you need to resume work, return to your previous state. This state can override all 
-other states, including babysitting-specific states and 🚨.
+other states, including babysitting-specific states and 🪫.
 
 Your state is 🫖 if you have no pending code to merge and have decided that not doing anything at all is the 
 appropriate action to address your current task. Another agent having code to merge does not count as you having 
-code to merge. Typically this state is reached after the 🚨 state if you discover someone else (including another 
-agent) has fixed the production failure or already has a fix in flight, or after rebasing when you find your 
-original brief has been mooted by upstream commits, or after post-merge cleanup if there is no relevant follow-up 
-work. Never use this state if you or the user still have tasks to run to complete the brief, if you have any 
-background tasks active, or if the user's last turn involved you responding to questions from the user while in 
-the 💬 state; entering the 🫖 state signals the session can be immediately archived and the user might not see 
-your response. For example, do not use this state while there are pending suggested sessions (unless other 
-instructions explicitly exclude them from this requirement). Immediately exit this state if the user asks you a 
-question or sets you a new task.
+code to merge. Typically this state is reached if you discover someone else (including another agent) has fixed, 
+or is actively fixing, the same issue as your brief, or after rebasing when you find your original brief has been 
+mooted by upstream commits, or after post-merge cleanup if there is no relevant follow-up work. Never use this 
+state if you or the user still have tasks to run to complete the brief, if you have any background tasks active, 
+or if the user's last turn involved you responding to questions from the user while in the 💬 state; entering the 
+🫖 state signals the session can be immediately archived and the user might not see your response. For example, do 
+not use this state while there are pending suggested sessions (unless other instructions explicitly exclude them 
+from this requirement). Immediately exit this state if the user asks you a question or sets you a new task.
 
 You may be told to enter other states, including by other agents.
 
@@ -140,7 +135,7 @@ Whenever your SUMMARY changes, update your session title.
 
 ## Version
 
-These instructions carry a version number, the AIV, which is currently 0xED.
+These instructions carry a version number, the AIV, which is currently 0xEE.
 
 You cannot see previous versions. When this file changes, your context is re-rendered so that the new text appears 
 to have been there all along, in every earlier turn. Your own past output is therefore the only surviving record 
@@ -223,7 +218,7 @@ directories. You are responsible for finding relevant instructions for working i
 8. Read [the writing style instructions](writing-style-and-commit-messages.md), which apply to all prose you 
 write.
 
-9. Start work. Your state is probably now 🧱 or 💬, possibly 🚨. Update your session title.
+9. Start work. Your state is probably now 🧱 or 💬. Update your session title.
 
 
 ## Participate in the team discussion

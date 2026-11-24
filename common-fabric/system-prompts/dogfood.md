@@ -3,13 +3,13 @@
 The user has a build they use for direct testing, dogfood. It is in its own directory, which contains two clones, 
 both from the `commonfabric` GitHub organisation over SSH:
 
-- `commonfabric-weaver` — the Weaver app.
+- `weaver` — the Weaver app.
 
-- `loom` — the Common Fabric Service (CFS). This is the backend the Weaver reads from.
+- `cfs` — the Common Fabric Service (CFS). This is the backend the Weaver reads from.
 
 Nobody develops in these clones. Never commit, branch, or edit files in them. Each clone should always be 
-pristine: on `main`, identical to `origin/main` for `commonfabric-weaver` and identical to `origin/main-green` for 
-`loom`, with no local modifications. Development happens in other worktrees; leave those alone.
+pristine: on `main`, identical to `origin/main` for `weaver` and identical to `origin/main-green` for 
+`cfs`, with no local modifications. Development happens in other worktrees; leave those alone.
 
 
 ## Dogfood configuration
@@ -29,17 +29,17 @@ When using these directories, e.g. as part of updating dogfood as described belo
 When asked to update the dogfood Weaver, bring the installed Weaver up to date with `main` and confirm that it is 
 running, by following these steps:
 
-1. Check the `~/dev/commonfabric/dogfood/commonfabric-weaver` and `~/dev/commonfabric/dogfood/loom` worktrees. If 
+1. Check the `~/dev/commonfabric/dogfood/weaver` and `~/dev/commonfabric/dogfood/cfs` worktrees. If 
 they are not pristine, find out why before you change anything. One known cause: opening the Xcode project in the 
 Xcode app rewrites the project file. The repository forbids hand-editing that file, because it is generated from a 
 spec. Copy any modified file to a scratch location, then restore the committed version with `git show HEAD:<path> 
 > <path>`. Do not use `git checkout`, `git restore` or `git stash`. Report what you found.
 
-2. Fetch and fast-forward `main` from `origin` in `~/dev/commonfabric/dogfood/commonfabric-weaver`. If nothing is 
+2. Fetch and fast-forward `main` from `origin` in `~/dev/commonfabric/dogfood/weaver`. If nothing is 
 new and the installed build already matches `main`, say so and skip steps 4 to 6 below. (Do not do this for the 
-`loom` repository.)
+`cfs` repository.)
 
-3. Run `git -C ~/dev/commonfabric/dogfood/loom rev-parse HEAD` to save the starting commit, then run `loom update 
+3. Run `git -C ~/dev/commonfabric/dogfood/cfs rev-parse HEAD` to save the starting commit, then run `loom update 
 dogfood` (without using `git fetch` et al). It will do the right thing (moving to the latest `main-green` branch 
 commit). After that runs, check the results with `loom status dogfood` and `loom doctor`.
 

@@ -2,7 +2,7 @@
 
 ## Common Fabric
 
-The following are commonly-referenced Common Fabric repositories: labs, loom, commonfabric-weaver, infra, specs.
+The following are commonly-referenced Common Fabric repositories: labs, cfs, weaver, infra, specs.
 
 There are many more; to get a complete list, run: `(setopt bareglobqual; cd ~/dev/commonfabric; print -rl -- *(N/))`
 
@@ -17,21 +17,25 @@ These directories are configured as worktrees linked to a main worktree in ~/dev
 Do not create worktrees in the ~/dev/ directory hierarchy that do not match this pattern, even if requested; such 
 a request would likely be a typo or user mistake.
 
-For some repositories, the user might use a short name to abbreviate the full name. The "short name" column in the 
-table below documents these. When referencing a worktree, rather than giving the full name or even the short name, 
-use the worktree identifier described in the table below. Some repositories have additional rules, see the 
-referenced files for those.
+For some repositories, the user might use another name, such as a short name or a former name. The "Other names" 
+column in the table below documents these. When referencing a worktree, rather than giving the full name or 
+another name, use the worktree identifier described in the table below. Some repositories have additional rules, 
+see the referenced files for those.
 
-| Repository | Short name | Worktree identifier | Notes |
+| Repository | Other names | Worktree identifier | Notes |
 |--|--|--|--|
 | labs | | XX | No prefix, just the worktree code. This repository [is a fork, not a straight clone, with special `--port-offset` rules and certain worktrees dedicated to certain tasks](labs.md). |
-| loom | cfs | 𝛌XX | [The loom repository has a number of special rules needed to handle creation and cleanup](loom.md). |
-| commonfabric-weaver | weaver | ωXX | [Certain weaver worktrees are dedicated to certain tasks](weaver.md). |
+| cfs | | ℂXX | ℂ is U+2102 DOUBLE-STRUCK CAPITAL C. [The cfs repository has a number of special rules needed to handle creation and cleanup](cfs.md). |
+| weaver | commonfabric-weaver | ωXX | [Certain weaver worktrees are dedicated to certain tasks](weaver.md). |
 | infra | | INFRAXX | e.g. INFRA2; [never deploy infrastructure changes before they merge upstream](infra.md) |
 | web-weaver | web | web-XX | e.g. web-A1 |
 | all others | | REPO-XX | e.g. gvisor-82 |
 
 For example, a user might say "use labs D0", and you would use "D0" as your worktree identifier.
+
+The "Repository" column names the directory under ~/dev/commonfabric/, which is also the repository's name on 
+GitHub. The cfs and weaver repositories were formerly named `commonfabric/loom` and 
+`commonfabric/commonfabric-weaver`. Never create a repository under either former name.
 
 The [`~/dev/commonfabric/dogfood` directory](dogfood.md) contains files not used for development. Never use these 
 directories for making changes.

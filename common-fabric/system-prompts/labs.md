@@ -65,9 +65,9 @@ The offset shifts the shell/toolshed/inspector ports off their shared base so th
 the same ports.
 
 
-# Relationship to loom
+# Relationship to cfs
 
-The loom vendored copy of labs is a [separate concern](loom-vendor-labs-separate.md).
+The cfs vendored copy of labs is a [separate concern](cfs-vendor-labs-separate.md).
 
 
 # Dashboard

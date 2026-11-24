@@ -75,17 +75,42 @@ async function sessionTitle($: EngineInterface, home: string) {
 }
 
 const PREFIXED_REPOSITORIES: readonly [RegExp, string][] = [
-  [/^(?:𝛌|l(?=.{0,2}$))/u, 'commonfabric/loom'],
-  [/^(?:ω|w(?=.{0,2}$))/u, 'commonfabric/commonfabric-weaver'],
+  [/^ℂ/u, 'commonfabric/cfs'],
+  [/^ω/u, 'commonfabric/weaver'],
   [/^INFRA/u, 'commonfabric/infra'],
   [/^deno/u, 'denoland'],
   [/^cliffy/u, 'cliffy'],
 ]
 
-const SHORT_NAMES: Readonly<Record<string, string>> = {
-  cfs: 'loom',
-  weaver: 'commonfabric-weaver',
-  web: 'web-weaver',
+// Other names of repositories. The lowercase letters among them also mark a
+// worktree when followed by its code, as in "c1" for cfs worktree 1.
+const OTHER_NAMES: ReadonlyMap<string, string> = new Map([
+  ['c', 'cfs'],
+  ['w', 'weaver'],
+  ['commonfabric-weaver', 'weaver'],
+  ['web', 'web-weaver'],
+])
+
+// How an identifier that has no mark at its start splits into a repository
+// and a code, or null when it does not split. Repository names such as
+// web-weaver contain hyphens, so only an identifier that is not itself a
+// repository name is split, either at its last hyphen, or after a lowercase
+// c or w followed by a code. The volume ignores case, so only an exact
+// match among the repositories' names tells "crm", a repository, from "cRM",
+// cfs worktree RM.
+async function split($: EngineInterface, commonfabric: string, id: string) {
+  if (OTHER_NAMES.has(id)) {
+    return null
+  }
+  const hyphenated = /^(.*)-(.*)$/u.exec(id)
+  if (hyphenated !== null) {
+    return (await $.fs.exists(`${commonfabric}/${id}`)) ? null : hyphenated
+  }
+  const marked = /^([cw])(.{1,2})$/u.exec(id)
+  if (marked !== null && (await $.fs.list(commonfabric)).some(({ name }) => name === id)) {
+    return null
+  }
+  return marked
 }
 
 // The directory a worktree identifier names, following the same rules as
@@ -101,21 +126,15 @@ async function worktreePath($: EngineInterface, home: string, id: string) {
   let root: string
   let code: string
   const prefixed = PREFIXED_REPOSITORIES.find(([pattern]) => pattern.test(id))
-  if (id === 'web') {
-    root = `${commonfabric}/web-weaver`
-    code = ''
-  } else if (prefixed !== undefined) {
+  if (prefixed !== undefined) {
     const [pattern, repository] = prefixed
     root = `${home}/dev/${repository}`
     code = id.replace(pattern, '')
   } else {
-    let repository = id
-    code = ''
-    if (id.includes('-') && !(await $.fs.exists(`${commonfabric}/${id}`))) {
-      repository = id.slice(0, id.lastIndexOf('-'))
-      code = id.slice(id.lastIndexOf('-') + 1)
-    }
-    repository = SHORT_NAMES[repository] ?? repository
+    const parts = await split($, commonfabric, id)
+    const named = parts?.[1] ?? id
+    let repository = OTHER_NAMES.get(named) ?? named
+    code = parts?.[2] ?? ''
     if (code === '' && !(await $.fs.exists(`${commonfabric}/${repository}`))) {
       repository = 'labs'
       code = id

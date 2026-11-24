@@ -8,8 +8,8 @@
 # written XX below, together with a marker for its repository:
 #
 #   XX              ~/dev/commonfabric/labs/XX
-#   𝛌XX or lXX      ~/dev/commonfabric/loom/XX
-#   ωXX or wXX      ~/dev/commonfabric/commonfabric-weaver/XX
+#   ℂXX or cXX      ~/dev/commonfabric/cfs/XX
+#   ωXX or wXX      ~/dev/commonfabric/weaver/XX
 #   INFRAXX         ~/dev/commonfabric/infra/XX
 #   REPO-XX         ~/dev/commonfabric/REPO/XX
 #   denoXX          ~/dev/denoland/XX
@@ -22,11 +22,13 @@
 # Topics board in the terminal with that Topic showing, by running the topics
 # task of the labs main worktree. The current directory does not change.
 #
-# REPO may be a short name: cfs for loom, weaver for commonfabric-weaver, and
-# web for web-weaver. A marker with no code names the main worktree, as in
+# REPO may be another name: commonfabric-weaver for weaver, and web for
+# web-weaver. A marker with no code names the main worktree, as in
 # "deno" for ~/dev/denoland/root. Letters in a code may be given in either case,
-# but the l and w markers must be lowercase, so that a labs code such as L3 or
-# W0 is written in uppercase; "web" names web-weaver, not weaver worktree EB.
+# but the c and w markers must be lowercase, so that a labs code such as C3 or
+# W0 is written in uppercase. A name that names a repository is never read as
+# a marker and a code: "web" names web-weaver, not weaver worktree EB, and
+# "crm" names the crm repository, not cfs worktree RM.
 #
 # With no argument, the current directory is described. The description is
 # the output of logs, followed by one line for each open pull request whose
@@ -66,12 +68,17 @@
   local commonfabric_root=$HOME/dev/commonfabric
   local target=
   local repository worktree_root worktree_code
+  local -A other_names=(
+    c cfs
+    w weaver commonfabric-weaver weaver
+    web web-weaver
+  )
   local url remote_name
   local head_branch slug listing_repository listing_name listing_label
   local listing_path listing_output listing_line listed_repository
   local listed_branch listed_number listed_rest listed_url
   local bold_on bold_off link_on link_off
-  local -a listed_numbers
+  local -a listed_numbers repository_names
   local -aU listing_repositories
 
   if (( $# > 0 )) && [[ $1 == top/<-> ]]; then
@@ -95,16 +102,13 @@
       dogfood|fishfood)
         target=$commonfabric_root/$1
         ;;
-      web)
-        worktree_root=$commonfabric_root/web-weaver
+      ℂ*)
+        worktree_root=$commonfabric_root/cfs
+        worktree_code=${1#ℂ}
         ;;
-      𝛌*|l|l?|l??)
-        worktree_root=$commonfabric_root/loom
-        worktree_code=${1#(𝛌|l)}
-        ;;
-      ω*|w|w?|w??)
-        worktree_root=$commonfabric_root/commonfabric-weaver
-        worktree_code=${1#(ω|w)}
+      ω*)
+        worktree_root=$commonfabric_root/weaver
+        worktree_code=${1#ω}
         ;;
       INFRA*)
         worktree_root=$commonfabric_root/infra
@@ -120,20 +124,29 @@
         ;;
       *)
         # Repository names such as web-weaver contain hyphens, so only an
-        # identifier that is not itself a repository name is split at its
-        # last hyphen into a repository name and a code. An identifier that
-        # names no repository at all is a labs worktree code.
+        # identifier that is not itself a repository name is split, either
+        # at its last hyphen into a repository name and a code, or after a
+        # lowercase c or w followed by a code. The volume ignores case, so
+        # only an exact match among the repositories' names tells crm, a
+        # repository, from cRM, cfs worktree RM. An identifier that names no
+        # repository at all is a labs worktree code.
         repository=$1
         worktree_code=
-        if [[ $1 == *-* && ! -d "$commonfabric_root/$1" ]]; then
-          repository=${1%-*}
-          worktree_code=${1##*-}
+        if [[ -n ${other_names[$1]-} ]]; then
+          :
+        elif [[ $1 == *-* ]]; then
+          if [[ ! -d "$commonfabric_root/$1" ]]; then
+            repository=${1%-*}
+            worktree_code=${1##*-}
+          fi
+        elif [[ $1 == [cw]?(|?) ]]; then
+          repository_names=("$commonfabric_root"/*(N-/:t))
+          if (( ! ${repository_names[(Ie)$1]} )); then
+            repository=${1[1]}
+            worktree_code=${1[2,-1]}
+          fi
         fi
-        case $repository in
-          cfs) repository=loom ;;
-          weaver) repository=commonfabric-weaver ;;
-          web) repository=web-weaver ;;
-        esac
+        repository=${other_names[$repository]-$repository}
         if [[ -z $worktree_code && ! -d "$commonfabric_root/$repository" ]]
         then
           repository=labs

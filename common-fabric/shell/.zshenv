@@ -44,7 +44,7 @@ path=("$HOME/.local/share/mise/shims" "${path[@]}")
 # mise's own directories, named outright rather than derived from XDG_*.
 #
 # Test suites point XDG_DATA_HOME (and sometimes HOME) at a scratch directory
-# to sandbox their own state; loom's conftest does this for every test. mise
+# to sandbox their own state; cfs's conftest does this for every test. mise
 # derives its install directory from XDG_DATA_HOME but keeps its lock files
 # and incomplete-install markers in directories that test did not move, so
 # every shim call under such a test downloads the pinned deno again, leaves

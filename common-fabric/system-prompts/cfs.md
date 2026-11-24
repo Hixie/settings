@@ -1,13 +1,13 @@
-# Loom worktrees
+# cfs worktrees
 
-## Preparing a loom worktree
+## Preparing a cfs worktree
 
 A code-only worktree does not need a running Loom instance.
 
 Before binding a Loom instance or running tests/ci tests, prepare the worktree:
 
 ```bash
-cd ~/dev/commonfabric/loom/XX
+cd ~/dev/commonfabric/cfs/XX
 src/bin/prepare-instance-target.sh
 ```
 
@@ -81,7 +81,7 @@ Use an acceptance instance instead of a persistent development instance when the
 against realistic data:
 
 ```bash
-cd ~/dev/commonfabric/loom/XX
+cd ~/dev/commonfabric/cfs/XX
 loom acceptance up --worktree .
 loom acceptance list
 ```
@@ -110,8 +110,8 @@ Stop and unregister the instance before removing its worktree:
 ```bash
 loom stop loomXX --include-toolshed
 loom instance rm loomXX
-git -C ~/dev/commonfabric/loom/root worktree remove ~/dev/commonfabric/loom/XX
-git -C ~/dev/commonfabric/loom/root worktree prune
+git -C ~/dev/commonfabric/cfs/root worktree remove ~/dev/commonfabric/cfs/XX
+git -C ~/dev/commonfabric/cfs/root worktree prune
 ```
 
 `loom instance rm` preserves the instance's data. Use `--purge` only when the File Cabinet is the instance's 

@@ -14,7 +14,7 @@ For Claude:
 - weaver S0-SZ is used for refactoring code involving timeouts, sleeps, retries, and similar technical debt
 - weaver U0-UZ is used for user interface fixes
 
-Weaver worktrees may need to be associated with [loom](loom.md) worktrees.
+Weaver worktrees may need to be associated with [cfs](cfs.md) worktrees.
 
 ## Testing
 

@@ -60,8 +60,8 @@ Family = namedtuple("Family", "parent names mark code")
 # pattern before the code in its identifiers.
 COMMONFABRIC_REPOSITORIES = {
     "labs": ("labs", (), ""),
-    "loom": ("loom", ("cfs",), "𝛌|λ"),
-    "commonfabric-weaver": ("weaver", ("commonfabric-weaver",), "ω"),
+    "cfs": ("cfs", (), "ℂ"),
+    "weaver": ("weaver", ("commonfabric-weaver",), "ω"),
     "infra": ("infra", (), "INFRA"),
     "web-weaver": ("web", ("web-weaver",), "web-"),
 }
@@ -80,11 +80,14 @@ def families():
     """Every family of worktrees, by the name the gate gives it.
 
     Every directory under ~/dev/commonfabric that has a main worktree
-    called "root" is a Common Fabric repository.
+    called "root" is a Common Fabric repository. A symbolic link there, such
+    as one from a repository's former name, is another name for the
+    repository it leads to, not a repository of its own.
     """
     listed = []
     roots = glob.glob(os.path.join(COMMONFABRIC, "*", "root"))
-    repositories = {os.path.basename(os.path.dirname(root)) for root in roots}
+    repositories = {os.path.basename(os.path.dirname(root)) for root in roots
+                    if not os.path.islink(os.path.dirname(root))}
     for repository in sorted(repositories):
         kind, others, mark = COMMONFABRIC_REPOSITORIES.get(
             repository, (repository, (), re.escape(repository) + "-"))
@@ -108,7 +111,7 @@ def identifier_pattern(family):
     """The pattern for a worktree identifier, with the code as its group.
 
     Besides the family's own mark, any name the family goes by followed by
-    a hyphen comes before the code, as in "labs-G7" or "loom-3".
+    a hyphen comes before the code, as in "labs-G7" or "cfs-3".
     """
     marks = [family.mark] + [re.escape(name) + "-" for name in family.names]
     return "(?:%s)(%s)" % ("|".join(marks), family.code)
@@ -116,7 +119,7 @@ def identifier_pattern(family):
 
 # A title that opens with a list of worktrees, then a colon, then the rest of
 # the title. Worktree identifiers are letters, digits, and hyphens, where
-# letters include non-ASCII ones such as "ω" and "𝛌", so a list never contains
+# letters include non-ASCII ones such as "ω" and "ℂ", so a list never contains
 # an emoji.
 TITLE_HEAD = re.compile(r"([\w\s,#-]*):\s*\S")
 
@@ -141,9 +144,9 @@ the new session is to work in, and nothing else, in one of these forms:
 
   Use REPO XX    a worktree, by its repository's name or short name and its
                  worktree code of one or two letters or digits, e.g.
-                 "Use labs G7", "Use weaver U3", "Use loom 3", "Use deno 2"
+                 "Use labs G7", "Use weaver U3", "Use cfs 3", "Use deno 2"
   Use XYZ        a worktree, by its worktree identifier, e.g. "Use G7",
-                 "Use ωU3", "Use 𝛌3", "Use INFRA2", "Use deno2",
+                 "Use ωU3", "Use ℂ3", "Use INFRA2", "Use deno2",
                  "Use gvisor-T1", "Use labs-G7", "Use settings"
   Use PATH       any other directory, as an absolute or ~-prefixed path
 
@@ -204,11 +207,12 @@ def from_path(spelled):
     """(kind, name, directory) for a directory named by its path.
 
     A path inside a worktree names that worktree, so that it gets the same
-    checks as when it is named by its kind and name.
+    checks as when it is named by its kind and name, including a path
+    through a symbolic link to the worktree.
     """
-    directory = os.path.abspath(os.path.expanduser(spelled))
+    directory = os.path.realpath(os.path.expanduser(spelled))
     for kind, family in families().items():
-        parent = family.parent
+        parent = os.path.realpath(family.parent)
         if contains(parent, directory) and directory != parent:
             entry = os.path.relpath(directory.lower(),
                                     parent.lower()).split(os.sep)[0]
@@ -299,10 +303,11 @@ def contains(directory, path):
     """Whether `path` is `directory` or something inside it.
 
     The comparison folds case because the volume these worktrees live on
-    does, so two spellings of one directory are one directory here.
+    does, and follows symbolic links, so two spellings of one directory are
+    one directory here.
     """
-    directory = os.path.abspath(directory).lower()
-    path = os.path.abspath(path or os.getcwd()).lower()
+    directory = os.path.realpath(directory).lower()
+    path = os.path.realpath(path or os.getcwd()).lower()
     return path == directory or path.startswith(directory + os.sep)
 
 

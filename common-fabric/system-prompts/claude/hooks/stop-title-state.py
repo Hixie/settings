@@ -26,7 +26,7 @@ CLAUDE_DIR = os.environ.get("CLAUDE_CONFIG_DIR",
 
 # The list of worktrees that opens a title, with its colon. Worktree
 # identifiers are letters, digits, and hyphens, where letters include
-# non-ASCII ones such as "ω" and "𝛌", so a list never contains an emoji.
+# non-ASCII ones such as "ω" and "ℂ", so a list never contains an emoji.
 TITLE_WORKTREES = re.compile(r"(?:[\w\s,#-]*:\s*)?")
 
 # The variation selector that asks for an emoji to be drawn in color. Some

@@ -30,11 +30,11 @@ FOOTER = "\n\n%s 0x94"
 # the hook is to block)
 CASES = [
     ("matching state, no worktrees", "🧱", "🧱 Fix the thing", "claude-desktop", False),
-    ("matching state, worktrees", "🧱", "X3, 𝛌X3: 🧱 Fix the thing", "claude-desktop", False),
+    ("matching state, worktrees", "🧱", "X3, ℂX3: 🧱 Fix the thing", "claude-desktop", False),
     ("matching state, summary with a colon", "💬", "💬 Review: the parser", "claude-desktop", False),
     ("matching state, one worktree with hyphen", "🐤", "labs-G7: 🐤 Fix it", "claude-desktop", False),
-    ("matching state, weaver and loom worktrees", "🦚", "ωU3, λ3, 𝛌X3, INFRA2: 🦚 Fix", "claude-desktop", False),
-    ("different state, weaver and loom worktrees", "🪻", "ωU3,λ3: 🦚 Fix", "claude-desktop", True),
+    ("matching state, weaver and cfs worktrees", "🦚", "ωU3, ℂ3, ℂX3, INFRA2: 🦚 Fix", "claude-desktop", False),
+    ("different state, weaver and cfs worktrees", "🪻", "ωU3,ℂ3: 🦚 Fix", "claude-desktop", True),
     ("variation selector only in footer", "⚙️", "⚙ Starting", "claude-desktop", False),
     ("variation selector only in title", "⚙", "⚙️ Starting", "claude-desktop", False),
     ("different state, no worktrees", "🐤", "🧱 Fix the thing", "claude-desktop", True),

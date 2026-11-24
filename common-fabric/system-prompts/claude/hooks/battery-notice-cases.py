@@ -156,7 +156,7 @@ def program_cases(battery):
 # whether it is to be sent the wall power notice on wall power, what it is
 # told afterwards on wall power)
 SESSIONS = [
-    ("blocked", True, "idle", "X1, 𝛌X1: 🪫 Wait for power", "battery", True, ""),
+    ("blocked", True, "idle", "X1, ℂX1: 🪫 Wait for power", "battery", True, ""),
     ("blocked-alone", True, "idle", "🪫 Wait for power", "battery", True, ""),
     ("never-told", True, "idle", "X2: 🪫 Wait for power", "", False, ""),
     ("busy", True, "busy", "X3: 🪫 Wait for power", "battery", False, "battery"),

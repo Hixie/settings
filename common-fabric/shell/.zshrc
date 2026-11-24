@@ -22,7 +22,9 @@ compinit
 # Each repository has a main checkout, which l names by the repository, and,
 # when that is a root checkout, the worktrees beside it, which l names by a
 # marker for the repository followed by the worktree's code. Each checkout is
-# described by the time HEAD last moved there and the branch checked out.
+# described by the time HEAD last moved there and the branch checked out. A
+# symbolic link to a repository, such as one from its former name, is skipped,
+# since the repository it leads to is listed under its own name.
 _l_targets() {
   (( CURRENT == 2 )) || return 1
 
@@ -34,11 +36,12 @@ _l_targets() {
   zmodload zsh/datetime
 
   for root in "$HOME"/dev/commonfabric/*/root(N-/); do
+    [[ -L ${root:h} ]] && continue
     name=${root:h:t}
     case $name in
       labs) prefix= ;;
-      loom) prefix=l ;;
-      commonfabric-weaver) prefix=w ;;
+      cfs) prefix=c ;;
+      weaver) prefix=w ;;
       infra) prefix=INFRA ;;
       *) prefix=$name- ;;
     esac

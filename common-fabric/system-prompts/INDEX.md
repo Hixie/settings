@@ -135,7 +135,7 @@ Whenever your SUMMARY changes, update your session title.
 
 ## Version
 
-These instructions carry a version number, the AIV, which is currently 0xEE.
+These instructions carry a version number, the AIV, which is currently 0xEF.
 
 You cannot see previous versions. When this file changes, your context is re-rendered so that the new text appears 
 to have been there all along, in every earlier turn. Your own past output is therefore the only surviving record 
@@ -438,10 +438,10 @@ local dev servers with offset (decimal) = worktree code (base 36)
 - [Set `HEADLESS=1` whenever an integration test launches a browser](integration.md) - Before a long browser test 
 run, verify that the top-level Chrome for Testing command contains `--headless=new`.
 
-- [vendor/labs is separate](loom-vendor-labs-separate.md) — don't edit loom's vendored labs copy
+- [vendor/labs is separate](cfs-vendor-labs-separate.md) — don't edit cfs's vendored labs copy
 
-- [Loom worktrees](loom.md) - there are special rules for preparing and cleaning up agent sessions using loom 
-(CFS) worktrees.
+- [cfs worktrees](cfs.md) - there are special rules for preparing and cleaning up agent sessions using cfs 
+(Common Fabric Service) worktrees.
 
 - [Weaver worktrees](weaver.md) - avoid showing visible windows when running tests or experiments.
 

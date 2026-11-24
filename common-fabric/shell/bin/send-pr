@@ -6,10 +6,10 @@
 #
 # The session is found through the checkout that has the pull request's
 # branch, as found by pr-worktree. That checkout has a worktree identifier,
-# such as L8 for ~/dev/commonfabric/labs/L8 or 𝛌L8 for
-# ~/dev/commonfabric/loom/L8. A session title begins with the identifiers of
+# such as L8 for ~/dev/commonfabric/labs/L8 or ℂL8 for
+# ~/dev/commonfabric/cfs/L8. A session title begins with the identifiers of
 # the worktrees the session is using, separated by commas, followed by a
-# colon, as in "L8, 𝛌L8: 🧱 Fix the build" or "labs,𝛌L8: 🧱 Fix the build".
+# colon, as in "L8, ℂL8: 🧱 Fix the build" or "labs,ℂL8: 🧱 Fix the build".
 #
 # The candidates are the running Claude sessions whose titles list the
 # identifier, and the most recently used unarchived Codex thread whose title
@@ -89,8 +89,8 @@ case $checkout in
     code=${checkout:t}
     case $repository in
       labs) identifier=$code ;;
-      loom) identifier=𝛌$code ;;
-      commonfabric-weaver) identifier=ω$code ;;
+      cfs) identifier=ℂ$code ;;
+      weaver) identifier=ω$code ;;
       infra) identifier=INFRA$code ;;
       web-weaver) identifier=web-$code ;;
       *) identifier=$repository-$code ;;

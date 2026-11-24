@@ -74,13 +74,20 @@ const LABS_REMOTES = {
 
 type Answer = { code: number; stdout?: string; stderr?: string }
 
+const REPOSITORIES = ['labs', 'cfs', 'web-weaver', 'weaver', 'crm', 'specs'] as const
+
 // Whether a folder or file exists: the root, the commonfabric folder, the
-// repository folders, the checkouts, and the other folders.
+// repository folders, the checkouts, and the other folders. The volume ignores
+// case, as macOS's does by default.
 function exists(world: World, path: string) {
-  return path === '/' || path === `${world.home}/dev/commonfabric` ||
-    ['labs', 'loom', 'web-weaver', 'commonfabric-weaver', 'specs'].some(repo => path === `${world.home}/dev/commonfabric/${repo}`) ||
-    Object.keys(world.checkouts).some(checkout => path === checkout || path === `${checkout}/.git`) ||
-    (world.folders ?? []).includes(path)
+  const folded = path.toLowerCase()
+  return [
+    '/',
+    `${world.home}/dev/commonfabric`,
+    ...REPOSITORIES.map(repo => `${world.home}/dev/commonfabric/${repo}`),
+    ...Object.keys(world.checkouts).flatMap(checkout => [checkout, `${checkout}/.git`]),
+    ...(world.folders ?? []),
+  ].some(existing => existing.toLowerCase() === folded)
 }
 
 // What the host's commands answer: the pull request table, the commands a
@@ -155,6 +162,10 @@ function host(on: On, world: World) {
   on('fs.exists', (_, e) => ({
     value: e.path === METADATA.replace(HOME, world.home) ? world.metadata !== null : exists(world, e.path),
   }))
+  on('fs.list', (_, e) => {
+    expect(e.path).toBe(`${world.home}/dev/commonfabric`)
+    return { value: REPOSITORIES.map(name => ({ name, kind: 'dir' as const, size: 0, mtimeMs: 0, isLink: false })) }
+  })
   on('prompt.submit', async (_, e) => {
     expect(e.origin).toEqual({ kind: 'plugin', name: 'worktree-buttons', asUser: true })
     await held(world)
@@ -508,18 +519,18 @@ test('a pull request table that cannot be read is reported', async ($, on) => {
 })
 
 test('a ready pull request offers a review of the commits after the first, together or one at a time, or a merge', async ($, on) => {
-  const w = world('D0, D1, 𝛌E3: ✅ Ship it', {
+  const w = world('D0, D1, ℂE3: ✅ Ship it', {
     [`${CF}/labs/D0`]: { remotes: LABS_REMOTES, branch: 'fix', commits: ['aaa', 'bbb', 'ccc'] },
     [`${CF}/labs/D1`]: { remotes: LABS_REMOTES, branch: 'two', commits: ['eee', 'fff'] },
-    [`${CF}/loom/E3`]: { remotes: { origin: 'git@github.com:commonfabric/loom.git' }, branch: 'fix', commits: ['ddd'] },
-  }, ['commonfabric/labs\tfix\t12', 'commonfabric/labs\ttwo\t13', 'commonfabric/loom\tfix\t34'])
+    [`${CF}/cfs/E3`]: { remotes: { origin: 'git@github.com:commonfabric/cfs.git' }, branch: 'fix', commits: ['ddd'] },
+  }, ['commonfabric/labs\tfix\t12', 'commonfabric/labs\ttwo\t13', 'commonfabric/cfs\tfix\t34'])
   host(on, w)
   await start($)
 
   for (const surface of SURFACES) {
     // A single new commit has no separate review of each commit.
     expect(await labels($, surface)).toEqual({
-      buttons: ['D0: REVIEW TO MERGE (2 new commits, PR #12)', 'EACH COMMIT', 'D1: REVIEW TO MERGE (1 new commit, PR #13)', '𝛌E3: REREVIEW TO MERGE (PR #34)'],
+      buttons: ['D0: REVIEW TO MERGE (2 new commits, PR #12)', 'EACH COMMIT', 'D1: REVIEW TO MERGE (1 new commit, PR #13)', 'ℂE3: REREVIEW TO MERGE (PR #34)'],
       texts: [],
     })
   }
@@ -531,23 +542,23 @@ test('a ready pull request offers a review of the commits after the first, toget
   await press($, 'D0')
   await press($, 'D0 EACH COMMIT')
   await press($, 'D1')
-  await press($, '𝛌E3')
+  await press($, 'ℂE3')
   expect(w.ran).toEqual([
     iterm(`cd ${CF}/labs/D0; c bbb..ccc`),
     iterm(`cd ${CF}/labs/D0; c bbb..ccc --separate`),
     iterm(`cd ${CF}/labs/D1; c fff..fff`),
-    iterm(`cd ${CF}/loom/E3; c`),
+    iterm(`cd ${CF}/cfs/E3; c`),
   ])
 })
 
 test('a pull request opens in the browser in any state but ✅', async ($, on) => {
   const w = world('', {
-    [`${CF}/commonfabric-weaver/A1`]: {
-      remotes: { origin: 'https://github.com/CommonFabric/commonfabric-weaver.git' },
+    [`${CF}/weaver/A1`]: {
+      remotes: { origin: 'https://github.com/CommonFabric/weaver.git' },
       branch: 'feature',
       commits: ['aaa'],
     },
-  }, ['commonfabric/commonfabric-weaver\tfeature\t7', 'commonfabric/commonfabric-weaver\tfeature\t9'])
+  }, ['commonfabric/weaver\tfeature\t7', 'commonfabric/weaver\tfeature\t9'])
   host(on, w)
   for (const state of ['🪻', '🦚', '🧱']) {
     w.title = `ωA1: ${state} Weaver work`
@@ -556,7 +567,7 @@ test('a pull request opens in the browser in any state but ✅', async ($, on) =
 
     expect(await labels($, 'desktop')).toEqual({ buttons: ['ωA1: OPEN PR #9'], texts: [] })
     await press($, 'ωA1')
-    expect(w.ran).toEqual([['open', 'https://github.com/commonfabric/commonfabric-weaver/pull/9']])
+    expect(w.ran).toEqual([['open', 'https://github.com/commonfabric/weaver/pull/9']])
   }
 })
 
@@ -760,15 +771,24 @@ test('a session that starts with no window attached has its buttons ready', asyn
 
 test('worktree identifiers name the same folders as ~/bin/l does', async ($, on) => {
   const paths: Record<string, string> = {
-    '𝛌E3': `${CF}/loom/E3`,
-    lf2: `${CF}/loom/F2`,
-    'ωA1': `${CF}/commonfabric-weaver/A1`,
-    wb2: `${CF}/commonfabric-weaver/B2`,
+    'ℂE3': `${CF}/cfs/E3`,
+    'ℂe4': `${CF}/cfs/E4`,
+    c1: `${CF}/cfs/1`,
+    C1: `${CF}/labs/C1`,
+    cfs: `${CF}/cfs/root`,
+    crm: `${CF}/crm/root`,
+    cRM: `${CF}/cfs/RM`,
+    lf: `${CF}/labs/LF`,
+    'ωA1': `${CF}/weaver/A1`,
+    wb2: `${CF}/weaver/B2`,
+    W2: `${CF}/labs/W2`,
     INFRA2: `${CF}/infra/2`,
     deno5: `${HOME}/dev/denoland/5`,
     cliffy: `${HOME}/dev/cliffy/root`,
-    'cfs-K1': `${CF}/loom/K1`,
-    'weaver-C3': `${CF}/commonfabric-weaver/C3`,
+    'cfs-K1': `${CF}/cfs/K1`,
+    'loom-K2': `${CF}/loom/K2`,
+    'weaver-C3': `${CF}/weaver/C3`,
+    'commonfabric-weaver-C4': `${CF}/weaver/C4`,
     web: `${CF}/web-weaver/root`,
     'web-A1': `${CF}/web-weaver/A1`,
     'gvisor-82': `${CF}/gvisor/82`,
@@ -781,12 +801,14 @@ test('worktree identifiers name the same folders as ~/bin/l does', async ($, on)
     fishfood: `${CF}/fishfood`,
   }
   const ids = Object.keys(paths)
-  host(on, world(`${ids.join(', ')}, D0X, D0: 🧱 Everything`, Object.fromEntries(
+  host(on, world(`${ids.join(', ')}, D0X, ℭE3, cE3X, 𝛌E5, λE6, lf2, D0: 🧱 Everything`, Object.fromEntries(
     Object.values(paths).map(path => [path, { remotes: LABS_REMOTES, branch: 'fix', commits: ['aaa'] }]),
   )))
   await start($)
 
-  // D0X is not an identifier, and D0 is the folder d0 already named.
+  // D0X, ℭE3, cE3X, and the former cfs identifiers 𝛌E5, λE6, and lf2 are
+  // not identifiers, loom is not another name for cfs, and D0 is the folder d0
+  // already named.
   expect(await labels($, 'desktop')).toEqual({ buttons: ids.map(id => `${id}: REVIEW`), texts: [] })
 })
 

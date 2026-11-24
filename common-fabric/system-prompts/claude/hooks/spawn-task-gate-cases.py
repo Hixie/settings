@@ -164,7 +164,7 @@ def held_by_title(sessions, kind):
     return None
 
 
-OFFER_TITLE = "𝛌ZQ: 🍄 Do the thing"
+OFFER_TITLE = "ℂZQ: 🍄 Do the thing"
 PARENT = gate.Session("parent", "/", "⚙️ Make offers", "Claude session",
                       "local_parent")
 WAITING = gate.Session("child", "/", OFFER_TITLE, "Claude session",
@@ -185,7 +185,7 @@ RECORDS = {
 # whether the gate is to find the session waiting for that brief.
 AWAITING = [
     ("waiting for its brief", [WAITING], PARENT, "task_1", True),
-    ("already briefed", [WAITING._replace(title="𝛌ZQ: ⚙️ Do the thing")],
+    ("already briefed", [WAITING._replace(title="ℂZQ: ⚙️ Do the thing")],
      PARENT, "task_1", False),
     ("another session's offer", [WAITING],
      PARENT._replace(host="local_other"), "task_1", False),
@@ -207,18 +207,18 @@ AWAITING = [
 # decision, and a phrase the decision must carry. Each brief is sent by
 # PARENT for the offer "task_1".
 BRIEFS = [
-    ("for its offer's session", [PARENT, WAITING], "Use loom ZQ", "ALLOW", ""),
-    ("naming another worktree", [PARENT, WAITING], "Use loom ZR", "DENY",
+    ("for its offer's session", [PARENT, WAITING], "Use cfs ZQ", "ALLOW", ""),
+    ("naming another worktree", [PARENT, WAITING], "Use cfs ZR", "DENY",
      "which does not name it"),
     ("after the session was briefed",
-     [PARENT, WAITING._replace(title="𝛌ZQ: ⚙️ Do the thing")], "Use loom ZQ",
+     [PARENT, WAITING._replace(title="ℂZQ: ⚙️ Do the thing")], "Use cfs ZQ",
      "DENY", "in use by the Claude session"),
     ("for another session's offer",
-     [PARENT._replace(host="local_other"), WAITING], "Use loom ZQ", "DENY",
+     [PARENT._replace(host="local_other"), WAITING], "Use cfs ZQ", "DENY",
      "in use by the Claude session"),
     ("for an offer naming no worktree",
      [PARENT, WAITING._replace(host="local_plain", title="🍄 Do it")],
-     "Use loom ZQ", "ALLOW", ""),
+     "Use cfs ZQ", "ALLOW", ""),
 ]
 
 
@@ -245,10 +245,10 @@ def codex_threads_read():
     threads that have a title, have not been archived, and are not a
     subagent's, and no others."""
     threads = [
-        ("kept", "exec", "𝛌ZQ: 🧱 Work", 0),
+        ("kept", "exec", "ℂZQ: 🧱 Work", 0),
         ("from the app", "vscode", "ωZQ: 🧱 Work", 0),
         ("subagent", '{"subagent":{"other":"guardian"}}', "Guardian review", 0),
-        ("archived", "exec", "𝛌ZR: 🧱 Work", 1),
+        ("archived", "exec", "ℂZR: 🧱 Work", 1),
         ("untitled", "exec", "", 0),
     ]
     with tempfile.TemporaryDirectory() as directory:
@@ -264,6 +264,36 @@ def codex_threads_read():
                 database.commit()
         found = gate.codex_sessions(os.path.join(directory, "state_*.sqlite"))
     return sorted(session.id for session in found) == ["from the app", "kept"]
+
+
+def paths_through_linked_home():
+    """Whether, with a home directory reached through a symbolic link, the
+    gate reads a path to a worktree, spelled through the link or not, as
+    that worktree, and a path outside every worktree as a path."""
+    with tempfile.TemporaryDirectory() as directory:
+        real = os.path.join(directory, "real")
+        commonfabric = os.path.join(real, "dev", "commonfabric")
+        os.makedirs(os.path.join(commonfabric, "cfs", "root"))
+        os.makedirs(os.path.join(commonfabric, "cfs", "Z9"))
+        os.symlink("cfs", os.path.join(commonfabric, "loom"))
+        home = os.path.join(directory, "home")
+        os.symlink(real, home)
+        spelled = [os.path.join(home, "dev", "commonfabric", "cfs", "Z9"),
+                   os.path.join(home, "dev", "commonfabric", "loom", "Z9"),
+                   os.path.join(commonfabric, "cfs", "Z9"),
+                   os.path.join(home, "dev")]
+        program = ("import importlib.util, json, sys\n"
+                   "spec = importlib.util.spec_from_file_location('gate', %r)\n"
+                   "gate = importlib.util.module_from_spec(spec)\n"
+                   "spec.loader.exec_module(gate)\n"
+                   "print(json.dumps([gate.from_path(path)[:2] "
+                   "for path in sys.argv[1:]]))" % HOOK)
+        finished = subprocess.run([sys.executable, "-c", program] + spelled,
+                                  capture_output=True, text=True,
+                                  env={**os.environ, "HOME": home})
+    found = json.loads(finished.stdout) if finished.returncode == 0 else None
+    return found == [["cfs", "Z9"], ["cfs", "Z9"], ["cfs", "Z9"],
+                     ["path", spelled[3]]]
 
 
 def app_records_read():
@@ -313,11 +343,14 @@ def free_existing(sessions):
 # Titles, and the (kind, name) of each worktree the gate is to read from them.
 TITLES = [
     ("B0: 🐤 Judge three publisher follow-ups", {("labs", "B0")}),
-    ("ωU3, 𝛌3, INFRA2, deno1: 🧱 Work across seams",
-     {("weaver", "U3"), ("loom", "3"), ("infra", "2"), ("deno", "1")}),
-    ("𝛌C0, gvisor-T1, web-A1, cliffy2, settings: 🧱 Other repositories",
-     {("loom", "C0"), ("gvisor", "T1"), ("web", "A1"), ("cliffy", "2"),
+    ("ωU3, ℂ3, INFRA2, deno1: 🧱 Work across seams",
+     {("weaver", "U3"), ("cfs", "3"), ("infra", "2"), ("deno", "1")}),
+    ("ℂC0, gvisor-T1, web-A1, cliffy2, settings: 🧱 Other repositories",
+     {("cfs", "C0"), ("gvisor", "T1"), ("web", "A1"), ("cliffy", "2"),
       ("settings", "settings")}),
+    ("𝛌E1, λE2, loom-E3, cfs-E4: 🧱 Only the current name of cfs",
+     {("cfs", "E4")}),
+    ("ℭE1, μE2: 🧱 Marks of no repository", set()),
     ("web-weaver-A1: 🧱 Full repository name", {("web", "A1")}),
     ("b0, ωu3: 🧱 Lowercase names", {("labs", "B0"), ("weaver", "U3")}),
     ("D4, #35657: 🐤 Pull request in the list", {("labs", "D4")}),
@@ -340,14 +373,14 @@ def cases(sessions):
     existing = free_existing(sessions)
     weaver = free(sessions, "weaver", [letter + digit for letter in "ZYXWV"
                                        for digit in "9876543210"], False)
-    loom = free(sessions, "loom", [letter + digit for letter in "ZYXWV"
-                                   for digit in "9876543210"], False)
+    cfs = free(sessions, "cfs", [letter + digit for letter in "ZYXWV"
+                                 for digit in "9876543210"], False)
     infra = free(sessions, "infra", [letter + digit for letter in "ZYXWV"
                                      for digit in "9876543210"], False)
     labs = free(sessions, "labs", [letter + digit for letter in "ZYXWV"
                                    for digit in "9876543210"], False)
     for kind, found in (("existing", existing), ("weaver", weaver),
-                        ("loom", loom), ("infra", infra),
+                        ("cfs", cfs), ("infra", infra),
                         ("nonexistent labs", labs)):
         if found is None:
             raise SystemExit("No free %s worktree could be found for the "
@@ -386,8 +419,10 @@ def cases(sessions):
          "ALLOW"),
         ("full name and hyphen", "Use commonfabric-weaver-%s\n\nDo it."
          % weaver, here, "ALLOW"),
-        ("loom name and hyphen", "Use loom-%s\n\nDo it." % loom, here,
+        ("cfs name and hyphen", "Use cfs-%s\n\nDo it." % cfs, here,
          "ALLOW"),
+        ("cfs former name and hyphen", "Use loom-%s\n\nDo it." % cfs, here,
+         "DENY", SESSION_ID, "does not open by naming a worktree"),
         ("labs name and hyphen", "Use labs-%s\n\nDo it." % labs, here,
          "ALLOW"),
         ("identifier without Use", "ω%s\n\nDo it." % weaver, here, "DENY",
@@ -401,10 +436,16 @@ def cases(sessions):
         ("infra identifier, period", "Use INFRA%s.\n\nDo it." % infra, here,
          "ALLOW"),
         ("infra", "Use infra %s\n\nDo it." % infra, here, "ALLOW"),
-        ("loom, period", "Use loom %s.\n\nDo the thing." % loom, here, "ALLOW"),
-        ("loom short name", "Use cfs %s\n\nDo the thing." % loom, here,
-         "ALLOW"),
-        ("loom identifier", "Use 𝛌%s\n\nDo the thing." % loom, here, "ALLOW"),
+        ("cfs, period", "Use cfs %s.\n\nDo the thing." % cfs, here, "ALLOW"),
+        ("cfs former name", "Use loom %s\n\nDo the thing." % cfs, here,
+         "DENY", SESSION_ID, "does not open by naming a worktree"),
+        ("cfs identifier", "Use ℂ%s\n\nDo the thing." % cfs, here, "ALLOW"),
+        ("cfs former identifier", "Use 𝛌%s\n\nDo the thing." % cfs, here,
+         "DENY", SESSION_ID, "does not open by naming a worktree"),
+        ("cfs former Greek identifier", "Use λ%s\n\nDo it." % cfs, here,
+         "DENY", SESSION_ID, "does not open by naming a worktree"),
+        ("mark of no repository", "Use ℭ%s\n\nDo the thing." % cfs, here,
+         "DENY", SESSION_ID, "does not open by naming a worktree"),
         ("path", "Use ~/dev\n\nDo the thing.", here, "ALLOW"),
         ("path, period", "Use ~/dev.\n\nDo the thing.", here,
          "ALLOW"),
@@ -457,7 +498,7 @@ def cases(sessions):
          "Use %s\n\nDo it." % gate.worktree_path("labs", "42"), here, "DENY",
          SESSION_ID, "reserved for Codex"),
         ("path to Codex weaver",
-         "Use ~/dev/commonfabric/commonfabric-weaver/1\n\nDo it.", here, "DENY",
+         "Use ~/dev/commonfabric/weaver/1\n\nDo it.", here, "DENY",
          SESSION_ID, "reserved for Codex"),
         ("weaver name too long", "Use weaver FOO\n\nDo the thing.",
          here, "DENY"),
@@ -465,7 +506,7 @@ def cases(sessions):
          SESSION_ID, "reserved for Codex"),
         ("weaver Codex, one digit", "Use ω4\n\nDo the thing.",
          here, "DENY", SESSION_ID, "reserved for Codex"),
-        ("loom Codex range", "Use 𝛌3\n\nDo the thing.", here, "DENY",
+        ("cfs Codex range", "Use ℂ3\n\nDo the thing.", here, "DENY",
          SESSION_ID, "reserved for Codex"),
         ("deno Codex range", "Use deno1\n\nDo the thing.", here, "DENY",
          SESSION_ID, "reserved for Codex"),
@@ -477,10 +518,10 @@ def cases(sessions):
         ("own weaver worktree", "Use weaver %s\n\nDo the thing." % weaver,
          gate.worktree_path("weaver", weaver), "DENY",
          SESSION_ID, "this session is working in"),
-        ("loom name too long", "Use loom foo\n\nDo the thing.",
+        ("cfs name too long", "Use cfs foo\n\nDo the thing.",
          here, "DENY"),
-        ("own loom worktree", "Use loom %s\n\nDo the thing." % loom,
-         gate.worktree_path("loom", loom), "DENY",
+        ("own cfs worktree", "Use cfs %s\n\nDo the thing." % cfs,
+         gate.worktree_path("cfs", cfs), "DENY",
          SESSION_ID, "this session is working in"),
         ("infra plus prose", "Use INFRA%s for the gates\n\nDo it." % infra,
          here, "DENY"),
@@ -490,11 +531,17 @@ def cases(sessions):
          SESSION_ID, "There is no directory"),
 
         ("title, list", "Use weaver %s\n\nDo it." % weaver, here, "ALLOW",
-         SESSION_ID, "", "𝛌%s, ω%s: ⚙️ Do it" % (loom, weaver)),
+         SESSION_ID, "", "ℂ%s, ω%s: ⚙️ Do it" % (cfs, weaver)),
         ("title, lowercase identifier", "Use weaver %s\n\nDo it." % weaver,
          here, "ALLOW", SESSION_ID, "", "ω%s: ⚙️ Do it" % weaver.lower()),
-        ("title, loom identifier", "Use loom %s\n\nDo it." % loom, here,
-         "ALLOW", SESSION_ID, "", "𝛌%s: ⚙️ Do it" % loom),
+        ("title, cfs identifier", "Use cfs %s\n\nDo it." % cfs, here,
+         "ALLOW", SESSION_ID, "", "ℂ%s: ⚙️ Do it" % cfs),
+        ("title, cfs former identifier", "Use cfs %s\n\nDo it." % cfs, here,
+         "DENY", SESSION_ID, "opens with \"ℂ%s: \"" % cfs,
+         "𝛌%s: ⚙️ Do it" % cfs),
+        ("title, mark of no repository", "Use cfs %s\n\nDo it." % cfs, here,
+         "DENY", SESSION_ID, "opens with \"ℂ%s: \"" % cfs,
+         "ℭ%s: ⚙️ Do it" % cfs),
         ("title, pull request in list", "Use weaver %s\n\nDo it." % weaver,
          here, "ALLOW", SESSION_ID, "", "ω%s, #123: ⚙️ Do it" % weaver),
         ("title, list with prose", "Use weaver %s\n\nDo it." % weaver,
@@ -504,7 +551,7 @@ def cases(sessions):
          % weaver, "%s: ⚙️ Do it" % weaver),
         ("title, list without it", "Use weaver %s\n\nDo it." % weaver, here,
          "DENY", SESSION_ID, "includes ω%s" % weaver,
-         "𝛌%s, INFRA%s: ⚙️ Do it" % (loom, infra)),
+         "ℂ%s, INFRA%s: ⚙️ Do it" % (cfs, infra)),
         ("title, path inside worktree", "Use %s/%s\n\nDo it."
          % (path, os.listdir(path)[0]), here, "DENY", SESSION_ID,
          "opens with \"%s: \"" % gate.identifier(kind, name), "⚙️ Do it"),
@@ -577,6 +624,20 @@ def cases(sessions):
         skipped.append("No repository with a single copy is free, so none is "
                        "checked for being allowed.")
 
+    for former, kind, name in (("loom", "cfs", cfs),
+                               ("commonfabric-weaver", "weaver", weaver)):
+        if not os.path.islink(os.path.join(here, former)):
+            skipped.append("%s is not a symbolic link to the %s repository, so "
+                           "paths through it are not checked."
+                           % (os.path.join(here, former), kind))
+            continue
+        through = os.path.join(here, former, name)
+        listed.append(("path through %s" % former, "Use %s\n\nDo it."
+                       % through, here, "ALLOW"))
+        listed.append(("own %s worktree through %s" % (kind, former),
+                       "Use %s\n\nDo it." % gate.label(kind, name), through,
+                       "DENY", SESSION_ID, "this session is working in"))
+
     dirty = next(((kind, name) for kind in gate.families()
                   for name in names_in(kind)
                   if gate.worktree_is_dirty(gate.worktree_path(kind, name))
@@ -588,7 +649,7 @@ def cases(sessions):
         skipped.append("No worktree has uncommitted changes without also "
                        "being held, so that denial is not checked.")
 
-    for kind in ("labs", "weaver", "loom", "deno"):
+    for kind in ("labs", "weaver", "cfs", "deno"):
         found = held_by_title(sessions, kind)
         if found is None:
             skipped.append("No live session's title names a %s worktree that "
@@ -604,10 +665,15 @@ def cases(sessions):
         listed.append(("path held by a %s title" % kind, "Use %s\n\nDo it."
                        % gate.worktree_path(kind, name), here, "DENY",
                        SESSION_ID, "in use by the"))
+    # The gate names the first live session that holds a worktree, so the
+    # case needs a worktree whose first holder is a Codex thread.
     codex = next(((session.title, kind, name) for session in sessions
                   if session.description == "Codex thread"
                   for kind, name in sorted(gate.title_worktrees(session.title))
-                  if not name[0].isdigit()),
+                  if not name[0].isdigit()
+                  and next(other for other in sessions if gate.holds(
+                      other, kind, name, gate.worktree_path(kind, name)))
+                  is session),
                  None)
     if codex:
         title, kind, name = codex
@@ -616,8 +682,9 @@ def cases(sessions):
                        "in use by the Codex thread \"%s\"" % title))
     else:
         skipped.append("No Codex thread's title names a worktree outside "
-                       "the Codex ranges, so holding one by a Codex thread "
-                       "is not checked.")
+                       "the Codex ranges that no session listed before it "
+                       "holds, so holding one by a Codex thread is not "
+                       "checked.")
     return listed, skipped
 
 
@@ -657,6 +724,10 @@ def main():
     good = codex_threads_read()
     wrong += 0 if good else 1
     print("%-4s Codex threads that hold worktrees leave out subagents' threads"
+          % ("ok" if good else "FAIL"))
+    good = paths_through_linked_home()
+    wrong += 0 if good else 1
+    print("%-4s paths through a linked home directory name their worktrees"
           % ("ok" if good else "FAIL"))
     print()
 

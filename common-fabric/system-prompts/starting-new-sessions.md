@@ -94,7 +94,7 @@ in, and nothing else, e.g.:
 - `Use labs XX` for a labs worktree
 - `Use weaver XX` or `use ωXX` for a weaver worktree
 - `Use INFRAXX` for an infra worktree
-- `Use loom XX` or `use 𝛌XX` for a loom worktree
+- `Use cfs XX` or `use ℂXX` for a cfs worktree
 - `Use denoXX` for a deno worktree
 - `Use gvisor-XX` for a gvisor worktree (or `REPO-XX` generally for any commonfabric worktree)
 - `Use PATH` for any other directory, given as an absolute or `~`-prefixed path

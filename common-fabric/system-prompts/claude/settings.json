@@ -113,13 +113,27 @@
         ]
       }
     ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo 'After compaction, the agent is given the list of instruction files it read from ~/.claude/ and is told to read again the ones still relevant. Do not restate, paraphrase, or summarize the rules in those files. Where the work depends on one of them, name the file, and record what the user asked for and how far the work has got.'"
+          }
+        ]
+      }
+    ],
     "SessionStart": [
       {
         "matcher": "compact",
         "hooks": [
           {
             "type": "command",
-            "command": "echo 'You were just compacted. Insert a 🗜️ into your next response.Immediately read your session title with `mcp__ccd_session_mgmt__get_session`, called with `session_id` set to `self`, to see what worktrees you are associated with. If any worktrees listed are unaccounted for in the summary, determine their purpose before continuing. Then, continue as described in the summary.'"
+            "command": "echo 'You were just compacted. Insert a 🗜️ into your next response. Immediately read your session title with `mcp__ccd_session_mgmt__get_session`, called with `session_id` set to `self`, to see what worktrees you are associated with. If any worktrees listed are unaccounted for in the summary, determine their purpose before continuing. Then, continue as described in the summary.'"
+          },
+          {
+            "type": "command",
+            "command": "/Users/ianh/.claude/hooks/reread-instructions.py"
           }
         ]
       },

@@ -83,6 +83,13 @@ Some repositories have specific guidelines for selecting worktrees, see notably 
 [weaver](weaver.md) worktrees. In the absence of any other guidelines, using two-character worktrees in the range 
 10-9Z for Codex, and two-character worktrees in the range E0-VZ for Claude.
 
+`~/bin/agent-sessions free REPO --harness HARNESS [--prefix X]` lists the worktrees of REPO that no session claims 
+or is stacked on, that have no uncommitted changes, and whose checked-out commit is on the main branch as last 
+fetched, keeping only the codes set aside for HARNESS (`claude` or `codex`), and, with `--prefix`, only those that 
+start with X. Take X from the repository's guidelines above, and leave `--prefix` out when they name no single 
+prefix. `~/bin/agent-sessions show --worktree XX` lists the sessions that claim worktree XX or are stacked on it. 
+See [agent-sessions](agent-sessions.md).
+
 
 ## Creating worktrees
 
@@ -134,6 +141,9 @@ imperative that you signal the other agent to tell it about your dependency. Do 
 have received confirmation from the other agent that it will notify you upon completion. Even if your brief tells
 you explicitly that you are so stacked, you must still proactively contact the other session so that it is aware
 of your relationship.
+
+`~/bin/agent-sessions graph` lists which sessions are stacked on which, and `~/bin/agent-sessions check` lists, 
+among other problems, sessions stacked on worktrees that no session claims or whose work has finished.
 
 When another agent notifies you that it is stacked on your work, confirm your understanding with that session and
 make sure that you notify it of the completion of your work (or that your work has been abandoned, or handed off

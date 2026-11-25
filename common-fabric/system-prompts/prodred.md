@@ -10,7 +10,8 @@ information you have collected to the topic. If you do not, file a topic describ
 clearly states that there is active work on this issue, report to the user who is doing the work, and stop these 
 steps.
 
-2. Check local agent sessions (Claude, Codex) for one working on this issue. If there is one, send it a message 
+2. Check local agent sessions (Claude, Codex) for one working on this issue, for example with 
+`~/bin/agent-sessions search REGEX` (see [agent-sessions](agent-sessions.md)). If there is one, send it a message 
 informing it of the information you have found, anything relevant you found in the laundry, and then report to the 
 user which session is doing the work, and stop these steps.
 

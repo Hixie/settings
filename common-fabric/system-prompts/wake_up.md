@@ -17,11 +17,14 @@ _This section only applies to Claude_.
 When you are told to wake everyone up: first, run `~/dev/contraptions/claude-account-switch/account-switch.sh 
 for-claude` and follow the instructions there.
 
-Then, enumerate all active sessions, determine which ones were interrupted or had active processes that got 
-interrupted, and send them a message telling them to wake up.
-
-Then, find all the sessions that were not interrupted but had been idle for more than 12 hours and whose state is 
-not ⏸️, and send them a message just telling them to reorient.
+Then, run `~/bin/agent-sessions wake --harness claude`. It lists, with each one's permission mode, the sessions 
+that were interrupted or had active processes that got interrupted (`wake`), and the sessions that were not 
+interrupted but have been idle for more than 12 hours (`reorient`), leaving out paused sessions (⏸️). 
+[agent-sessions](agent-sessions.md) says how it decides. Send each `wake` session a message telling it to wake up, 
+and each `reorient` session a message just telling it to reorient, first matching your permission mode to its mode 
+as [the instructions that help you avoid traps in your harness](claude_tools.md) say. Read the last events of each 
+session listed as `unknown` before deciding. Do not message the sessions listed as `unreachable`: their folder no 
+longer exists, and the app does not deliver messages to them.
 
 You may include additional context in these messages if doing so might be helpful for the sessions, but all agents 
 will have access to these instructions and therefore you do not need to give them instructions redundant with 

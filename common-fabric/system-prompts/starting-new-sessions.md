@@ -50,7 +50,9 @@ Once you have picked one, if it exists already, reset it to pristine condition b
 writing the agent instructions. If it does not exist, you may let the session create it itself.
 
 Before actually spawning a new session in this way, check open PRs and Claude and Codex sessions, and Claude's 
-pending session queue, for existing work in this area, to avoid duplicate efforts. Look at [the topics 
+pending session queue, for existing work in this area, to avoid duplicate efforts. 
+`~/bin/agent-sessions search REGEX` lists the Claude and Codex sessions, archived ones included, whose messages 
+match, and `~/bin/agent-sessions list --all --grep REGEX` those whose titles or summaries do. Look at [the topics 
 board](topics.md) to see if anyone else is working on this.
 
 

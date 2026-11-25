@@ -136,7 +136,7 @@ Whenever your SUMMARY changes, update your session title.
 
 ## Version
 
-These instructions carry a version number, the AIV, which is currently 0xF0.
+These instructions carry a version number, the AIV, which is currently 0xF1.
 
 You cannot see previous versions. When this file changes, your context is re-rendered so that the new text appears 
 to have been there all along, in every earlier turn. Your own past output is therefore the only surviving record 
@@ -490,6 +490,11 @@ sessions, and `Agent`; `mcp__ccd_turn__update_plan` and `mcp__ccd_turn__wrap_up`
 them](claude_tools.md) - Claude agents should read that document for advice that will save you time _before_ you 
 call those tools; this file also gives mandatory instructions for dealing with and reporting permission denials 
 (including when experienced by subagents)
+
+- [Use `~/bin/agent-sessions` for questions about other sessions](agent-sessions.md) - which session holds a 
+worktree, another session's permission mode, stacked sessions, which sessions mentioned something, worktrees no 
+session uses, and which sessions to wake; read it before reading the desktop app's or Codex's session files, or 
+paging through `list_sessions`, `get_session`, `list_events` or `search_session_transcripts`
 
 - [Claude should read these instructions before making any shell calls, including `cat`](claude_shell.md) - Use 
 the `Read` tool to read files, learn about `zsh` oddities that will otherwise trip you up, learn how 

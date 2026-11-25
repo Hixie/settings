@@ -1,0 +1,1288 @@
+#!/usr/bin/env python3
+"""Answer questions about the Claude and Codex sessions on this machine.
+
+Reads the files the Claude desktop app, Claude Code, and Codex keep on disk,
+and decides which session holds which worktree with the code of the hook that
+guards session spawning, ~/.claude/hooks/spawn-task-gate.py, so that this
+tool and that hook give the same answer. Run it with --help for the
+commands, and see ~/.claude/agent-sessions.md for what they do. It changes
+nothing but its own cache.
+"""
+
+import argparse
+import datetime
+import glob
+import importlib.util
+import io
+import json
+import os
+import re
+import sqlite3
+import subprocess
+import sys
+from concurrent.futures import ThreadPoolExecutor
+from contextlib import closing, redirect_stdout
+from dataclasses import dataclass, field
+from functools import cache, cached_property
+
+HOME = os.path.expanduser("~")
+GATE_PATH = os.path.join(HOME, ".claude", "hooks", "spawn-task-gate.py")
+DESKTOP = os.path.join(HOME, "Library", "Application Support", "Claude",
+                       "claude-code-sessions")
+PROCESSES = os.path.join(HOME, ".claude", "sessions")
+TRANSCRIPTS = os.path.join(HOME, ".claude", "projects")
+CODEX_TRANSCRIPTS = [os.path.join(HOME, ".codex", folder)
+                     for folder in ("sessions", "archived_sessions")]
+CACHE = os.path.join(HOME, "Library", "Caches", "agent-sessions", "desktop.json")
+
+# The fields of the desktop app's session files that this tool uses.
+FIELDS = ("sessionId", "cliSessionId", "priorCliSessionIds", "title",
+          "previousTitles", "cwd", "isArchived", "permissionMode", "model",
+          "effort", "createdAt", "lastActivityAt", "spawnedFrom",
+          "postTurnSummary", "lastTurnReport")
+
+UUID = r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+
+# The state emoji that marks a session whose work is stacked on the work in
+# other worktrees, which it lists in parentheses after the emoji.
+STACKED = "📚"
+
+# The states of the sessions that wake leaves out unless told otherwise:
+# paused ones.
+STATES_SKIPPED = ("⏸️",)
+
+# The states of a session whose work has merged (🪻) or that has nothing
+# left to merge (🫖).
+FINISHED = ("🪻", "🫖")
+
+
+def load_gate():
+    spec = importlib.util.spec_from_file_location("spawn_task_gate", GATE_PATH)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+gate = load_gate()
+
+
+@dataclass
+class Title:
+    """What a session title says: the worktrees it lists, its state emoji,
+    the worktrees it is stacked on, and the items of either list that name
+    no worktree."""
+    worktrees: set
+    state: str
+    bases: list
+    unrecognised: list
+
+
+def items(text):
+    return [item.strip() for item in text.split(",") if item.strip()]
+
+
+def unrecognised(listed):
+    """The items of a list of worktrees that name none, leaving out pull
+    request numbers such as "#123"."""
+    return [item for item in listed if gate.title_worktree(item) is None
+            and not re.fullmatch(r"#\d+", item)]
+
+
+def parse_title(title):
+    """Read a title of the form "WORKTREES: STATE SUMMARY", where STATE is an
+    emoji, and "📚 (BASES)" when the work is stacked on other worktrees."""
+    head = gate.TITLE_HEAD.match(title)
+    listed = items(head.group(1)) if head else []
+    rest = title[head.end(1) + 1:].lstrip() if head else title.lstrip()
+    match = re.match(r"(\S+)(?:\s*\(([^)]*)\))?", rest)
+    token = match.group(1) if match else ""
+    state = token if all(not c.isascii() and not c.isalnum() for c in token) else ""
+    stacked = items(match.group(2) or "") if state == STACKED else []
+    return Title(gate.title_worktrees(title), state,
+                 [base for base in map(gate.title_worktree, stacked) if base],
+                 unrecognised(listed) + unrecognised(stacked))
+
+
+@dataclass
+class Session:
+    """A Claude session or a Codex thread.
+
+    `held` is the hook's own record of the session when the hook counts it
+    as able to hold worktrees: a Claude session with a running process, or
+    a Codex thread that has a title and has not been archived. `record` is
+    the desktop app's file for the session, `process` the file Claude Code
+    keeps for its running process, and `thread` the Codex thread's row.
+    """
+    kind: str
+    id: str
+    title: str
+    cwd: str
+    held: gate.Session = None
+    record: dict = field(default_factory=dict)
+    process: dict = field(default_factory=dict)
+    thread: dict = field(default_factory=dict)
+
+    @property
+    def archived(self):
+        return bool(self.record.get("isArchived") or self.thread.get("archived"))
+
+    @property
+    def status(self):
+        """"running" for a Claude session with a process, "open" for a Codex
+        thread the hook counts, "archived" for an archived session or
+        thread, "dormant" for any other Claude session, and "untitled" for
+        any other Codex thread."""
+        if self.held:
+            return "running" if self.kind == "claude" else "open"
+        if self.archived:
+            return "archived"
+        return "dormant" if self.kind == "claude" else "untitled"
+
+    @property
+    def harness(self):
+        """"claude-desktop" for a Claude session the desktop app started,
+        whose ID starts with local_; "claude-cli" for one started from a
+        terminal, whose ID is its Claude Code session's; or "codex"."""
+        if self.kind == "codex":
+            return "codex"
+        return "claude-desktop" if self.id.startswith("local_") else "claude-cli"
+
+    def runs_in(self, harnesses):
+        return wanted(harnesses, self.harness)
+
+    @property
+    def current(self):
+        """Whether the session can claim worktrees: the hook counts it, or
+        it is a Claude session that has not been archived."""
+        return self.status in ("running", "open", "dormant")
+
+    @cached_property
+    def parsed(self):
+        return parse_title(self.title)
+
+    @cached_property
+    def worktrees(self):
+        """The worktrees the session claims, as (kind, name): those its title
+        lists, and the one its working directory is in, if any."""
+        kind, name, _ = gate.from_path(self.cwd) if self.cwd else ("path", "", "")
+        return self.parsed.worktrees | ({(kind, name)} if kind != "path" else set())
+
+    @property
+    def lost(self):
+        """Whether the session is a current Claude session whose working
+        directory no longer exists, which the app refuses to send messages
+        to."""
+        return self.kind == "claude" and self.current and not os.path.isdir(self.cwd)
+
+    def as_gate_session(self):
+        return self.held or gate.Session(self.id, self.cwd, self.title,
+                                         "dormant Claude session", self.id)
+
+    def claims(self, kind, name, directory):
+        return gate.holds(self.as_gate_session(), kind, name, directory)
+
+    def cli_ids(self):
+        """The IDs of the session's Claude Code sessions, newest first."""
+        ids = [self.record.get("cliSessionId"), self.process.get("sessionId"),
+               *reversed(self.record.get("priorCliSessionIds") or [])]
+        return [i for i in dict.fromkeys(ids) if i]
+
+    @property
+    def last_activity(self):
+        """When the session was last active, in milliseconds since 1970."""
+        return (self.record.get("lastActivityAt") or self.process.get("updatedAt")
+                or self.thread.get("updated_at_ms"))
+
+    @property
+    def name(self):
+        """The session's harness and ID, which name it."""
+        return "%s %s" % (self.harness, self.id)
+
+    @property
+    def reference(self):
+        """The session's harness and ID, for JSON."""
+        return {"harness": self.harness, "id": self.id}
+
+    def label(self):
+        """The session's title, in quotation marks, and its name."""
+        return "%s (%s)" % ('"%s"' % self.title if self.title else "untitled", self.name)
+
+    def text(self):
+        """What --grep searches: the session's titles, the app's summary
+        of its last turn, and a Codex thread's first message."""
+        summary = self.record.get("postTurnSummary") or {}
+        parts = [self.title, *(self.record.get("previousTitles") or []),
+                 self.record.get("lastTurnReport"), summary.get("status_detail"),
+                 summary.get("needs_action"), self.thread.get("first_user_message"),
+                 self.thread.get("title")]
+        return "\n".join(part for part in parts if part)
+
+
+def wanted(harnesses, harness):
+    """Whether `harness` is one of `harnesses`, or `harnesses` is empty.
+    "claude" stands for both claude-desktop and claude-cli, and either of
+    those for "claude"."""
+    return not harnesses or any(h == harness or h.startswith(harness + "-")
+                                or harness.startswith(h + "-") for h in harnesses)
+
+
+def read_json(path):
+    try:
+        with open(path, encoding="utf-8") as handle:
+            return json.load(handle)
+    except (OSError, ValueError) as error:
+        print("agent-sessions: skipping %s: %s" % (path, error), file=sys.stderr)
+        return {}
+
+
+def desktop_records(directory=DESKTOP, cache=CACHE):
+    """The fields this tool uses from the desktop app's file for each
+    session, by the session's ID.
+
+    The app keeps one directory per account and organization, named
+    <account>/<org> with a UUID for each. Directories beside those whose
+    names go on past the UUID, such as "<org>.superseded.XXXXXX" or
+    "<org>.before-recover.XXXXXXXX", hold copies set aside by account
+    switching or session recovery, and are not read.
+
+    The files hold far more than these fields, and decoding all of them
+    takes seconds, so the fields are kept in a cache, and a file is read
+    again only when its modification time or size differs from the cached
+    one.
+    """
+    try:
+        with open(cache, encoding="utf-8") as handle:
+            saved = json.load(handle)
+        known = saved["files"] if saved["fields"] == list(FIELDS) else {}
+    except (OSError, ValueError, KeyError, TypeError):
+        known = {}
+    files, records = {}, {}
+    pattern = os.path.join(directory, "*", "*", "local_*.json")
+    for path in sorted(glob.glob(pattern)):
+        org = os.path.dirname(path)
+        if not (re.fullmatch(UUID, os.path.basename(org)) and re.fullmatch(
+                UUID, os.path.basename(os.path.dirname(org)))):
+            continue
+        try:
+            stat = os.stat(path)
+        except FileNotFoundError:
+            continue
+        stamp = [stat.st_mtime_ns, stat.st_size]
+        entry = known.get(path)
+        if not entry or entry[0] != stamp:
+            record = read_json(path)
+            entry = [stamp, {key: record[key] for key in FIELDS if key in record}]
+        sid = entry[1].get("sessionId")
+        if sid:
+            files[path] = entry
+            if sid in records:
+                print("agent-sessions: %s has more than one file; using the one "
+                      "with the latest activity" % sid, file=sys.stderr)
+            if (entry[1].get("lastActivityAt") or 0) >= (
+                    records.get(sid, {}).get("lastActivityAt") or 0):
+                records[sid] = entry[1]
+    if files != known:
+        os.makedirs(os.path.dirname(cache), exist_ok=True)
+        temporary = "%s.%d" % (cache, os.getpid())
+        with open(temporary, "w", encoding="utf-8") as handle:
+            json.dump({"fields": list(FIELDS), "files": files}, handle,
+                      ensure_ascii=False)
+        os.replace(temporary, cache)
+    return records
+
+
+def process_records(directory=PROCESSES):
+    """The file Claude Code keeps for each session process, by the ID of
+    the Claude Code session."""
+    records = {}
+    for path in glob.glob(os.path.join(directory, "*.json")):
+        record = read_json(path)
+        if record.get("sessionId"):
+            records[record["sessionId"]] = record
+    return records
+
+
+@cache
+def codex_threads(state=gate.CODEX_STATE):
+    """The Codex threads table's row for every thread that is not a
+    subagent's, by the thread's ID, from the database the hook reads: the
+    one with the highest number."""
+    paths = glob.glob(state)
+    if not paths:
+        return {}
+    newest = max(paths, key=lambda path: int(re.search(
+        r"([0-9]+)\.sqlite$", path).group(1)))
+    with closing(sqlite3.connect("file:%s?mode=ro" % newest, uri=True)) as db:
+        db.row_factory = sqlite3.Row
+        rows = db.execute(
+            "SELECT * FROM threads WHERE CASE WHEN json_valid(source) "
+            "THEN json_extract(source, '$.subagent') END IS NULL")
+        return {row["id"]: dict(row) for row in rows}
+
+
+def load_sessions():
+    """Every Claude session the desktop app or Claude Code knows of, and
+    every Codex thread the hook counts."""
+    decision = io.StringIO()
+    try:
+        with redirect_stdout(decision):
+            live = gate.live_sessions()
+    except SystemExit:
+        reason = json.loads(decision.getvalue())["hookSpecificOutput"][
+            "permissionDecisionReason"].split("\n\n")[0]
+        sys.exit("agent-sessions: the spawn gate could not list the live "
+                 "sessions: " + reason)
+    records = desktop_records()
+    processes = process_records()
+    sessions = []
+    hosted = set()
+    for held in live:
+        if held.description != "Claude session" or (held.host or held.id) in hosted:
+            continue
+        record = records.get(held.host, {})
+        hosted.add(held.host or held.id)
+        sessions.append(Session("claude", held.host or held.id, held.title,
+                                held.cwd or "", held, record,
+                                processes.get(held.id, {})))
+    for sid, record in records.items():
+        if sid not in hosted:
+            sessions.append(Session("claude", sid, record.get("title") or "",
+                                    record.get("cwd") or "", None, record))
+    held = {s.id: s for s in live if s.description != "Claude session"}
+    for tid, row in codex_threads().items():
+        sessions.append(Session("codex", tid, row.get("name") or "",
+                                row.get("cwd") or "", held.get(tid), thread=row))
+    return sessions
+
+
+def timestamp(milliseconds):
+    if milliseconds is None:
+        return None
+    moment = datetime.datetime.fromtimestamp(milliseconds / 1000,
+                                             datetime.timezone.utc)
+    return moment.strftime("%Y-%m-%dT%H:%MZ")
+
+
+def identifiers(worktrees):
+    return sorted(gate.identifier(kind, name) for kind, name in worktrees)
+
+
+def transcripts(session):
+    if session.kind == "codex":
+        path = session.thread.get("rollout_path")
+        return [path] if path else []
+    return [path for cli in session.cli_ids()
+            for path in glob.glob(os.path.join(TRANSCRIPTS, "*", cli + ".jsonl"))]
+
+
+def describe(session, full=False):
+    """A session's facts, as a dictionary with stable keys."""
+    title = session.parsed
+    record, process = session.record, session.process
+    facts = {
+        "harness": session.harness,
+        "id": session.id,
+        "status": session.status,
+        "title": session.title,
+        "state": title.state,
+        "worktrees": identifiers(session.worktrees),
+        "stackedOn": identifiers(title.bases),
+        "unrecognised": title.unrecognised,
+        "permissionMode": record.get("permissionMode"),
+        "model": record.get("model") or session.thread.get("model"),
+        "cwd": session.cwd,
+        "lastActivity": timestamp(session.last_activity),
+    }
+    if full:
+        facts.update({
+            "effort": record.get("effort") or session.thread.get("reasoning_effort"),
+            "created": timestamp(record.get("createdAt")
+                                 or session.thread.get("created_at_ms")),
+            "cliSessionIds": session.cli_ids(),
+            "pid": process.get("pid"),
+            "processStatus": process.get("status"),
+            "spawnedFrom": (record.get("spawnedFrom") or {}).get("sessionId"),
+            "previousTitles": record.get("previousTitles") or [],
+            "summary": record.get("postTurnSummary"),
+            "transcripts": transcripts(session),
+        })
+    return facts
+
+
+def claimed(sessions):
+    """Every worktree that a session claims through its title, its working
+    directory, or the list of worktrees it is stacked on, as (kind, name)."""
+    return {w for s in sessions for w in s.worktrees | set(s.parsed.bases)}
+
+
+@dataclass
+class Worktree:
+    kind: str
+    name: str
+    path: str
+    holders: list      # sessions the hook counts as holding it
+    dormant: list      # unarchived Claude sessions with no process that claim it
+    dependents: list   # sessions not archived that are stacked on it
+
+    @property
+    def identifier(self):
+        return gate.identifier(self.kind, self.name)
+
+    @property
+    def exists(self):
+        return os.path.isdir(self.path)
+
+
+def worktrees(sessions, extra=()):
+    """A Worktree for every worktree a current session claims, and for each
+    (kind, name) in `extra`."""
+    current = [s for s in sessions if s.current]
+    result = []
+    for kind, name in sorted(claimed(current) | set(extra)):
+        path = gate.worktree_path(kind, name)
+        result.append(Worktree(
+            kind, name, path,
+            [s for s in current if s.held and s.claims(kind, name, path)],
+            [s for s in current if not s.held and s.claims(kind, name, path)],
+            [s for s in current if (kind, name) in s.parsed.bases]))
+    return result
+
+
+def names(group):
+    return "; ".join(s.label() for s in group)
+
+
+def problems(sessions):
+    """Each thing about the sessions' claims on worktrees that is wrong or
+    that the hook cannot see, as (kind of problem, description)."""
+    found = []
+    for tree in worktrees(sessions):
+        here = tree.identifier
+        claimants = tree.holders + tree.dormant
+        if len(tree.holders) > 1:
+            found.append(("conflict", "%s is held by %d sessions: %s" % (
+                here, len(tree.holders), names(tree.holders))))
+        if claimants and not tree.exists:
+            found.append(("missing", "%s is claimed by %s, but %s does not exist" % (
+                here, names(claimants), tree.path)))
+        if tree.dormant and not tree.holders:
+            found.append(("unguarded", "%s is claimed only by %s, which has no "
+                          "running process, so the spawn gate would let a new "
+                          "session take %s" % (
+                              here, names(tree.dormant), here)))
+        if tree.dependents and claimants and all(
+                s.parsed.state in FINISHED for s in claimants):
+            found.append(("finished-base", "%s is stacked on %s, whose work "
+                          "has finished: %s" % (
+                              names(tree.dependents), here,
+                              names(claimants))))
+        if tree.dependents and not claimants:
+            found.append(("unheld-base", "%s is stacked on %s, which no session "
+                          "claims%s" % (
+                              names(tree.dependents), here,
+                              "" if tree.exists else ", and %s does not exist" % tree.path)))
+    for session in sessions:
+        if session.lost:
+            found.append(("lost-folder", "%s works in %s, which no longer exists, so "
+                          "the app cannot deliver messages to it" % (
+                              session.label(), session.cwd)))
+        if session.current and session.parsed.state == STACKED and not session.parsed.bases:
+            found.append(("unlisted-base", "%s is stacked, but its title lists no "
+                          "worktree it is stacked on" % session.label()))
+        if session.current and session.parsed.unrecognised:
+            found.append(("unrecognised", "%s lists %s, which %s no worktree "
+                          "identifier, so the spawn gate does not count it" % (
+                              session.label(),
+                              ", ".join("`%s`" % i for i in session.parsed.unrecognised),
+                              "is" if len(session.parsed.unrecognised) == 1 else "are")))
+    return found
+
+
+def resolve_worktree(query):
+    """(kind, name, path) for a query that names a worktree, as in "VB",
+    "labs VB", "ωLF", "INFRAE0", "contraptions", or a path, or None."""
+    kind, name, path = gate.resolve("Use " + query)
+    return None if kind in (None, "path") else (kind, name, path)
+
+
+# The kinds of name `show` looks sessions up by: the option for each, and
+# what it matches.
+NAMESPACES = {
+    "session": "a session's ID, or the start of one: a Claude desktop session's "
+               "ID (with or without local_), a Claude Code session's ID, which "
+               "names its transcript, or a Codex thread's ID",
+    "worktree": "a worktree, as an identifier such as VB, ωLF or INFRAE0, as "
+                "REPO CODE such as \"labs VB\", or as a path; this finds the "
+                "sessions that claim it or are stacked on it",
+}
+
+# The harnesses a session can run in, and what --harness accepts.
+HARNESSES = ("claude-desktop", "claude-cli", "codex")
+HARNESS_CHOICES = ("claude",) + HARNESSES
+
+
+def name_in(namespace):
+    """A parser for a name in one of the NAMESPACES, giving (namespace,
+    name), which rejects a worktree that does not resolve and an ID that is
+    empty, since an empty ID would match every session."""
+    def parse(text):
+        if namespace == "worktree" and resolve_worktree(text) is None:
+            raise argparse.ArgumentTypeError("%r names no worktree" % text)
+        if namespace != "worktree" and not text.removeprefix("local_"):
+            raise argparse.ArgumentTypeError("an ID cannot be empty")
+        return namespace, text
+    return parse
+
+
+def find(sessions, namespace, query):
+    """The sessions that `query` names in one of the NAMESPACES."""
+    if namespace == "worktree":
+        kind, name, path = resolve_worktree(query)
+        return [s for s in sessions
+                if s.claims(kind, name, path) or (kind, name) in s.parsed.bases]
+    bare = query.removeprefix("local_")
+    return [s for s in sessions
+            if any(i.removeprefix("local_").startswith(bare) for i in [s.id, *s.cli_ids()])]
+
+
+def line(facts):
+    """A session's facts as one line: its status, harness, ID, title in
+    quotation marks, and permission mode and model."""
+    extra = ", ".join(filter(None, (facts["permissionMode"], facts["model"])))
+    return "%-9s %-14s %-42s %s%s" % (
+        facts["status"], facts["harness"], facts["id"],
+        '"%s"' % facts["title"] if facts["title"] else "untitled",
+        "  (%s)" % extra if extra else "")
+
+
+def emit(args, value, text):
+    if args.json:
+        json.dump(value, sys.stdout, ensure_ascii=False, indent=1)
+        print()
+    else:
+        for row in text:
+            print(row)
+
+
+def select(sessions, args):
+    chosen = [s for s in sessions if (args.all or s.current) and s.runs_in(args.harness)]
+    if args.state:
+        chosen = [s for s in chosen if s.parsed.state in args.state]
+    if args.mode:
+        chosen = [s for s in chosen if s.record.get("permissionMode") == args.mode]
+    if args.grep:
+        chosen = [s for s in chosen if args.grep.search(s.text())]
+    return chosen
+
+
+def command_list(args, sessions):
+    chosen = select(sessions, args)
+    chosen.sort(key=lambda s: (s.harness, s.status, s.title))
+    facts = [describe(s) for s in chosen]
+    emit(args, facts, map(line, facts))
+
+
+def command_show(args, sessions):
+    pool = [s for s in sessions if (args.all or s.current) and s.runs_in(args.harness)]
+    found = {query: find(pool, *query) for query in args.queries}
+    chosen = list(dict.fromkeys(s.id for matches in found.values() for s in matches))
+    by_id = {s.id: s for s in pool}
+    results = []
+    for sid in chosen:
+        facts = describe(by_id[sid], full=True)
+        facts["lastTurn"], facts["lastTurnWhy"] = last_turn(by_id[sid])
+        results.append(facts)
+    emit(args, results, "\n\n".join("\n".join(
+        "%s: %s" % (key, json.dumps(value, ensure_ascii=False)
+                    if isinstance(value, (list, dict)) else value)
+        for key, value in facts.items() if value not in (None, "", []))
+        for facts in results).splitlines())
+    missing = ["--%s %s" % query for query, matches in found.items() if not matches]
+    if missing:
+        hints = (["--all includes archived sessions and untitled Codex threads"]
+                 if not args.all else []) + (
+            ["--harness leaves out the sessions in other harnesses"] if args.harness else [])
+        sys.exit("agent-sessions: no session matches %s" % "; ".join([", ".join(missing)]
+                                                                       + hints))
+
+
+def claim_text(tree):
+    """Who holds a worktree and who else claims it, in words."""
+    parts = []
+    if tree.holders:
+        parts.append("held by " + names(tree.holders))
+    if tree.dormant:
+        parts.append("claimed without a running process by " + names(tree.dormant))
+    return "; ".join(parts) or "no session claims it"
+
+
+def command_worktrees(args, sessions):
+    wanted = {query: resolve_worktree(query) for query in args.query}
+    unknown = [query for query, worktree in wanted.items() if not worktree]
+    if unknown:
+        sys.exit("agent-sessions: %s names no worktree" % ", ".join(unknown))
+    keys = {worktree[:2] for worktree in wanted.values()}
+    trees = [t for t in worktrees(sessions, keys) if not keys or (t.kind, t.name) in keys]
+    emit(args, [{
+        "worktree": t.identifier, "path": t.path, "exists": t.exists,
+        "heldBy": [s.reference for s in t.holders],
+        "dormantClaims": [s.reference for s in t.dormant],
+        "stackedOnBy": [s.reference for s in t.dependents],
+    } for t in trees], ["%s  %s%s\n  %s%s" % (
+        t.identifier, t.path, "" if t.exists else " (missing)", claim_text(t),
+        "\n  stacked on by " + names(t.dependents) if t.dependents else "")
+        for t in trees])
+
+
+def command_check(args, sessions):
+    found = problems(sessions)
+    emit(args, [{"problem": kind, "text": text} for kind, text in found],
+         ["%s: %s" % problem for problem in found] or ["no problems found"])
+    if found:
+        sys.exit(1)
+
+
+def command_graph(args, sessions):
+    """Each stacked session, with the sessions that claim the worktrees it
+    is stacked on."""
+    trees = {(t.kind, t.name): t for t in worktrees(sessions)}
+    edges = [(s, trees[base]) for s in sessions if s.current for base in s.parsed.bases]
+    if args.mermaid:
+        print("graph LR")
+        nodes = {}
+
+        def node(key, text):
+            nodes.setdefault(key, "n%d" % len(nodes))
+            return '%s["%s"]' % (nodes[key], text.replace('"', "'"))
+        for session, tree in edges:
+            claimants = [(s, "") for s in tree.holders] + [
+                (s, " (no running process)") for s in tree.dormant]
+            for holder, note in claimants or [(None, "")]:
+                target = (node(holder.id, holder.title + note) if holder else
+                          node(tree.identifier, "%s (no holder)" % tree.identifier))
+                print("  %s -->|%s| %s" % (node(session.id, session.title),
+                                           tree.identifier, target))
+        return
+    rows, previous = [], None
+    for session, tree in edges:
+        if session is not previous:
+            rows.append(session.label())
+            previous = session
+        rows.append("  on %s: %s%s" % (tree.identifier, claim_text(tree),
+                                       "" if tree.exists else "; it does not exist"))
+    emit(args, [{"session": session.reference, "base": tree.identifier,
+                 "heldBy": [s.reference for s in tree.holders],
+                 "dormantClaims": [s.reference for s in tree.dormant],
+                 "exists": tree.exists} for session, tree in edges], rows)
+
+
+def split_tail(data, size):
+    """Where the last `size` bytes of a transcript begin, moved back to the
+    start of their first line, and the records from there on, leaving out a
+    last line that is still being written."""
+    start = data.rfind(b"\n", 0, max(0, len(data) - size)) + 1
+    return start, [json.loads(line) for line in data[start:].split(b"\n")[:-1] if line.strip()]
+
+
+def blocks(record):
+    """The blocks of a message whose content is a list of them, or []."""
+    content = (record.get("message") or {}).get("content")
+    return content if isinstance(content, list) else []
+
+
+def content_text(content):
+    """The text of a message's content: a string, or a list of blocks."""
+    if isinstance(content, str):
+        return content
+    return " ".join(b.get("text", "") for b in content or ()
+                    if b.get("type", "").lower() == "text")
+
+
+def message_text(record):
+    return content_text((record.get("message") or {}).get("content"))
+
+
+def tool_results(record):
+    return [b for b in blocks(record) if b.get("type") == "tool_result"]
+
+
+def delivered_text(record):
+    """The text a record delivers to the session, or queues for it: a
+    message's, a queued message's, or, for a message absorbed in the middle
+    of a turn, which is recorded as an attachment, the attachment's."""
+    if record["type"] == "attachment":
+        return content_text((record.get("attachment") or {}).get("prompt"))
+    if record["type"] == "queue-operation":
+        return record.get("content") or ""
+    return message_text(record)
+
+
+# Messages that expect no reply: commands someone ran in the session's shell
+# or as local commands, the app's notice that the working directory changed,
+# and messages made only of system reminders.
+NO_REPLY = re.compile(r"\s*(<bash-(input|stdout|stderr)>|<local-command-stdout>|"
+                      r"<system-reminder>\s*The session's working directory has changed|"
+                      r"(<system-reminder>(?:(?!</system-reminder>).)*</system-reminder>\s*)+$)",
+                      re.DOTALL)
+NOTIFICATION = re.compile(r"<task-id>(\w+)</task-id>")
+HAND_BACK = re.compile(r'<agent-message from="(\w+)"')
+# A task notification or report says the tasks it names ended when it has a
+# final status, or is a monitor's notice that it expired. TaskOutput's
+# reports write an ID as <task_id>, and one notification can name several.
+TASK_ID = re.compile(r"<task[-_]id>(\w+)</task[-_]id>")
+FINAL = re.compile(r"<status>(?:completed|failed|killed|stopped)</status>|"
+                   r"\[Monitor (?:expired|timed out)")
+REPORT_START = re.compile(r"(?=<task-notification>|<retrieval_status>)")
+CUT_OFF = re.compile(r"<status>(?:killed|stopped)</status>")
+KILLED = "a background task it was running was killed"
+
+
+def launches(record):
+    """The IDs of the background tasks, subagents and monitors that a tool
+    result says were started: Bash's background tasks, whether started so or
+    moved to the background later, Agent's subagents started to run
+    alongside the session, and Monitor's monitors."""
+    result = record.get("toolUseResult")
+    if not isinstance(result, dict):
+        return set()
+    started = {result.get("backgroundTaskId"), result.get("taskId")}
+    if result.get("status") == "async_launched":
+        started.add(result.get("agentId"))
+    return started - {None}
+
+
+def ends(record):
+    """The IDs of the tasks a record says have ended: those a notification
+    or report with a final status names, and those of the session's own
+    TaskStop requests."""
+    text = delivered_text(record) + "\n".join(
+        content_text(result.get("content")) for result in tool_results(record))
+    return {task for report in REPORT_START.split(text) if FINAL.search(report)
+            for task in TASK_ID.findall(report)} | {
+        block["input"].get("task_id") for block in blocks(record)
+        if block.get("name") == "TaskStop"}
+
+
+# What a line of a transcript that can start or end a task contains, so that
+# such lines can be found without decoding the rest.
+LIFECYCLE = re.compile(rb'"backgroundTaskId"|"taskId"|"async_launched"|<status>|'
+                       rb"\[Monitor (?:expired|timed out)|agent-message from=|\"TaskStop\"")
+
+
+def killed_notice(text):
+    """Whether a message is a notice that tasks were killed or stopped."""
+    return bool(CUT_OFF.search(text)) and not HAND_BACK.search(text)
+
+
+def when(record):
+    return datetime.datetime.fromisoformat(record["timestamp"].replace("Z", "+00:00"))
+
+
+def turn_verdict(records, started=None, done=False, earlier=()):
+    """How a Claude session's last turn ended, from the records at the end of
+    its transcript, and from `earlier` records that start or end tasks:
+    ("interrupted", why), ("stopped", "") when someone stopped it,
+    ("finished", ""), or ("unknown", why) when no message is left to judge.
+
+    A turn is interrupted when it ends on an API error, a tool call or tool
+    result that got no reply, or a message that got no reply; when a message
+    was queued for the session and never delivered; or, unless the session's
+    work is `done`, when one of its background tasks was killed: a notice
+    says a task it did not stop itself was killed or stopped, which is what
+    an app restart does to every task still running, or a task it started
+    never ended and was not started by the process running now (`started`,
+    if any). A message needs no reply when NO_REPLY matches it, when it is a
+    local command, whose output follows it, or when it is a task
+    notification about tasks that had all ended or handed back before it.
+    """
+    ended, reported, launched = set(), set(), {}
+    turns, waiting = [], []
+
+    def note(record):
+        found = launches(record)
+        if found:
+            launched.update(dict.fromkeys(found, when(record)))
+        ended.update(ends(record))
+        reported.update(HAND_BACK.findall(delivered_text(record)))
+
+    def quiet(text, rest=()):
+        tasks = set(NOTIFICATION.findall(text))
+        reply = next((r for r in rest if r["type"] == "user"), {})
+        return bool(NO_REPLY.match(text) or tasks and tasks <= ended | reported
+                    or done and killed_notice(text)
+                    or text.lstrip().startswith("<command-name>")
+                    and message_text(reply).lstrip().startswith("<local-command-stdout>"))
+    for record in earlier:
+        note(record)
+    for index, record in enumerate(records):
+        kind, text = record["type"], delivered_text(record)
+        if kind == "queue-operation":
+            operation = record.get("operation")
+            if operation == "enqueue":
+                waiting.append((index, text, quiet(text)))
+            elif operation == "remove":
+                match = next((w for w in waiting if w[1] == text), None)
+                waiting = [w for w in waiting if w is not match]
+        elif kind == "assistant" or kind == "user" and not quiet(text, records[index + 1:]):
+            turns.append(index)
+        note(record)
+    if not turns:
+        return "unknown", "its transcript ends with no messages"
+    end = turns[-1]
+    last = records[end]
+    text = message_text(last)
+    if last["type"] == "assistant":
+        stop = last["message"].get("stop_reason")
+        if last.get("isApiErrorMessage"):
+            return "interrupted", "an API error: " + text
+        if text.strip() == "No response requested.":
+            return "interrupted", "the harness cut its turn short"
+        if stop == "tool_use":
+            return "interrupted", "a tool call never returned"
+        if stop not in ("end_turn", "stop_sequence", "max_tokens", "refusal"):
+            return "interrupted", "its reply stopped partway"
+    elif "[Request interrupted by user" in text:
+        return "stopped", ""
+    elif tool_results(last):
+        return "interrupted", "it never replied to a tool result"
+    elif killed_notice(text):
+        return "interrupted", KILLED
+    else:
+        return "interrupted", "it never replied to its last message"
+    # A message queued after the last turn and still there was never
+    # delivered: one delivered later would be the last turn. An app that
+    # quits takes queued messages off the queue and delivers none of them,
+    # so taking a message off the queue does not deliver it.
+    queued = [text for index, text, needless in waiting if index > end and not needless]
+    if any(map(killed_notice, queued)):
+        return "interrupted", KILLED
+    if queued:
+        return "interrupted", "a message queued for it was never delivered"
+    if not done and any(task not in ended and (started is None or at < started)
+                        for task, at in launched.items()):
+        return "interrupted", KILLED
+    return "finished", ""
+
+
+def conversation(records):
+    """The records of the session's own conversation that the turn rule
+    reads, leaving out subagents' and bookkeeping."""
+    return [r for r in records if not r.get("isSidechain") and r.get("timestamp")
+            and r["type"] in ("user", "assistant", "queue-operation", "attachment")]
+
+
+# What each event that ends a Codex turn says about the turn. Codex records a
+# turn that someone interrupted on purpose as aborted.
+CODEX_TURN = {"task_complete": ("finished", ""), "turn_aborted": ("stopped", ""),
+              "task_started": None}
+
+
+@cache
+def codex_started():
+    """When the oldest running Codex process started, or None when none is
+    running."""
+    listing = subprocess.run(["ps", "-A", "-o", "lstart=,comm="],
+                             capture_output=True, text=True).stdout
+    starts = [datetime.datetime.strptime(row[:24], "%a %b %d %H:%M:%S %Y").astimezone(
+        datetime.timezone.utc) for row in listing.splitlines()
+        if os.path.basename(row[24:].strip()) == "codex"]
+    return min(starts, default=None)
+
+
+def read_back(data, enough):
+    """Where the records at the end of a transcript begin, and the records,
+    read further back from the end of `data` until `enough(records)` holds
+    or the start is reached."""
+    size = 1 << 16
+    while True:
+        start, records = split_tail(data, size)
+        if enough(records) or not start:
+            return start, records
+        size *= 2
+
+
+def codex_turn(session, running=codex_started, threads=codex_threads):
+    """How a Codex thread's last turn ended, from the last event in its
+    transcript that starts or ends a turn. A turn that started and has not
+    ended is still working when a Codex process that started before it is
+    running, and was interrupted otherwise; `running` says when the oldest
+    running Codex process started."""
+    path = session.thread.get("rollout_path")
+    if not path or not os.path.exists(path):
+        return "unknown", "it has no transcript"
+    with open(path, "rb") as handle:
+        data = handle.read()
+
+    def turns(records):
+        return [r for r in records if r.get("type") == "event_msg"
+                and (r.get("payload") or {}).get("type") in CODEX_TURN]
+    events = turns(read_back(data, turns)[1])
+    if not events:
+        return "unknown", "its transcript has no turns"
+    last = events[-1]
+    ending = CODEX_TURN[last["payload"]["type"]]
+    if ending == ("stopped", ""):
+        # A quit aborts every thread's turn at once, which no person does.
+        at = when(last).timestamp() * 1000
+        if any(abs((row.get("updated_at_ms") or 0) - at) < 1000
+               for tid, row in threads().items() if tid != session.id):
+            return "interrupted", "Codex quit during its turn"
+    if ending:
+        return ending
+    oldest = running()
+    if oldest and oldest < when(last):
+        return "working", ""
+    return "interrupted", "its turn never ended"
+
+
+def last_turn(session):
+    """How a session's last turn ended: ("working", ""), ("interrupted",
+    why), ("stopped", ""), ("finished", ""), or ("unknown", why). For a
+    Claude session, this comes from the end of its newest transcript that
+    has messages, read back until it holds one, and from the lines before
+    that which start or end tasks."""
+    if session.kind == "codex":
+        return codex_turn(session)
+    if session.process.get("status") == "busy":
+        return "working", ""
+    started = session.process.get("startedAt")
+    started = started and datetime.datetime.fromtimestamp(
+        started / 1000, datetime.timezone.utc)
+    paths = transcripts(session)
+    for path in paths:
+        with open(path, "rb") as handle:
+            data = handle.read()
+
+        def messages(records):
+            return [r for r in conversation(records) if r["type"] in ("user", "assistant")]
+        start, records = read_back(data, messages)
+        if messages(records):
+            earlier = conversation(json.loads(line) for line in data[:start].split(b"\n")
+                                   if LIFECYCLE.search(line))
+            return turn_verdict(conversation(records), started,
+                                session.parsed.state in FINISHED, earlier)
+    return "unknown", "its transcript has no messages" if paths else "it has no transcript"
+
+
+def command_wake(args, sessions):
+    """The sessions to tell to wake up, because their last turn was
+    interrupted; those to tell to reorient, because their last turn was not
+    interrupted and they have been idle for longer than --idle; those whose
+    last turn cannot be read; and those whose folder no longer exists,
+    which the desktop app does not deliver messages to. Sessions in the
+    states --skip-state names are left out, as are those not in a state
+    --state names, if it names any; when neither is given, paused sessions
+    are left out."""
+    now = datetime.datetime.now(datetime.timezone.utc)
+    skipped = set(STATES_SKIPPED if args.skip_state is None and args.state is None
+                  else args.skip_state or ())
+    rows = []
+    for session in sessions:
+        state = session.parsed.state
+        if (not session.current or not session.runs_in(args.harness) or state in skipped
+                or args.state and state not in args.state):
+            continue
+        if session.lost:
+            rows.append(("unreachable", session, "its folder %s no longer exists"
+                         % session.cwd))
+            continue
+        verdict, why = last_turn(session)
+        idle = now.timestamp() * 1000 - (session.last_activity or 0)
+        if verdict in ("interrupted", "unknown"):
+            rows.append(("wake" if verdict == "interrupted" else "unknown", session, why))
+        elif verdict in ("finished", "stopped") and idle > args.idle * 3600 * 1000:
+            rows.append(("reorient", session, ""))
+    emit(args, [{"action": action, "harness": s.harness, "id": s.id, "title": s.title,
+                 "why": why, "permissionMode": s.record.get("permissionMode"),
+                 "lastActivity": timestamp(s.last_activity)}
+                for action, s, why in rows],
+         ["%-11s %s%s%s" % (action, s.label(),
+                            " in %s mode" % s.record["permissionMode"]
+                            if s.record.get("permissionMode") else "",
+                            ": " + why if why else "") for action, s, why in rows]
+         or ["no session needs waking or reorienting"])
+
+
+def regular_expression(text):
+    """A regular expression that ignores case, for argparse."""
+    try:
+        return re.compile(text, re.IGNORECASE)
+    except re.error as error:
+        raise argparse.ArgumentTypeError("%r is not a regular expression: %s" % (text, error))
+
+
+def loosened(pattern):
+    """A regular expression for ripgrep that matches every line of a
+    transcript, as JSON writes it, whose decoded text `pattern` can match.
+    JSON writes a quotation mark, a backslash and a control character
+    escaped, so each part of the pattern that could match one of those also
+    matches an escape; anchors are dropped, since a message is only part of
+    its line. It can match more lines than `pattern` would; it never
+    matches fewer."""
+    escape = r"\\."
+    out, i = [], 0
+    while i < len(pattern):
+        c = pattern[i]
+        if c == "\\" and i + 1 < len(pattern):
+            pair, i = pattern[i:i + 2], i + 2
+            if pair in (r"\A", r"\Z", r"\z", r"\b", r"\B"):
+                continue
+            if pair in (r"\n", r"\t", r"\r", "\\\\", '\\"'):
+                out.append(r"\\[ntr\\\\\"]" if pair != '\\"' else r'\\?"')
+            elif pair in (r"\s", r"\S", r"\W", r"\D"):
+                out.append("(?:%s|%s)" % (pair, escape))
+            else:
+                out.append(pair)
+        elif c == "[":
+            # The class ends at the first "]" that is neither escaped nor its
+            # first member.
+            end = i + 1 + (pattern[i + 1:i + 2] == "^")
+            end += pattern[end:end + 1] == "]"
+            while pattern[end] != "]":
+                end += 2 if pattern[end] == "\\" else 1
+            out.append("(?:%s|%s)" % (pattern[i:end + 1], escape))
+            i = end + 1
+        else:
+            out.append({"^": "", "$": "", ".": "(?:%s|.)" % escape, '"': r'\\?"'}.get(c, c))
+            i += 1
+    return "".join(out)
+
+
+def written_text(record):
+    """The text of a message that a person typed into a session or that the
+    session's agent wrote, if a transcript record carries one. Tool results,
+    notifications, hook feedback, system reminders, summaries of compacted
+    conversations, messages from other sessions and subagents, and Codex's
+    own records carry none."""
+    kind = record.get("type")
+    if kind == "assistant" and not record.get("isSidechain"):
+        return message_text(record)
+    if kind == "user" and not (record.get("isSidechain") or record.get("isMeta")
+                               or record.get("isCompactSummary")):
+        text = message_text(record)
+        return "" if NO_REPLY.match(text) or "<task-notification>" in text else text
+    item = (record.get("payload") or {}).get("item") or {}
+    if item.get("type") in ("UserMessage", "AgentMessage"):
+        return content_text(item.get("content"))
+    return ""
+
+
+def command_search(args, sessions):
+    """The sessions, archived ones included, in whose messages a regular
+    expression matches, ignoring case, newest match first. ripgrep finds the
+    lines of the transcripts that match anywhere, and only those lines are
+    decoded, to keep the matches in messages that a person or an agent
+    wrote."""
+    pattern = args.regex
+    by_path = {}
+    for session in sessions:
+        if session.runs_in(args.harness):
+            for path in transcripts(session):
+                by_path[path] = session
+    roots = [root for root, harness in [(TRANSCRIPTS, "claude")] + [
+        (folder, "codex") for folder in CODEX_TRANSCRIPTS]
+        if os.path.isdir(root) and wanted(args.harness, harness)]
+    found = {}
+    with subprocess.Popen(["rg", "--null", "--no-heading", "--with-filename",
+                           "--no-line-number", "--ignore-case", "--glob", "*.jsonl",
+                           "--glob", "!**/subagents/**", "--regexp", loosened(pattern.pattern), *roots],
+                          stdout=subprocess.PIPE, stderr=subprocess.PIPE) as rg:
+        for row in rg.stdout:
+            path, _, line = row.partition(b"\0")
+            session = by_path.get(path.decode())
+            if session is None:
+                continue
+            try:
+                record = json.loads(line)
+            except ValueError:
+                continue  # a line still being written
+            text = written_text(record)
+            match = pattern.search(text)
+            if match:
+                hits = found.setdefault(session.id, [session, 0, "", ""])
+                hits[1] += 1
+                if record.get("timestamp", "") >= hits[2]:
+                    hits[2] = record.get("timestamp", "")
+                    hits[3] = " ".join(text[max(0, match.start() - 60):match.end() + 60].split())
+        errors = rg.stderr.read().decode()
+    if rg.returncode > 1:
+        sys.exit("agent-sessions: ripgrep failed: " + errors.strip())
+    hits = sorted(found.values(), key=lambda hit: hit[2], reverse=True)
+    shown = hits[:args.limit] if args.limit else hits
+    emit(args, [{"harness": s.harness, "id": s.id, "title": s.title, "status": s.status,
+                 "messages": count, "lastMatch": stamp[:16] + "Z", "context": context}
+                for s, count, stamp, context in shown],
+         ["%s  %s %s, %d %s: %s" % (stamp[:16] + "Z", s.status, s.label(), count,
+                                    "message" if count == 1 else "messages", context)
+          for s, count, stamp, context in shown]
+         + (["and %d more sessions; --limit 0 lists them all" % (len(hits) - len(shown))]
+            if len(hits) > len(shown) else [])
+         or ["no session's messages match"])
+
+
+def git(directory, *arguments):
+    return subprocess.run(["git", "-C", directory, *arguments],
+                          capture_output=True, text=True)
+
+
+def landed(directory):
+    """Whether the commit a worktree has checked out is on its repository's
+    main branch, as last fetched: upstream's when there is an upstream
+    remote, and origin's otherwise. merge-base exits with 0 for a commit on
+    the branch, 1 for one that is not, and 128 for a branch that does not
+    exist."""
+    for ref in ("upstream/HEAD", "upstream/main", "origin/HEAD", "origin/main"):
+        code = git(directory, "merge-base", "--is-ancestor", "HEAD", ref).returncode
+        if code in (0, 1):
+            return code == 0
+    return False
+
+
+def candidate(path, unlanded):
+    """A worktree's branch and whether it is on main, or None when it has
+    uncommitted changes, is not a working tree git can read, or, unless
+    `unlanded`, is not on main."""
+    on_main = landed(path)
+    if not (on_main or unlanded):
+        return None
+    status = git(path, "--no-optional-locks", "status", "--porcelain")
+    if status.returncode or status.stdout.strip():
+        return None
+    branch = git(path, "symbolic-ref", "--short", "--quiet", "HEAD").stdout.strip()
+    return branch or "(detached)", on_main
+
+
+def command_free(args, sessions):
+    """The worktrees of a repository that no session uses: no current
+    session claims them or is stacked on them, the commit they have checked
+    out is on the main branch, and they have no uncommitted changes. With
+    --unlanded, also those whose commit is not on the main branch, which may
+    hold work that has not landed, or work that landed in a squashed commit.
+    With --harness, only the codes set aside for that harness: those that
+    start with a digit for Codex, and the others for Claude."""
+    families = gate.families()
+    kind = next((kind for kind, family in families.items()
+                 if args.repository.lower() in family.names), None)
+    if kind is None:
+        sys.exit("agent-sessions: %s is not a repository with worktrees"
+                 % args.repository)
+    busy = {(t.kind, t.name) for t in worktrees(sessions)
+            if t.holders or t.dormant or t.dependents}
+    paths = {}
+    for entry in sorted(os.listdir(families[kind].parent)):
+        name = gate.canonical(kind, entry)
+        path = gate.worktree_path(kind, name)
+        harness = "codex" if entry[0].isdigit() else "claude"
+        if (re.fullmatch(gate.CODE, entry)
+                and wanted(args.harness, harness)
+                and name.startswith(args.prefix.upper())
+                and (kind, name) not in busy and os.path.isdir(path)):
+            paths[gate.identifier(kind, name)] = path
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        results = pool.map(candidate, paths.values(), [args.unlanded] * len(paths))
+        found = [{"worktree": identifier, "path": path, "branch": result[0],
+                  "landed": result[1]}
+                 for (identifier, path), result in zip(paths.items(), results)
+                 if result]
+    found.sort(key=lambda tree: not tree["landed"])
+    emit(args, found, ["%s  %s  %s%s" % (
+        tree["worktree"], tree["path"], tree["branch"],
+        "" if tree["landed"] else "  (has commits that are not on main)")
+        for tree in found] or ["no free %s worktrees" % args.repository])
+
+
+def options(default, everything):
+    """--json, and, for the commands that list sessions, --all, which may come
+    before a command's name or after it."""
+    parser = argparse.ArgumentParser(add_help=False)
+    parser.add_argument("--json", action="store_true", default=default,
+                        help="print JSON rather than text")
+    if everything:
+        parser.add_argument("--all", action="store_true", default=default,
+                            help="include archived sessions and untitled Codex threads")
+    return parser
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(
+        prog="agent-sessions", description=__doc__.split("\n\n")[0],
+        parents=[options(False, True)])
+    parser.set_defaults(run=command_list, state=None, mode=None, grep=None, mermaid=False,
+                        queries=[], harness=None)
+    subparsers = parser.add_subparsers()
+
+    def command(name, run, text):
+        sub = subparsers.add_parser(name, help=text,
+                                    parents=[options(argparse.SUPPRESS,
+                                                     name in ("list", "show"))])
+        sub.set_defaults(run=run)
+        return sub
+
+    def harness(sub, text, choices=HARNESS_CHOICES):
+        sub.add_argument("--harness", action="append", choices=choices, help=(
+            text + "; claude stands for both claude-desktop and claude-cli; give it "
+            "more than once for more than one"))
+
+    def states(sub, option, text, **more):
+        sub.add_argument(option, action="extend", metavar="STATE", help=(
+            text + "; name several after it, or give it more than once"), **more)
+    listing = command("list", command_list, "one line per session (the default)")
+    states(listing, "--state", "only sessions in these states, e.g. 📚", nargs="+")
+    harness(listing, "only sessions in this harness")
+    listing.add_argument("--mode", help="only sessions in this permission mode")
+    listing.add_argument("--grep", metavar="REGEX", type=regular_expression, help=(
+        "only sessions whose current or earlier titles, last-turn summary, "
+        "or first Codex message match, ignoring case"))
+    show = command("show", command_show, "everything about the sessions that "
+                   "IDs or worktrees name")
+    for namespace, text in NAMESPACES.items():
+        show.add_argument("--" + namespace, dest="queries", action="append",
+                          metavar="WORKTREE" if namespace == "worktree" else "ID",
+                          type=name_in(namespace), help=text)
+    harness(show, "only sessions in this harness")
+    trees = command("worktrees", command_worktrees, "each claimed worktree, who "
+                    "holds it, and what is stacked on it")
+    trees.add_argument("query", nargs="*", help="only these worktrees")
+    command("check", command_check, "problems with the sessions' claims on "
+            "worktrees; exits 1 when there are any")
+    free = command("free", command_free, "worktrees of a repository that no "
+                   "session uses")
+    free.add_argument("repository", help="e.g. labs, cfs, weaver, infra, deno")
+    free.add_argument("--prefix", default="",
+                      help="only codes that start with this, e.g. F")
+    free.add_argument("--unlanded", action="store_true",
+                      help="also worktrees whose commit is not on main")
+    harness(free, "only codes set aside for this harness: those that start with a "
+            "digit for Codex, and the others for Claude", ("claude", "codex"))
+    wake = command("wake", command_wake, "the sessions to wake up or tell to reorient")
+    harness(wake, "only sessions in this harness")
+    wake.add_argument("--idle", type=float, default=12, metavar="HOURS",
+                      help="how long a session must have been idle to be told to "
+                      "reorient (default 12)")
+    states(wake, "--state", "only sessions in these states", nargs="+")
+    states(wake, "--skip-state", "leave out sessions in these states; with neither "
+           "option, paused sessions (⏸️) are left out, and this option with no states "
+           "leaves out none", nargs="*")
+    search = command("search", command_search, "the sessions, archived ones included, "
+                     "in whose messages a regular expression matches")
+    search.add_argument("regex", type=regular_expression,
+                        help="matched against messages, ignoring case")
+    harness(search, "only sessions in this harness")
+    search.add_argument("--limit", type=int, default=20,
+                        help="list at most this many sessions, newest match first "
+                        "(default 20; 0 lists them all)")
+    graph = command("graph", command_graph, "which sessions are stacked on which")
+    graph.add_argument("--mermaid", action="store_true",
+                       help="print a Mermaid flowchart")
+    args = parser.parse_args(argv)
+    if args.all and args.run not in (command_list, command_show):
+        parser.error("--all applies only to list and show")
+    if args.run is command_show and not args.queries:
+        parser.error("show needs at least one of %s" % ", ".join("--" + n for n in NAMESPACES))
+    if args.json and args.mermaid:
+        parser.error("--mermaid and --json cannot be used together")
+    args.run(args, load_sessions())
+
+
+if __name__ == "__main__":
+    main()

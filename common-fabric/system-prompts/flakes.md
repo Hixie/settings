@@ -11,7 +11,8 @@ While waiting for CI to rerun the test and/or for another session to fix it, run
 and without the PR's change, to definitively prove that it is not related to the PR.
 
 If you confirm that you have found an intermittent failure and that it is not caused by your own work, check if 
-there is another session already dealing with that flake. If so, mention the flake to the user and indicate which 
+there is another session already dealing with that flake, for example with `~/bin/agent-sessions search REGEX` 
+(see [agent-sessions](agent-sessions.md)). If so, mention the flake to the user and indicate which 
 worktree the other session is using to address the issue. If there is no other session dealing with that flake, 
 find an [appropriate unused worktree](starting-new-sessions.md) for the affected [repo](identifying-worktrees.md), 
 and [start a new session](starting-new-sessions.md) telling it only:

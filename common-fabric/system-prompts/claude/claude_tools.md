@@ -40,14 +40,17 @@ Before using "SendMessage" or "mcp__ccd_session_mgmt__send_message", check if yo
 mode as you. If not, lower your mode or the other session's mode so that you are in the same mode before sending 
 the message.
 
-`list_sessions` and `get_session` report `permissionMode` only for this session and sessions it started. The 
-desktop app keeps every session's metadata, archived ones included, in `~/Library/Application 
-Support/Claude/claude-code-sessions/*/*/local_<id>.json`, where `<id>` is the part of the session ID after 
-`local_`. Its fields include `permissionMode` (`default`, `acceptEdits`, `plan`, `auto` or `bypassPermissions`), 
-`title`, `model` and `isArchived`. This is the mode the app last saved, so read it rather than infer the mode from 
-a transcript. `set_session_permission_mode` can then change any session's mode. Lowering a mode, such as from 
-`bypassPermissions` to `auto`, needs no approval card. Never try to raise a mode, as that will block your progress 
-while waiting for user confirmation.
+`list_sessions` and `get_session` report `permissionMode` only for this session and sessions it started. For any 
+other session, run `~/bin/agent-sessions show --all --session ID`, where ID is the session's ID or the start of it, 
+with or without `local_`. That prints the mode the desktop app last saved (`default`, `acceptEdits`, `plan`, `auto` 
+or `bypassPermissions`). Use it rather than inferring the mode from a transcript or reading the app's session 
+files. `~/bin/agent-sessions list --mode MODE` lists the sessions in one mode, and 
+[agent-sessions](agent-sessions.md) answers other questions about sessions. `set_session_permission_mode` can then 
+change any session's mode. Lowering a mode, such as from `bypassPermissions` to `auto`, needs no approval card. 
+Never try to raise a mode, as that will block your progress while waiting for user confirmation.
+
+Session IDs for `mcp__ccd_session_mgmt__send_message`, `get_session` and the other session tools start with 
+`local_`; a bare UUID fails with "not found".
 
 If possible, send messages with `mcp__ccd_session_mgmt__send_message`, not `SendMessage`. `SendMessage` stops 
 after 10 messages to desktop sessions per user turn. Inform the user if either 

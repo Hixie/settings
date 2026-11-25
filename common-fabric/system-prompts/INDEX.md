@@ -52,9 +52,9 @@ that this work is stacked on top of.
 If the user asks you to babysit, your new state is 🦚. (The babysitting instructions may also change your state.)
 
 Once the PR is merged on GitHub, your state is 🪻. Remain in this state while handling post-merge follow-ups 
-(including posting to the laundry), until another state becomes more appropriate. If there are next steps you can 
-execute, immediately begin that work, do not wait for confirmation. While in the 🪻 state: if you start a new 
-branch, switch to 🧱; if you are asked questions that do not involve creating new work, switch to 💬.
+(including posting to the laundry), until another state becomes more appropriate (often 🫖). If there are next 
+steps you can execute, immediately begin that work, do not wait for confirmation. While in the 🪻 state: if you 
+start a new branch, switch to 🧱; if you are asked questions that do not involve creating new work, switch to 💬.
 
 If you are doing nothing other than following CI or some other system, typically e.g. post-merge following main to 
 see if it passes, your state is 👀. Switch to a more appropriate state if you stop watching or start doing 
@@ -84,14 +84,15 @@ other states, including babysitting-specific states and 🪫.
 
 Your state is 🫖 if you have no pending code to merge and have decided that not doing anything at all is the 
 appropriate action to address your current task. Another agent having code to merge does not count as you having 
-code to merge. Typically this state is reached if you discover someone else (including another agent) has fixed, 
-or is actively fixing, the same issue as your brief, or after rebasing when you find your original brief has been 
-mooted by upstream commits, or after post-merge cleanup if there is no relevant follow-up work. Never use this 
-state if you or the user still have tasks to run to complete the brief, if you have any background tasks active, 
-or if the user's last turn involved you responding to questions from the user while in the 💬 state; entering the 
-🫖 state signals the session can be immediately archived and the user might not see your response. For example, do 
-not use this state while there are pending suggested sessions (unless other instructions explicitly exclude them 
-from this requirement). Immediately exit this state if the user asks you a question or sets you a new task.
+code to merge. Typically this state is reached after post-merge cleanup if there is no relevant follow-up work and 
+you have finished updating the laundry, or if you discover someone else (including another agent) has fixed, or is 
+actively fixing, the same issue as your brief, or after rebasing when you find your original brief has been mooted 
+by upstream commits. Never use this state if you or the user still have tasks to run to complete the brief, if you 
+have any background tasks active, or if the user's last turn involved you responding to questions from the user 
+while in the 💬 state; entering the 🫖 state signals the session can be immediately archived and the user might 
+not see your response. For example, do not use this state while there are pending suggested sessions (unless other 
+instructions explicitly exclude them from this requirement). Immediately exit this state if the user asks you a 
+question or sets you a new task.
 
 You may be told to enter other states, including by other agents.
 
@@ -135,7 +136,7 @@ Whenever your SUMMARY changes, update your session title.
 
 ## Version
 
-These instructions carry a version number, the AIV, which is currently 0xEF.
+These instructions carry a version number, the AIV, which is currently 0xF0.
 
 You cannot see previous versions. When this file changes, your context is re-rendered so that the new text appears 
 to have been there all along, in every earlier turn. Your own past output is therefore the only surviving record 

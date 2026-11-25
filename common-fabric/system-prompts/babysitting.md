@@ -126,10 +126,15 @@ branch name, and do not push the new branch. Only the user pushes branches to cr
 (Remember that you must print your FOOTER LINE on each turn, and update your session title any time your state 
 changes.)
 
-The current babysitting version number is Alpha Gamma Psi.
+The current babysitting version number is Alpha Gamma Omega.
 
 ## Following a commit after merging
 
 In certain situations (this is not the common case) you may have reason to follow the commit beyond merging, e.g. 
 to check that it goes green when run on main CI. Add `--landed` to the `prwatch` command line to efficiently 
 follow a commit to and beyond the MERGE state if you know you will need to do this.
+
+To be woken as soon as one workflow's run behind the merge ends, such as the run that publishes an image you then 
+deploy, use `--landed-workflow FILE` instead, where `FILE` is that workflow's file name, such as 
+`dashboard-image.yml`. It implies `--landed`, keeps a state file of its own, and its `LANDED` verdict links the 
+run.

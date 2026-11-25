@@ -6,9 +6,9 @@ designed to be optimal for your needs.
 
 Use the Bash tool to run `prwatch <pr> --expect HEAD --once` with `run_in_background: true` and `timeout: 
 2147483647`. It exits at the first line it prints, and its exit wakes you. Handle what it reported, then run the 
-same command again. Every line it prints calls for a response, so each time it wakes you there is something to 
-do. Do not use the Monitor tool: it stops after 30 minutes whether or not anything happened, and each stop wakes 
-you for nothing.
+same command again. Every line it prints calls for a response, so each time it wakes you there is something to do. 
+Adding `--verbose` does not change when it exits: the extra lines it prints never end `--once`. Do not use the 
+Monitor tool: it stops after 30 minutes whether or not anything happened, and each stop wakes you for nothing.
 
 Add the `--github-webhook-relay` option that [the babysitting instructions](babysitting.md) describe to each 
 `prwatch` command below, whenever it applies to the pull request.

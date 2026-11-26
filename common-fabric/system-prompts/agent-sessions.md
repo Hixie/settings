@@ -110,6 +110,9 @@ ended and started after the oldest running Codex process.
   only the sessions in the states it names. `--skip-state STATE` leaves out the sessions in the states it names,
   and with no states leaves out none. Each takes several states after it, or can be given more than once.
 - `--harness` keeps only the sessions in that harness.
+- `--sender-mode MODE` names the permission mode of the session that will send the messages. Each session in a
+  higher mode is marked "lower it to MODE first", and its `lowerTo` in JSON is MODE rather than null. The modes,
+  lowest first, are `plan`, `default`, `acceptEdits`, `auto` and `bypassPermissions`.
 
 A Claude session's last turn was interrupted when its transcript ends without a reply that finished: with an API
 error such as a usage limit, a reply cut short, a tool call or tool result with no reply, a message with no reply,

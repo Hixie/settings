@@ -55,6 +55,9 @@ STATES_SKIPPED = ("⏸️",)
 # left to merge (🫖).
 FINISHED = ("🪻", "🫖")
 
+# Claude's permission modes, lowest first.
+MODES = ("plan", "default", "acceptEdits", "auto", "bypassPermissions")
+
 
 def load_gate():
     spec = importlib.util.spec_from_file_location("spawn_task_gate", GATE_PATH)
@@ -972,7 +975,8 @@ def command_wake(args, sessions):
     which the desktop app does not deliver messages to. Sessions in the
     states --skip-state names are left out, as are those not in a state
     --state names, if it names any; when neither is given, paused sessions
-    are left out."""
+    are left out. With --sender-mode, each session in a higher mode than
+    the sender's is marked as one to lower to the sender's mode first."""
     now = datetime.datetime.now(datetime.timezone.utc)
     skipped = set(STATES_SKIPPED if args.skip_state is None and args.state is None
                   else args.skip_state or ())
@@ -992,13 +996,24 @@ def command_wake(args, sessions):
             rows.append(("wake" if verdict == "interrupted" else "unknown", session, why))
         elif verdict in ("finished", "stopped") and idle > args.idle * 3600 * 1000:
             rows.append(("reorient", session, ""))
+
+    def lower_to(mode):
+        """The mode to lower a session in `mode` to before messaging it."""
+        if args.sender_mode and mode in MODES[MODES.index(args.sender_mode) + 1:]:
+            return args.sender_mode
+        return None
+
+    def in_mode(mode):
+        if not mode:
+            return ""
+        lower = lower_to(mode)
+        return " in %s mode%s" % (mode, " (lower it to %s first)" % lower if lower else "")
     emit(args, [{"action": action, "harness": s.harness, "id": s.id, "title": s.title,
                  "why": why, "permissionMode": s.record.get("permissionMode"),
+                 "lowerTo": lower_to(s.record.get("permissionMode")),
                  "lastActivity": timestamp(s.last_activity)}
                 for action, s, why in rows],
-         ["%-11s %s%s%s" % (action, s.label(),
-                            " in %s mode" % s.record["permissionMode"]
-                            if s.record.get("permissionMode") else "",
+         ["%-11s %s%s%s" % (action, s.label(), in_mode(s.record.get("permissionMode")),
                             ": " + why if why else "") for action, s, why in rows]
          or ["no session needs waking or reorienting"])
 
@@ -1259,6 +1274,9 @@ def main(argv=None):
     wake.add_argument("--idle", type=float, default=12, metavar="HOURS",
                       help="how long a session must have been idle to be told to "
                       "reorient (default 12)")
+    wake.add_argument("--sender-mode", choices=MODES, help=(
+        "the permission mode of the session that will send the messages; marks "
+        "each session in a higher mode as one to lower to it first"))
     states(wake, "--state", "only sessions in these states", nargs="+")
     states(wake, "--skip-state", "leave out sessions in these states; with neither "
            "option, paused sessions (⏸️) are left out, and this option with no states "

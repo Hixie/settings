@@ -1154,6 +1154,27 @@ class Wake(unittest.TestCase):
         self.assertEqual(self.rows("--state", "🐤", "--state", "✅"),
                          {("reorient", "1a2b3c4d-codex", ""), ("reorient", IDS["unguarded"], "")})
 
+    def test_sender_mode(self):
+        # Every Claude session here is in auto mode but the paused one, which
+        # is in bypassPermissions mode; Codex threads have no mode.
+        def marked(*argv):
+            rows, code = run("wake", "--skip-state", *argv)
+            self.assertEqual(code, 0)
+            return {row["id"]: row["lowerTo"] for row in rows if row["lowerTo"]}
+        claude = {row[1] for row in self.DEFAULT - self.CODEX} | {IDS["dormant"]}
+        self.assertEqual(marked(), {})
+        self.assertEqual(marked("--sender-mode", "bypassPermissions"), {})
+        self.assertEqual(marked("--sender-mode", "auto"), {IDS["dormant"]: "auto"})
+        self.assertEqual(marked("--sender-mode", "plan"), dict.fromkeys(claude, "plan"))
+        lines = text("wake", "--skip-state", "--sender-mode", "auto")
+        self.assertIn('reorient    "VA, V5: ⏸️ Paused work" (claude-desktop %s) in '
+                      'bypassPermissions mode (lower it to auto first)\n' % IDS["dormant"], lines)
+        self.assertIn('reorient    "contraptions: ✅ Finished tool" (claude-desktop %s) in auto '
+                      'mode\n' % IDS["unguarded"], lines)
+        _, err, code = invoke("wake", "--sender-mode", "root")
+        self.assertEqual(code, 2)
+        self.assertIn("invalid choice: 'root'", err)
+
     def test_codex_turns(self):
         def verdict(ending, running, minutes=10):
             path = rollout("probe", ending, minutes / 60)

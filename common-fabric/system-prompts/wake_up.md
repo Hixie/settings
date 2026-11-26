@@ -17,13 +17,17 @@ _This section only applies to Claude_.
 When you are told to wake everyone up: first, run `~/dev/contraptions/claude-account-switch/account-switch.sh 
 for-claude` and follow the instructions there.
 
-Then, run `~/bin/agent-sessions wake --harness claude`. It lists, with each one's permission mode, the sessions 
-that were interrupted or had active processes that got interrupted (`wake`), and the sessions that were not 
-interrupted but have been idle for more than 12 hours (`reorient`), leaving out paused sessions (⏸️). 
+Then, run `~/bin/agent-sessions wake --harness claude --sender-mode MODE`, where MODE is your own permission mode, 
+which `list_sessions` reports for this session. It lists, with each one's permission mode, the sessions that were 
+interrupted or had active processes that got interrupted (`wake`), and the sessions that were not interrupted but 
+have been idle for more than 12 hours (`reorient`), leaving out paused sessions (⏸️). It marks each session in a 
+higher mode than yours, for example with "lower it to auto first" when you are in `auto` mode. 
 [agent-sessions](agent-sessions.md) says how it decides. Send each `wake` session a message telling it to wake up, 
-and each `reorient` session a message just telling it to reorient, first matching your permission mode to its mode 
-as [the instructions that help you avoid traps in your harness](claude_tools.md) say. Read the last events of each 
-session listed as `unknown` before deciding. Do not message the sessions listed as `unreachable`: their folder no 
+and each `reorient` session a message just telling it to reorient. Before each message, lower the session's mode 
+where its line says to, and otherwise match your permission mode to its mode as [the instructions that help you 
+avoid traps in your harness](claude_tools.md) say. Message the sessions in lower modes than yours last, because 
+reaching them means lowering your own mode. Read the last events of each session listed as `unknown` before 
+deciding. Do not message the sessions listed as `unreachable`: their folder no 
 longer exists, and the app does not deliver messages to them.
 
 You may include additional context in these messages if doing so might be helpful for the sessions, but all agents 

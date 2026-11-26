@@ -67,6 +67,51 @@ Contrary to other documentation, on this machine we do not enable Full Disk Acce
 what happens when it is not enabled).
 
 
+## Fishfood
+
+~/dev/commonfabric/fishfood/ holds a second Common Fabric instance, fishfood, for bleeding-edge testing. It runs 
+exactly what users of the rapids release channel run: the CFS and Weaver commits that infra's 
+`releases/rapids.json` names, with its home on rapids. Labs is the CFS commit's own vendored copy (`vendor/labs`), 
+whose pin the rapids release always makes equal to the manifest's Labs commit. When using these directories, your 
+worktree identifier is "fishfood". Never touch dogfood while working on fishfood.
+
+The directory contains two clones from the `commonfabric` GitHub organisation over SSH, `cfs` and `weaver`. 
+Nobody develops in them. Each is always detached at the commit the current rapids release names, with no local 
+modifications.
+
+- The CFS runs as the Loom instance `fishfood`: port offset 1, bound to the `cfs` clone, its hosted home on 
+`https://rapids.saga-castor.ts.net`, and the same identity key as dogfood (`~/.config/commonfabric/identity.key`).
+
+- Its Weaver is `/Applications/Weaver (Rapids).app` (bundle ID `com.commontools.CommonFabricWeaver.channel.rapids`), 
+built from the `weaver` clone. It reads which instance to use from 
+`~/Library/Application Support/com.commontools.CommonFabricWeaver.channel.rapids/channel-binding.json`, which 
+`loom weaver-bind rapids --instance fishfood` wrote once. The binding survives updates; write it again only if it 
+is missing, which the Weaver deploy reports.
+
+To update fishfood:
+
+1. Check that both clones are clean, as in step 1 above.
+
+2. Read the current release: `git -C ~/dev/commonfabric/infra/root fetch origin`, then `git -C 
+~/dev/commonfabric/infra/root show origin/main:releases/rapids.json`. Note its `release`, `loom.sha` and 
+`weaver.sha`.
+
+3. In each clone, `git fetch origin`, then `git checkout --detach` the commit the release names for it (`loom.sha` 
+for `cfs`, `weaver.sha` for `weaver`).
+
+4. Run `loom update fishfood --skip-pull`, then check `loom status fishfood`.
+
+5. In `~/dev/commonfabric/fishfood/weaver`, read what changed as in step 4 above, then run `WEAVER_CHANNEL=rapids 
+WEAVER_ONLY=local bash apple/scripts/deploy-weaver.sh`.
+
+6. Verify as in step 6 above, for `/Applications/Weaver (Rapids).app`. Its status route listens on the gateway port 
+the binding names, and its `connection.pillConnectedTo` must be `http://localhost:9901`. The fishfood Toolshed's 
+`http://localhost:8001/api/meta` must report the same `gitSha` as `https://rapids.saga-castor.ts.net/api/meta`. 
+Confirm that dogfood's Weaver is still running.
+
+7. Report as in step 7 above, naming the rapids release.
+
+
 ## When something fails
 
 - Report failures exactly as they happened, with the error text. Never install a stale build, and never describe a 

@@ -9,8 +9,9 @@ import { parseTitle } from './title.js'
 // is a comma-separated list of worktree identifiers and STATE is an emoji. For
 // each worktree, the band above the prompt shows a button labeled with the
 // identifier and what pressing the button does, and sometimes dim buttons
-// beside it; the README lists the labels. While the buttons are being worked
-// out, the band shows a spinner in their place.
+// beside it; the README lists the labels. After them, the band shows a button
+// for each topic the conversation names, such as top/1234. While the buttons
+// are being worked out, the band shows a spinner in their place.
 
 const ENTRIES = { plugin: 'worktree-buttons', key: 'entries' } as const
 const PENDING = { plugin: 'worktree-buttons', key: 'pending' } as const
@@ -181,8 +182,12 @@ async function inspect(
   prs: readonly PullRequest[],
   main: string,
   itermRun: string,
+  several: boolean,
 ): Promise<WorktreeButton> {
   const inTerminal = (command: string): WorktreeAction => ({ kind: 'run', argv: [itermRun, `cd ${shellWord(path)}; ${command}`] })
+  // A message to the session's agent names the worktree when the title lists
+  // several, so that the agent acts on that worktree alone.
+  const say = (verb: string): WorktreeAction => ({ kind: 'say', text: several ? `${verb} ${id}` : verb })
   const button = (label: string, action: WorktreeAction): WorktreeButton => ({ id, label: `${id}: ${label}`, action })
   const terminal = (label: string, command: string) => button(label, inTerminal(command))
   // A folder that is not a git checkout, such as the one that holds the
@@ -233,14 +238,14 @@ async function inspect(
   }
   const offer = (label: string, action: WorktreeAction, ...alternates: WorktreeAlternate[]): WorktreeButton => ({
     ...button(label, action),
-    alternates: conflicts ? [...alternates, { label: 'REBASE', action: { kind: 'say', text: 'rebase' } }] : alternates,
+    alternates: conflicts ? [...alternates, { label: 'REBASE', action: say('rebase') }] : alternates,
   })
   // Without a pull request, SQUASH tells the session's agent to squash the
   // branch's commits.
   if (pr === undefined) {
     const review = inTerminal('c --separate')
     return n > 1
-      ? offer(`REVIEW (${n} commits)`, review, { label: 'SQUASH', action: { kind: 'say', text: 'squash' } })
+      ? offer(`REVIEW (${n} commits)`, review, { label: 'SQUASH', action: say('squash') })
       : offer('REVIEW', review)
   }
   if (!state.startsWith('✅')) {
@@ -259,13 +264,22 @@ async function inspect(
     : offer(label, inTerminal(range), { label: 'EACH COMMIT', action: inTerminal(`${range} --separate`) })
 }
 
+// A button for each topic, such as top/1234, that the text of the
+// conversation's messages names, in the order they are first named. A press
+// opens the topic with `l`.
+async function topicButtons($: EngineInterface, itermRun: string): Promise<readonly WorktreeButton[]> {
+  const named = (await $.session.messages()).flatMap(({ text }) => text.match(/\btop\/[0-9]+\b/gu) ?? [])
+  return [...new Set(named)].map(topic => ({ id: topic, label: topic, action: { kind: 'run', argv: [itermRun, `l ${topic}`] } }))
+}
+
 // Calls checking once the title is known to name worktrees, before the slower
 // work of inspecting them.
-async function compute($: EngineInterface, checking: () => Promise<void>): Promise<readonly WorktreeButton[]> {
-  const home = await $.env.get('HOME')
-  if (home === undefined) {
-    throw new Error('HOME is not set')
-  }
+async function worktreeButtons(
+  $: EngineInterface,
+  home: string,
+  itermRun: string,
+  checking: () => Promise<void>,
+): Promise<readonly WorktreeButton[]> {
   const title = await sessionTitle($, home)
   const parsed = title === null ? null : parseTitle(title)
   if (parsed === null || parsed.worktrees === '') {
@@ -288,18 +302,27 @@ async function compute($: EngineInterface, checking: () => Promise<void>): Promi
   await checking()
   const prs = await pullRequests($, home)
   const main = (await $.env.get('MAIN')) ?? 'main'
-  // Runs a command in the shell of iTerm2's frontmost session, only if that
-  // shell is idle at an empty prompt; it prints "busy" otherwise.
-  const itermRun = `${home}/dev/contraptions/iterm-run/iterm-run`
   return Promise.all(
     worktrees.map(async ({ id, path }) => {
       try {
-        return await inspect($, id, path, state, prs, main, itermRun)
+        return await inspect($, id, path, state, prs, main, itermRun, worktrees.length > 1)
       } catch (error) {
         return { id, label: `${id}: ERROR: ${message(error)}`, action: null }
       }
     }),
   )
+}
+
+async function compute($: EngineInterface, checking: () => Promise<void>): Promise<readonly WorktreeButton[]> {
+  const home = await $.env.get('HOME')
+  if (home === undefined) {
+    throw new Error('HOME is not set')
+  }
+  // Runs a command in the shell of iTerm2's frontmost session, only if that
+  // shell is idle at an empty prompt; it prints "busy" otherwise.
+  const itermRun = `${home}/dev/contraptions/iterm-run/iterm-run`
+  const [worktrees, topics] = await Promise.all([worktreeButtons($, home, itermRun, checking), topicButtons($, itermRun)])
+  return [...worktrees, ...topics]
 }
 
 let generation = 0

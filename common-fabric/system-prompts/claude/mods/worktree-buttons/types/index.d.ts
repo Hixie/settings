@@ -6,9 +6,12 @@ export type WorktreeAction =
   | { kind: 'say'; text: string }
 
 export type WorktreeButton = {
-  /** The worktree identifier, as the session title gives it. */
+  /**
+   * The worktree identifier, as the session title gives it, or the topic,
+   * such as top/1234.
+   */
   id: string
-  /** The text the band shows for the worktree. */
+  /** The text the band shows for the worktree or topic. */
   label: string
   /** What a press does, or null when the worktree offers nothing to do. */
   action: WorktreeAction | null

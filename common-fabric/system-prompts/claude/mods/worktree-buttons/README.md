@@ -16,7 +16,7 @@ session, through `~/dev/contraptions/iterm-run`.
 |--|--|--|--|--|
 | any | any | 0 | `D0: OPEN WORKTREE` | runs `cd WORKTREE; l` |
 | none | any | 1 | `D0: REVIEW` | runs `cd WORKTREE; c --separate` |
-| none | any | >1 | `D0: REVIEW (N commits)`, `SQUASH` | runs `cd WORKTREE; c --separate`; SQUASH sends the session "squash" |
+| none | any | >1 | `D0: REVIEW (N commits)`, `SQUASH` | runs `cd WORKTREE; c --separate`; SQUASH sends the session "squash" or "squash D0" |
 | listed | not ✅ | >0 | `D0: OPEN PR #P` | opens the pull request with `open` |
 | listed | ✅ | 1 | `D0: REREVIEW TO MERGE (PR #P)` | runs `cd WORKTREE; c` |
 | listed | ✅ | >1 | `D0: REVIEW TO MERGE (N-1 new commits, PR #P)`, `EACH COMMIT` | runs `cd WORKTREE; c A..B`; EACH COMMIT adds `--separate` when N-1 > 1 |
@@ -31,9 +31,16 @@ offers OPEN WORKTREE whatever pull request is listed for its branch.
 
 When merging the N commits into the main branch would conflict, every row of
 the table above except OPEN WORKTREE also has a dim `REBASE` button, after any
-other dim button, which sends the session the message "rebase". The mod finds
-out with `git merge-tree --write-tree --quiet`, which merges the branch into the
-main branch without touching the worktree. It exits with status 1 and prints
+other dim button, which sends the session the message "rebase".
+
+When the band shows more than one worktree, the messages SQUASH and REBASE
+send name the worktree whose button was pressed, as in "squash D0", so that
+the session's agent acts on that worktree alone. Identifiers that are skipped,
+as described below, do not count.
+
+The mod finds out whether the merge would conflict with
+`git merge-tree --write-tree --quiet`, which merges the branch into the main
+branch without touching the worktree. It exits with status 1 and prints
 nothing when the merge conflicts. Any other failure, including status 1 with a
 message, is shown as an error in place of the worktree's buttons, as described
 below.
@@ -95,6 +102,26 @@ only in shells that load its listener from `~/.zshrc`; otherwise nothing runs
 and a message says the shell was busy. iterm-run asks iTerm2 which session is
 frontmost, so macOS asks once whether Claude may control iTerm2.
 
+## Topic buttons
+
+After the worktrees' buttons, the band shows a button for each topic on the
+team's topics board that the conversation names, such as `top/1234`, labeled
+with that name. A press runs `l top/1234` in iTerm2 in the same way, which
+opens the topics board in the terminal with that topic showing. The buttons
+are in the order the topics are first named. A name counts only as a whole
+word, so `stop/7` and `top/9x` do not. The topic buttons are worked out
+whenever the worktree buttons are, and they show even when the title names no
+worktrees.
+
+The mod reads the newest 4096 entries of the conversation with
+`$.session.messages()` and looks only at the text of its user and assistant
+messages, not at tool calls or their results, so a topics board listing that
+an agent reads does not add a button for every topic in it. User messages
+include text the engine adds on the person's behalf, such as the instructions
+of a skill the agent loads or a subagent's report, because the entries
+`$.session.messages()` returns do not say which user messages the person
+typed.
+
 ## Sorting sessions into sidebar sections
 
 The mod also files the session in the desktop app's sidebar under the section
@@ -135,9 +162,9 @@ From this folder:
     claude plugin test .
 
 `claude plugin test` runs `tests/register.test.tsx`, which stands in for the
-session title, the pull request table, git, and the commands a press runs, and
-`tests/sort-session.test.ts`, which stands in for the desktop app's session and
-sidebar tools.
+session title, the conversation, the pull request table, git, and the commands
+a press runs, and `tests/sort-session.test.ts`, which stands in for the
+desktop app's session and sidebar tools.
 Run both with the Claude Code that the desktop app runs, which is at
 `~/Library/Application Support/Claude/claude-code/VERSION/*/claude.app/Contents/MacOS/claude`
 for the newest VERSION there. The mod draws the spinner with the `Progress`

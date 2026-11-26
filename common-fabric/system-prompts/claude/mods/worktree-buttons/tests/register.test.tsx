@@ -45,6 +45,10 @@ type World = {
   folders?: readonly string[]
   // The session's working directory, once the session has started.
   cwd?: string
+  // The text of each message of the conversation, and the text of a tool
+  // call and its result, which come before them.
+  conversation?: readonly string[]
+  toolText?: string
   ran: (readonly string[])[]
   home: string
   // How the commands a press runs fail, if they do.
@@ -217,6 +221,18 @@ function host(on: On, world: World) {
     return { cwd: e.cwd }
   })
   on('session.attach', (_, e) => ({ clientId: e.clientId }))
+  on('session.messages', () => {
+    const tools = (text: string) => [
+      { role: 'assistant' as const, text: '', toolUses: [{ tool_use_id: 'call', tool: 'Bash', input: { command: text }, text, result: text }] },
+      { role: 'user' as const, text: '', toolUses: [], toolResults: [{ tool_use_id: 'call', text, result: text, isError: false }] },
+    ]
+    return {
+      value: [
+        ...(world.toolText === undefined ? [] : tools(world.toolText)),
+        ...(world.conversation ?? []).map((text, index) => ({ role: index % 2 === 0 ? 'user' as const : 'assistant' as const, text, toolUses: [] })),
+      ],
+    }
+  })
   // The desktop app's record of the session, before its window has reported
   // the sidebar's sections, so the session is never sorted into one.
   on('mcp.call', () => ({
@@ -268,8 +284,10 @@ test('a branch with commits and no pull request offers a review, and a squash wh
   expect(w.ran).toEqual([iterm(`cd ${CF}/labs/D0; c --separate`), iterm(`cd ${CF}/labs/D1; c --separate`)])
   expect(w.said).toEqual([])
 
+  // With several worktrees, the message names the one whose button was
+  // pressed.
   await press($, 'D0 SQUASH')
-  expect(w.said).toEqual(['squash'])
+  expect(w.said).toEqual(['squash D0'])
   expect(w.ran).toHaveLength(2)
 
   w.refusesMessages = 'a Stop hook is blocking'
@@ -315,15 +333,58 @@ test('a branch whose commits conflict with the main branch also offers a rebase,
   await press($, 'D1 REBASE')
   await press($, 'D1 SQUASH')
   await press($, 'D3 REBASE')
-  expect(w.said).toEqual(['rebase', 'squash', 'rebase'])
+  expect(w.said).toEqual(['rebase D1', 'squash D1', 'rebase D3'])
   await press($, 'D3 EACH COMMIT')
   expect(w.ran).toEqual([iterm(`cd ${CF}/labs/D3; c fff..ggg --separate`)])
 
   // A pull request that is not ready opens in the browser, with a rebase
-  // beside it.
+  // beside it. With one worktree, the message names none.
   w.title = 'D2: 🦚 Fix the thing'
   await $.session.attach({ surface: 'desktop', clientId: 'desktop:default' })
   expect(await labels($, 'desktop')).toEqual({ buttons: ['D2: OPEN PR #12', 'REBASE'], texts: [] })
+  await press($, 'D2 REBASE')
+  expect(w.said.at(-1)).toBe('rebase')
+})
+
+test('a message names no worktree when the others in the title are skipped', async ($, on) => {
+  const w = world('D0, d0, D0X: 🧱 Fix the thing', {
+    [`${CF}/labs/D0`]: { remotes: LABS_REMOTES, branch: 'fix', commits: ['aaa', 'bbb'] },
+  })
+  host(on, w)
+  await start($)
+
+  expect(await labels($, 'desktop')).toEqual({ buttons: ['D0: REVIEW (2 commits)', 'SQUASH'], texts: [] })
+  await press($, 'D0 SQUASH')
+  expect(w.said).toEqual(['squash'])
+})
+
+test('each topic the conversation names has a button, after the worktrees, that opens it', async ($, on) => {
+  const w = world('💬 Question', {
+    [`${CF}/labs/D0`]: { remotes: LABS_REMOTES, branch: 'fix', commits: ['aaa'] },
+  })
+  w.conversation = ['What did top/1234 decide?', 'It points at top/56.\nLike top/1234, it is open.', 'Not stop/7, laptop/8, top/9x, or top/.']
+  // A tool call and its result are not read.
+  w.toolText = 'topics list: top/999'
+  host(on, w)
+  await start($)
+
+  for (const surface of SURFACES) {
+    expect(await labels($, surface)).toEqual({ buttons: ['top/1234', 'top/56'], texts: [] })
+  }
+  await press($, 'top/56')
+  expect(w.ran).toEqual([iterm('l top/56')])
+
+  w.title = 'D0: 🧱 Work'
+  w.conversation = [...w.conversation, 'Then top/3.']
+  await $.session.attach({ surface: 'desktop', clientId: 'desktop:default' })
+  expect(await labels($, 'desktop')).toEqual({ buttons: ['D0: REVIEW', 'top/1234', 'top/56', 'top/3'], texts: [] })
+
+  // A conversation that names no topic, with no worktrees, leaves the band to
+  // the engine.
+  w.title = '💬 Question'
+  w.conversation = ['Not stop/7 either.']
+  await $.session.attach({ surface: 'desktop', clientId: 'desktop:default' })
+  expect(await labels($, 'desktop')).toEqual({ buttons: [], texts: ['engine'] })
 })
 
 test('a press that has not finished shows its progress in place of its button', async ($, on) => {

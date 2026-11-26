@@ -9,6 +9,14 @@ else. If the failure was caused by the PR or branch, report this. If the branch 
 there is no need to resolve the issue, another agent (the one owning the branch) will do so; you may send it your 
 findings to help it make progress.
 
+For a labs test, the dashboard lists every test that pull requests hold back as flaky at 
+https://dashboard.saga-castor.ts.net/test-selection/flaky.json, as JSON; "Flaky tests as JSON" in labs' 
+`dashboard/README.md` defines its fields. Read it with `curl`, not by scraping the dashboard's pages. A test's 
+`disagreements` are the runs in which one commit both passed and failed: each failing run gives the `url` of its 
+workflow run attempt and the `job` whose log holds the failure. A `lastRun` long ago, or `null`, means nothing runs 
+the test any more, so check that the test still exists before deflaking it. When you are told to deflake a test by 
+name rather than by URL, start there.
+
 If the failure is on main or is a flake reproducible on main, create a new test case that reliably triggers the 
 failure. This test case should be one that fails reliably when the flake is present, and passes only if it is 
 fixed. Once the test has been created and reliably reproduces the failure (by failing with the same symptoms as 

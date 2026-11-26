@@ -65,12 +65,24 @@ The offset shifts the shell/toolshed/inspector ports off their shared base so th
 the same ports.
 
 
-# Relationship to cfs
+## Relationship to cfs
 
 The cfs vendored copy of labs is a [separate concern](cfs-vendor-labs-separate.md).
 
 
-# Dashboard
+## Dashboard
 
 Updating (rolling) the deployed [dashboard](https://dashboard.saga-castor.ts.net/) is done through the [infra](infra.md) 
 repository.
+
+
+## CI
+
+### Tests
+
+CI in this repository only runs about 2% of the tests. Run relevant tests locally before relying on CI.
+
+### Data
+
+When possible, answer questions about CI history in this repo from the public test-record store (labs 
+`docs/development/test-records.md`, “Reading the data”), which costs no GitHub requests.

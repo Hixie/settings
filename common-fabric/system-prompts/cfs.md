@@ -97,10 +97,12 @@ loom acceptance down loomXX
 ```
 
 
-## Tests on this machine bypass the slot queue.
+## Tests
 
 The slot queue is bypassed on this machine and runs go bare. Do not follow the repository's rule regarding how to 
 run tests locally.
+
+CI only runs a subset of the tests from this repo. Run any relevant tests locally rather than relying on CI.
 
 
 ## Remove a persistent instance and worktree

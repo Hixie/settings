@@ -1,6 +1,9 @@
 import type { EngineInterface, Register } from 'claude-code'
 
 import type { WorktreeAction, WorktreeAlternate, WorktreeButton } from '../types'
+import { message } from './message.js'
+import { hostSession, sort, sortAfter } from './sort-session.js'
+import { parseTitle } from './title.js'
 
 // The session title has the shape "WORKTREES: STATE SUMMARY", where WORKTREES
 // is a comma-separated list of worktree identifiers and STATE is an emoji. For
@@ -49,10 +52,6 @@ async function mustRun($: EngineInterface, argv: readonly string[], cwd: string)
   return result.stdout
 }
 
-function message(error: unknown) {
-  return error instanceof Error ? error.message : String(error)
-}
-
 function lines(text: string) {
   return text === '' ? [] : text.split('\n')
 }
@@ -60,7 +59,7 @@ function lines(text: string) {
 async function sessionTitle($: EngineInterface, home: string) {
   const account = await $.env.get('CLAUDE_CODE_ACCOUNT_UUID')
   const organization = await $.env.get('CLAUDE_CODE_ORGANIZATION_UUID')
-  const session = await $.env.get('CLAUDE_CODE_HOST_SESSION_ID')
+  const session = await hostSession($)
   if (account === undefined || organization === undefined || session === undefined) {
     return null
   }
@@ -268,15 +267,14 @@ async function compute($: EngineInterface, checking: () => Promise<void>): Promi
     throw new Error('HOME is not set')
   }
   const title = await sessionTitle($, home)
-  const separator = title?.indexOf(': ') ?? -1
-  // The state emoji follows the list; a title like "PR: fix flake" has none.
-  if (title === null || separator < 0 || /^[\p{L}\p{N}]/u.test(title.slice(separator + 2))) {
+  const parsed = title === null ? null : parseTitle(title)
+  if (parsed === null || parsed.worktrees === '') {
     return []
   }
-  const state = title.slice(separator + 2)
+  const { state } = parsed
   const found = (
     await Promise.all(
-      title.slice(0, separator).split(',').map(async text => {
+      parsed.worktrees.split(',').map(async text => {
         const id = text.trim()
         const path = id === '' ? null : await worktreePath($, home, id)
         return path === null ? [] : [{ id, path }]
@@ -363,12 +361,23 @@ async function press($: EngineInterface, key: string, label: string, action: Wor
 
 export const register: Register = on => {
   // Each of these may change the title, the branches, or what the band can
-  // show, so the buttons are worked out again once the event is done.
-  on('session.start', ($, e, next) => next(e).finally(() => void refresh($)))
+  // show, so the buttons are worked out again once the event is done. A
+  // session is also sorted into the sidebar section for its state when it
+  // starts, and when a call that sets its title or moves it to the top level
+  // of the sidebar succeeds.
+  on('session.start', ($, e, next) =>
+    next(e).finally(() => {
+      void refresh($)
+      sort($)
+    }))
   on('session.attach', ($, e, next) => next(e).finally(() => void refresh($)))
   on('turn.complete', ($, e, next) => next(e).finally(() => void refresh($)))
   on('tool.call', { tool: 'mcp__ccd_session_mgmt__set_session_title' }, ($, e, next) =>
-    next(e).finally(() => void refresh($)))
+    next(e)
+      .then(result => sortAfter($, e.session_id, result))
+      .finally(() => void refresh($)))
+  on('tool.call', { tool: 'mcp__ccd_session_mgmt__detach_session' }, ($, e, next) =>
+    next(e).then(result => sortAfter($, e.session_id, result)))
 
   on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
     const { value: shown = [] } = await $.state.get(ENTRIES)

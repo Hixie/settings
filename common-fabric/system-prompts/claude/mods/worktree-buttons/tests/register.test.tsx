@@ -217,6 +217,11 @@ function host(on: On, world: World) {
     return { cwd: e.cwd }
   })
   on('session.attach', (_, e) => ({ clientId: e.clientId }))
+  // The desktop app's record of the session, before its window has reported
+  // the sidebar's sections, so the session is never sorted into one.
+  on('mcp.call', () => ({
+    value: { content: [{ type: 'text' as const, text: JSON.stringify({ title: world.title }) }], isError: false },
+  }))
 }
 
 function world(title: string, checkouts: Record<string, Checkout>, prs: readonly string[] = []): World {
@@ -584,7 +589,17 @@ test('a pull request for another repository or branch does not count', async ($,
 test('a title without worktrees leaves the band to the engine', async ($, on) => {
   const w = world('', {})
   host(on, w)
-  for (const title of ['🧱 Fix: a bug in the parser', 'Untitled session', '💬 Question']) {
+  const titles = [
+    '🧱 Fix: a bug in the parser',
+    'Untitled session',
+    '💬 Question',
+    'PR: fix flake',
+    '🐤 D0: 🧱 or not',
+    '🐤 D0-1: 🧱 or not',
+    '💬 Review PR-12: `draft`',
+    'Bump node-20: (security)',
+  ]
+  for (const title of titles) {
     w.title = title
     await start($)
 

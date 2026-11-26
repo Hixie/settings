@@ -49,8 +49,11 @@ GitHub repository of the worktree's `upstream` remote, or of its `origin`
 remote when there is no `upstream`. When several lines match, the highest
 number wins.
 
-A title whose text after the first `: ` starts with a letter or a digit, such
-as `PR: fix flake`, has no worktree list. An identifier that `~/bin/l` would
+A title that starts with an emoji, such as `💬 Fix: a bug`, has no worktree
+list, and neither does a title whose text after the first `: ` does not start
+with an emoji, such as `PR: fix flake`. Emoji here, and as states below, are
+pictographic emoji, with any skin tone or other pictographic emoji joined to
+them; flags and keycaps are not. An identifier that `~/bin/l` would
 reject is skipped, and so is a second identifier for a folder already listed.
 A worktree whose folder does not exist, such as one deleted before the title
 was updated, is shown as dim `D0: FOLDER MISSING` text instead of a button. A
@@ -92,6 +95,38 @@ only in shells that load its listener from `~/.zshrc`; otherwise nothing runs
 and a message says the shell was busy. iterm-run asks iTerm2 which session is
 frontmost, so macOS asks once whether Claude may control iTerm2.
 
+## Sorting sessions into sidebar sections
+
+The mod also files the session in the desktop app's sidebar under the section
+for its state: the first section, in sidebar order, that the sidebar shows and
+whose name contains the state emoji of the session's title. A section can
+therefore hold several states, such as one named `🧱 🚧`. Only whole emoji
+count, so the state `❤` does not match a section named `❤️‍🔥`, and emoji are
+compared without U+FE0F VARIATION SELECTOR-16, so `⏸` and `⏸️` match each
+other. The state is the emoji the title starts with, or else the emoji that
+follows the first `: `.
+
+The session is sorted when it starts, and when a tool call that sets its own
+title or moves it to the top level of the sidebar succeeds
+(`set_session_title` or `detach_session` naming `self` or the session's own
+id). A call that names another session sorts nothing; that session's own copy
+of the mod sorts it when it sets its own title. One sort finishes before the
+next starts, so the last title set decides. The mod reads the title and the
+session's section with `get_session`, the sections with `list_sections`, and
+moves the session with `move_sessions`, all through the desktop app's MCP
+servers. A session the desktop app did not start, such as one in a terminal,
+has no `CLAUDE_CODE_HOST_SESSION_ID` and is never sorted.
+
+The session stays where it is when no section's name contains its state, when
+the title has no state, when it is pinned (moving a pinned session unpins it),
+or when the app has not yet reported which section the session is in. A
+session in a section whose name starts with `Arc:` also stays; a session in
+any other section is moved out of it when its state matches another section.
+When a call fails, or the app answers in a form the mod does not expect, a
+toast says why. According to the description of `move_sessions`, moving a
+session switches the sidebar to a layout that shows custom sections if it was
+not in one.
+
 ## Checking changes
 
 From this folder:
@@ -100,7 +135,9 @@ From this folder:
     claude plugin test .
 
 `claude plugin test` runs `tests/register.test.tsx`, which stands in for the
-session title, the pull request table, git, and the commands a press runs.
+session title, the pull request table, git, and the commands a press runs, and
+`tests/sort-session.test.ts`, which stands in for the desktop app's session and
+sidebar tools.
 Run both with the Claude Code that the desktop app runs, which is at
 `~/Library/Application Support/Claude/claude-code/VERSION/*/claude.app/Contents/MacOS/claude`
 for the newest VERSION there. The mod draws the spinner with the `Progress`

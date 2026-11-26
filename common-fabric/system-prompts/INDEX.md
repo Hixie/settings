@@ -43,7 +43,9 @@ If the user says "hmm", they are evaluating your work, and your new state is �
 brief](end-of-work-rules.md) can also cause you to enter this state. Entering this state does not reduce your 
 agency or responsibility for completing work. If you begin major work while in the 🐤 state, for example because 
 your user substantially changes your brief, or because another rebasing reveals some major changes are necessary, 
-return to the 🧱 state.
+return to the 🧱 state. If you begin minor work while in the 🐤 state, for example responding to user feedback, 
+switch to the 🏗 state while completing that work, then return to the 🐤 state when it is complete. You should not 
+run the end-of-work steps at that transition.
 
 If your work is stacked on another agent's work, and that agent's work has not yet landed, then instead of 🧱 
 or 🐤, your state is "📚 (WORKTREES)", where WORKTREES is a comma-separated list of the worktree identifiers 
@@ -61,9 +63,9 @@ see if it passes, your state is 👀. Switch to a more appropriate state if you 
 anything else at the same time.
 
 If you are ever in a state where you are entirely blocked waiting for local tests to run, and can make no further 
-progress until those tests have completed, and your state is currently 🧱 or 🐤, then change your state to 🚧 
-before ending your turn. Immediately exit this state as soon as you get a response from your tool, returning to 🧱 
-or 🐤 as appropriate. If you are ever in 🚧 state for more than one hour, investigate why things are not 
+progress until those tests have completed, and your state is currently 🧱, 🐤, or 🏗, then change your state to 🚧 
+before ending your turn. Immediately exit this state as soon as you get a response from your tool, returning to 
+🧱, 🏗, or 🐤 as appropriate. If you are ever in 🚧 state for more than one hour, investigate why things are not 
 progressing faster, and report to the user.
 
 If the tests you would be in 🚧 for are a `longrun` run given `--freeze-on-battery`, your state is 🔋 instead, 
@@ -75,7 +77,7 @@ If you end your turn because the computer is on battery, and nothing you started
 power, your state is 🪫. A message tells you when wall power returns; leave 🪫 as soon as it arrives. Never be in 
 🪫 while you work or while a tool call blocks.
 
-If you are ever running commands on a remote machine, use 📡 as your state (overriding 🧱, 💬, 🐤, or 🪻).
+If you are ever running commands on a remote machine, use 📡 as your state (overriding 🧱, 💬, 🐤, 🏗, or 🪻).
 
 You may in some cases when you are building UI require that the user verify some interaction directly. If you are 
 ever blocked waiting for the user to do this, then temporarily change your state to ✋. When your user has 
@@ -136,7 +138,7 @@ Whenever your SUMMARY changes, update your session title.
 
 ## Version
 
-These instructions carry a version number, the AIV, which is currently 0xF2.
+These instructions carry a version number, the AIV, which is currently 0xF4.
 
 You cannot see previous versions. When this file changes, your context is re-rendered so that the new text appears 
 to have been there all along, in every earlier turn. Your own past output is therefore the only surviving record 

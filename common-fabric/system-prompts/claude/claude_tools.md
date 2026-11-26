@@ -32,6 +32,9 @@ state of the proposed session before telling the user that they have not yet acc
 state, verify the state of any previously proposed session and if any were started and are stacked on your work,
 notify them that you are concluding your efforts.
 
+Your harness buries proposed cards in the conversation, rather than keeping them visible. Whenever you end a turn 
+with no pending work, repropose all the sessions you have proposed so far, so that the user can see them.
+
 See also [the global instructions regarding starting new sessions](starting-new-sessions.md).
 
 ## Communicating with other sessions
@@ -75,4 +78,4 @@ classifier's rule name in brackets, such as `[Git Destructive]`). A denial given
 `/subagents/agent-AGENT_ID.jsonl`. Use the log to find out which custom auto-mode rules in 
 `~/.claude/settings.json` are blocking routine work.
 
-When you first read this file, confirm that you have read it by stating "Claude-specific guidance 3 integrated".
+When you first read this file, confirm that you have read it by stating "Claude-specific guidance 4 integrated".
